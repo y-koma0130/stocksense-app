@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { css } from '../../../styled-system/css'
 
 export default function LoginPage() {
@@ -16,7 +17,16 @@ export default function LoginPage() {
     <div className={containerStyle}>
       <div className={cardStyle}>
         <div className={headerStyle}>
-          <h1 className={titleStyle}>StockSense</h1>
+          <div className={logoContainerStyle}>
+            <Image
+              src="/Logo.svg"
+              alt="StockSense Logo"
+              width={200}
+              height={60}
+              priority
+              className={logoStyle}
+            />
+          </div>
           <p className={subtitleStyle}>AIが見つける、買い時の銘柄</p>
         </div>
 
@@ -50,6 +60,7 @@ const containerStyle = css({
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '100vh',
+  width: '100%',
   backgroundColor: '#434343',
   padding: '1rem',
 })
@@ -68,11 +79,17 @@ const headerStyle = css({
   marginBottom: '2rem',
 })
 
-const titleStyle = css({
-  fontSize: '2rem',
-  fontWeight: 'bold',
-  color: '#E9F355',
-  marginBottom: '0.5rem',
+const logoContainerStyle = css({
+  display: 'flex',
+  justifyContent: 'center',
+  marginBottom: '1rem',
+})
+
+const logoStyle = css({
+  width: '200px',
+  height: 'auto',
+  maxWidth: '100%',
+  objectFit: 'contain',
 })
 
 const subtitleStyle = css({

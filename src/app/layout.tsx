@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "StockSense - AI投資支援プラットフォーム",
-  description: "中期〜長期視点で「今買っておくといい銘柄」をAIが自動提示する投資支援プラットフォーム",
+  description:
+    "中期〜長期視点で「今買っておくといい銘柄」をAIが自動提示する投資支援プラットフォーム",
 };
 
 export default function RootLayout({
@@ -25,11 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }

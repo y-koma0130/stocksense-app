@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { css } from "../../../styled-system/css";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { css } from "../../../styled-system/css";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -36,7 +36,7 @@ export default function LoginPage() {
         });
         setEmail("");
       }
-    } catch (error) {
+    } catch {
       setMessage({
         type: "error",
         text: "エラーが発生しました。もう一度お試しください。",
@@ -65,13 +65,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className={formStyle}>
           {message && (
-            <div
-              className={
-                message.type === "success"
-                  ? successMessageStyle
-                  : errorMessageStyle
-              }
-            >
+            <div className={message.type === "success" ? successMessageStyle : errorMessageStyle}>
               {message.text}
             </div>
           )}

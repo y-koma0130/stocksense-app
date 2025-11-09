@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { css } from "../../../styled-system/css";
 import LogoutButton from "./logout-button";
 
@@ -24,9 +24,7 @@ export default async function DashboardPage() {
       <div className={cardStyle}>
         <h2 className={welcomeStyle}>ようこそ!</h2>
         <p className={emailStyle}>{user.email}</p>
-        <p className={descriptionStyle}>
-          ここからAIが見つける買い時の銘柄を確認できます。
-        </p>
+        <p className={descriptionStyle}>ここからAIが見つける買い時の銘柄を確認できます。</p>
       </div>
     </div>
   );

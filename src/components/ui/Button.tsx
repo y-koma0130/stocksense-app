@@ -43,17 +43,17 @@ const baseStyle = css({
   },
   _focus: {
     outline: "2px solid",
-    outlineColor: "#E9F355",
+    outlineColor: "accent",
     outlineOffset: "2px",
   },
 });
 
 const variantStyles = {
   primary: css({
-    backgroundColor: "#E9F355",
-    color: "#2E2E2E",
+    backgroundColor: "accent",
+    color: "cardBg",
     _hover: {
-      backgroundColor: "#F5FF7A",
+      backgroundColor: "accentHover",
       transform: "translateY(-1px)",
     },
     _active: {
@@ -61,17 +61,17 @@ const variantStyles = {
     },
   }),
   secondary: css({
-    backgroundColor: "#2E2E2E",
-    color: "#E5E5E5",
-    border: "1px solid #555",
+    backgroundColor: "cardBg",
+    color: "text",
+    border: "1px solid {colors.border}",
     _hover: {
-      backgroundColor: "#3A3A3A",
-      borderColor: "#666",
+      backgroundColor: "cardBgHover",
+      borderColor: "border",
     },
   }),
   ghost: css({
     backgroundColor: "transparent",
-    color: "#E5E5E5",
+    color: "text",
     _hover: {
       backgroundColor: "rgba(255, 255, 255, 0.1)",
     },

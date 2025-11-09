@@ -77,7 +77,7 @@ const logoStyle = css({
 
 const subtitleStyle = css({
   fontSize: "0.95rem",
-  color: "#E5E5E5",
+  color: "text",
   opacity: 0.8,
 });
 

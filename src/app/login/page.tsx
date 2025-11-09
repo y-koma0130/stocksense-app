@@ -1,3 +1,5 @@
+"use client";
+
 import { LoginCard } from "@/features/auth/components/LoginCard";
 import { css } from "../../../styled-system/css";
 
@@ -15,6 +17,6 @@ const containerStyle = css({
   justifyContent: "center",
   minHeight: "100vh",
   width: "100%",
-  backgroundColor: "#434343",
+  backgroundColor: "background",
   padding: "1rem",
 });

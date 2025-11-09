@@ -50,7 +50,7 @@ export function CardContent({ className, children, ...props }: CardContentProps)
 }
 
 const cardStyle = css({
-  backgroundColor: "#2E2E2E",
+  backgroundColor: "cardBg",
   borderRadius: "12px",
   padding: "2.5rem",
   width: "100%",
@@ -64,10 +64,10 @@ const headerStyle = css({
 const titleStyle = css({
   fontSize: "1.5rem",
   fontWeight: "600",
-  color: "#E9F355",
+  color: "accent",
   marginBottom: "0.5rem",
 });
 
 const contentStyle = css({
-  color: "#E5E5E5",
+  color: "text",
 });

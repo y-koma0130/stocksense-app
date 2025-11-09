@@ -26,12 +26,12 @@ const baseStyle = css({
 
 const variantStyles = {
   success: css({
-    backgroundColor: "#2E5C2E",
-    color: "#9AE69A",
+    backgroundColor: "successBg",
+    color: "success",
   }),
   error: css({
-    backgroundColor: "#5C2E2E",
-    color: "#E69A9A",
+    backgroundColor: "errorBg",
+    color: "error",
   }),
   info: css({
     backgroundColor: "#2E3A5C",

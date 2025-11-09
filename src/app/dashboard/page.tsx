@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
+import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { createClient } from "@/lib/supabase/server";
 import { css } from "../../../styled-system/css";
 
@@ -16,53 +16,47 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className={containerStyle}>
-      <div className={headerStyle}>
+    <>
+      <Header />
+      <div className={containerStyle}>
         <h1 className={titleStyle}>StockSense Dashboard</h1>
-        <LogoutButton />
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>ようこそ!</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className={emailStyle}>{user.email}</p>
-          <p className={descriptionStyle}>ここからAIが見つける買い時の銘柄を確認できます。</p>
-        </CardContent>
-      </Card>
-    </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>ようこそ!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={emailStyle}>{user.email}</p>
+            <p className={descriptionStyle}>ここからAIが見つける買い時の銘柄を確認できます。</p>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
 
 const containerStyle = css({
-  minHeight: "100vh",
+  minHeight: "calc(100vh - 68px)",
   padding: "2rem",
-  backgroundColor: "#434343",
-});
-
-const headerStyle = css({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "2rem",
+  backgroundColor: "background",
 });
 
 const titleStyle = css({
   fontSize: "2rem",
   fontWeight: "700",
-  color: "#E5E5E5",
+  color: "text",
+  marginBottom: "2rem",
 });
 
 const emailStyle = css({
   fontSize: "1rem",
-  color: "#E5E5E5",
+  color: "text",
   marginBottom: "1.5rem",
   opacity: 0.8,
 });
 
 const descriptionStyle = css({
   fontSize: "1rem",
-  color: "#E5E5E5",
+  color: "text",
   lineHeight: "1.6",
 });

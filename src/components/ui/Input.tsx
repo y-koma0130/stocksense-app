@@ -41,24 +41,24 @@ const wrapperStyle = css({
 const labelStyle = css({
   fontSize: "0.875rem",
   fontWeight: "500",
-  color: "#E5E5E5",
+  color: "text",
 });
 
 const inputStyle = css({
   padding: "0.75rem 1rem",
-  backgroundColor: "#434343",
-  border: "1px solid #555",
+  backgroundColor: "background",
+  border: "1px solid {colors.border}",
   borderRadius: "6px",
-  color: "#E5E5E5",
+  color: "text",
   fontSize: "1rem",
   outline: "none",
   transition: "border-color 0.2s",
   width: "100%",
   _placeholder: {
-    color: "#999",
+    color: "textMuted",
   },
   _focus: {
-    borderColor: "#E9F355",
+    borderColor: "accent",
   },
   _disabled: {
     opacity: 0.5,
@@ -67,13 +67,13 @@ const inputStyle = css({
 });
 
 const errorInputStyle = css({
-  borderColor: "#E69A9A",
+  borderColor: "error",
   _focus: {
-    borderColor: "#E69A9A",
+    borderColor: "error",
   },
 });
 
 const errorTextStyle = css({
   fontSize: "0.75rem",
-  color: "#E69A9A",
+  color: "error",
 });

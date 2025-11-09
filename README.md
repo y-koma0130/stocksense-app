@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StockSense
 
-## Getting Started
+**StockSense（ストックセンス）** は、AIが中期〜長期視点で投資対象の「今買っておくといい銘柄」を提示する投資支援プラットフォームです。
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎯 提供価値（Core Value）
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 数ヶ月〜数年単位で「今買っておくと良い投資対象」をAIが自動提示
+- 日々チャートを見ていない個人投資家向け
+- シグナル（買い／中立／高値圏）＋AIコメント＋目安売却価格を提示
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 💹 対象カテゴリー（初期MVP）
 
-## Learn More
+| カテゴリ | 対象例 |
+|-----------|---------|
+| 国内株（高配当） | JT, 三菱HCキャピタル, 日本特殊陶業 |
+| 国内株（先端技術） | ソシオネクスト, SCREEN, TDK |
+| 国内株（市場別） | 東証プライム、グロース、スタンダード |
+| 米国インデックス投信 | eMAXIS Slim S&P500, NASDAQ100, オルカン |
+| 金（Gold） | GOLD ETF, 田中貴金属価格 |
+| 暗号資産 | BTC, ETH, XRP, SOL |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ⚙️ コアロジック（AI判断の基盤）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 中期（数ヶ月）
+- RSI（週足）
+- 移動平均乖離率（13/26週）
+- 出来高トレンド
+- 最近のニュースセンチメント
 
-## Deploy on Vercel
+### 長期（半年〜数年）
+- PER/PBR（割安度）
+- 配当利回り
+- 業績推移（売上・営業益）
+- 為替・金利環境
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 共通要素
+- 市場全体のボラティリティ
+- 主要指数との相関（TOPIX, S&P500など）
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🔮 AIスコア算出(仮)
+
+1. RSI: 売られすぎ（30未満）→ +20pt
+2. PER/PBR: 割安→ +20pt
+3. 出来高上昇＋乖離率改善→ +20pt
+4. 配当利回り高→ +20pt
+5. ニュースセンチメントがポジティブ→ +20pt
+
+→ 合計100点満点の「Buy Potential Score」を算出
+
+### AIコメント生成
+- スコア＋WebSearchニュース＋過去半年の値動きで要約
+- 例：「RSIが過去半年で最も低く、業績も安定。長期保有での反発余地あり。」
+
+### 売却目安価格（任意）
+- 過去高値／平均PERを参考に推定
+- 「目安売却：〜円〜円（+20〜30%）」
+
+---
+
+## 📊 ダッシュボード設計
+
+| 表示モード | 内容 |
+|-------------|------|
+| 中期モード | RSI週足、乖離率、出来高トレンド、AIスコア |
+| 長期モード | PER、配当、業績推移、長期AIスコア |
+
+- 中期／長期はタブ切替式
+- 銘柄カードに「AIスコア」「目安コメント」「売却目安」を表示
+
+---
+
+## 🔔 通知設定
+
+- カテゴリ別通知（国内高配当、先端技術、ETF、金、暗号通貨）
+- 時間軸別設定（中期／長期のON/OFF）
+- 通知タイミング：即時／日次／週次
+- 通知手段：LINE Notify（初期）
+- 通知例：「【中期買い時】ソシオネクストがRSI28で反発傾向」
+
+---
+
+## 🗄️ データ項目
+
+| カテゴリ | 指標 |
+|-----------|------|
+| 株式 | 価格、RSI週足、PER、PBR、配当利回り、業績成長率 |
+| ETF/投信 | 価格、RSI週足、トレンド方向、直近パフォーマンス |
+| 金・仮想通貨 | 価格、RSI週足、ボラティリティ、移動平均乖離 |
+| 共通 | スコア、AIコメント、推定売却レンジ、更新日 |
+
+---
+
+## 🧱 データ更新の流れ
+
+1. 毎週市場データを取得（週足換算）
+2. RSI・PER・配当などを更新
+3. AIスコア再計算
+4. スコア変化が閾値を超えたものを通知対象に
+5. LINE経由で通知送信
+
+---
+
+## 💡 今後の拡張（ロードマップ）
+
+| フェーズ | 内容 |
+|-----------|------|
+| v1.0 | AIスコア＋LINE通知（国内株＋ETF＋金＋暗号通貨） |
+| v1.1 | 売却目安レンジと中期／長期切替表示 |
+| v1.2 | 週次マーケット要約（AI自動生成）をダッシュボードに掲載 |
+| v2.0 | ユーザー間ウォッチリスト共有・人気スコア表示 |

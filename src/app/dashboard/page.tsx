@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { LogoutButton } from "@/features/auth";
 import { createClient } from "@/lib/supabase/server";
 import { css } from "../../../styled-system/css";
-import LogoutButton from "./logout-button";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -21,11 +22,15 @@ export default async function DashboardPage() {
         <LogoutButton />
       </div>
 
-      <div className={cardStyle}>
-        <h2 className={welcomeStyle}>ようこそ!</h2>
-        <p className={emailStyle}>{user.email}</p>
-        <p className={descriptionStyle}>ここからAIが見つける買い時の銘柄を確認できます。</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>ようこそ!</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className={emailStyle}>{user.email}</p>
+          <p className={descriptionStyle}>ここからAIが見つける買い時の銘柄を確認できます。</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -47,21 +52,6 @@ const titleStyle = css({
   fontSize: "2rem",
   fontWeight: "700",
   color: "#E5E5E5",
-});
-
-const cardStyle = css({
-  backgroundColor: "#2E2E2E",
-  borderRadius: "12px",
-  padding: "2.5rem",
-  maxWidth: "600px",
-  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
-});
-
-const welcomeStyle = css({
-  fontSize: "1.5rem",
-  fontWeight: "600",
-  color: "#E9F355",
-  marginBottom: "1rem",
 });
 
 const emailStyle = css({

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { LogoutButton } from "@/features/auth";
+import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { createClient } from "@/lib/supabase/server";
 import { css } from "../../../styled-system/css";
 

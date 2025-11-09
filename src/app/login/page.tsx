@@ -1,4 +1,4 @@
-import { LoginCard } from "@/features/auth";
+import { LoginCard } from "@/features/auth/components/LoginCard";
 import { css } from "../../../styled-system/css";
 
 export default function LoginPage() {

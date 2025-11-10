@@ -2,6 +2,7 @@ import type { ComponentPropsWithoutRef } from "react";
 import { css, cx } from "../../../styled-system/css";
 
 interface MarketSummaryCardProps extends ComponentPropsWithoutRef<"div"> {
+  id?: string;
   title: string;
   price: number;
   change: number;
@@ -10,6 +11,7 @@ interface MarketSummaryCardProps extends ComponentPropsWithoutRef<"div"> {
 }
 
 export function MarketSummaryCard({
+  id,
   title,
   price,
   change,
@@ -20,14 +22,19 @@ export function MarketSummaryCard({
 }: MarketSummaryCardProps) {
   const isPositive = change >= 0;
 
+  // Use more decimal places for JPY/USD (円ドル) display
+  const isJpyUsd = id === "usdjpy" && currency === "$";
+  const priceDecimals = isJpyUsd ? 5 : 2;
+  const changeDecimals = isJpyUsd ? 5 : 2;
+
   const formattedPrice = new Intl.NumberFormat("ja-JP", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: priceDecimals,
+    maximumFractionDigits: priceDecimals,
   }).format(price);
 
   const formattedChange = new Intl.NumberFormat("ja-JP", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: changeDecimals,
+    maximumFractionDigits: changeDecimals,
     signDisplay: "always",
   }).format(change);
 

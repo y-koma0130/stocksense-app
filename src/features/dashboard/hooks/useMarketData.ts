@@ -1,48 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-interface MarketData {
-  id: string;
-  title: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  currency: string;
-}
+import { trpc } from "../../../../trpc/client";
 
 export function useMarketData() {
-  const [data, setData] = useState<MarketData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = trpc.market.getAll.useQuery(undefined, {
+    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+    staleTime: 30 * 1000, // Consider data stale after 30 seconds
+  });
 
-  useEffect(() => {
-    async function fetchMarketData() {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/market");
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch market data");
-        }
-
-        const marketData = (await response.json()) as MarketData[];
-        setData(marketData);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchMarketData();
-
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchMarketData, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return { data, loading, error };
+  return {
+    data: data ?? [],
+    loading: isLoading,
+    error: error?.message ?? null,
+  };
 }

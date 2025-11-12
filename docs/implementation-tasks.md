@@ -31,7 +31,7 @@
 ### 新規インストール必要
 
 ```bash
-# Inngest（週次・月次ジョブ管理）
+# Inngest（週次・月次ジョブ管理）✅ インストール済み
 pnpm add inngest
 
 # テクニカル指標計算
@@ -40,11 +40,11 @@ pnpm add technicalindicators
 # Excelファイルパース（JPX業種平均取得用）
 pnpm add xlsx
 
-# 通知機能（メール）
-pnpm add resend
-
 # 日付操作
 pnpm add date-fns
+
+# 通知機能（LINE Notify）- Phase 2で実装
+# pnpm add axios（LINE Notify API用）
 ```
 
 ---
@@ -216,29 +216,31 @@ export const weeklyMidTermScoring = inngest.createFunction(
 
 ## 📝 実装タスク（優先順位順）
 
-### Phase 1: 環境セットアップ（2-3日）
+### 🎯 Phase 1: コアスコアリング機能（最優先・当面のゴール）
 
-#### 1.1 Inngestセットアップ
-- [ ] Inngestアカウント作成（https://www.inngest.com/）
-- [ ] プロジェクトに `inngest` パッケージインストール
-- [ ] `inngest/client.ts` 作成・初期化
-- [ ] `/api/inngest` エンドポイント作成
-- [ ] Inngest Dev Server起動確認
-- [ ] 環境変数設定（`INNGEST_SIGNING_KEY`, `INNGEST_EVENT_KEY`）
+**目標**: スコア計算ロジックの実装とInngestジョブでの自動実行
 
-#### 1.2 Supabaseマイグレーション
+#### 1.1 Inngestセットアップ ✅ 完了
+- [x] Inngestアカウント作成（https://www.inngest.com/）
+- [x] プロジェクトに `inngest` パッケージインストール
+- [x] `inngest/client.ts` 作成・初期化
+- [x] `/api/inngest` エンドポイント作成
+- [x] Inngest Dev Server起動確認
+- [x] 環境変数設定（`INNGEST_SIGNING_KEY`, `INNGEST_EVENT_KEY`）
+
+#### 1.2 必要パッケージインストール
+```bash
+pnpm add technicalindicators xlsx date-fns
+```
+
+#### 1.3 Supabaseマイグレーション
 - [ ] マイグレーションSQL実行
 - [ ] テーブル作成確認
 - [ ] インデックス設定確認
 
-#### 1.3 必要パッケージインストール
-```bash
-pnpm add inngest technicalindicators xlsx resend date-fns
-```
-
 ---
 
-### Phase 2: 銘柄マスターデータ準備（1-2日）
+### Phase 1-2: 銘柄マスターデータ準備（1-2日）
 
 #### 2.1 JPXから銘柄一覧取得
 - [ ] JPX公式サイトからプライム銘柄一覧CSVダウンロード
@@ -253,7 +255,7 @@ pnpm add inngest technicalindicators xlsx resend date-fns
 
 ---
 
-### Phase 3: データ取得・計算ライブラリ（3-4日）
+### Phase 1-3: データ取得・計算ライブラリ（3-4日）
 
 #### 3.1 Yahoo Finance クライアント拡張
 - [ ] `src/lib/yahoo-finance/fundamentals.ts` 作成
@@ -276,7 +278,7 @@ pnpm add inngest technicalindicators xlsx resend date-fns
 
 ---
 
-### Phase 4: スコアリングエンジン（3-4日）
+### Phase 1-4: スコアリングエンジン（3-4日）
 
 #### 4.1 スコア計算ロジック実装
 - [ ] `src/lib/scoring/calculator.ts` 作成
@@ -295,7 +297,7 @@ pnpm add inngest technicalindicators xlsx resend date-fns
 
 ---
 
-### Phase 5: Inngestジョブ実装（4-5日）
+### Phase 1-5: Inngestジョブ実装（4-5日）
 
 #### 5.1 業種平均更新ジョブ
 - [ ] `inngest/functions/update-sector-averages.ts` 実装
@@ -323,23 +325,26 @@ pnpm add inngest technicalindicators xlsx resend date-fns
 
 ---
 
-### Phase 6: 通知機能（2-3日）
+## 🔔 Phase 2: 通知機能（次フェーズ）
 
-#### 6.1 メール通知実装
-- [ ] Resendアカウント作成・API Key取得
-- [ ] メールテンプレート作成（HTML）
-- [ ] `src/lib/notifications/email.ts` 実装
+**Phase 1完了後に実装**
+
+### 2.1 LINE Notify統合
+- [ ] LINE Notify登録・アクセストークン取得
+- [ ] `src/lib/notifications/line.ts` 実装
   - 上位20社抽出ロジック
-  - メール本文生成
-  - Resend API呼び出し
+  - LINE通知メッセージ生成
+  - LINE Notify API呼び出し
 
-#### 6.2 通知履歴保存
+### 2.2 通知履歴保存
 - [ ] `notifications` テーブルへ保存ロジック
 - [ ] 通知成功/失敗のログ記録
 
 ---
 
-### Phase 7: tRPC API実装（2-3日）
+## 📊 Phase 3: UI・API拡張（将来）
+
+### 3.1 tRPC API実装
 
 #### 7.1 スコア取得API
 - [ ] `trpc/routers/stocks.ts` 作成
@@ -353,7 +358,7 @@ pnpm add inngest technicalindicators xlsx resend date-fns
 
 ---
 
-### Phase 8: UI実装（3-4日）
+### 3.2 UI実装
 
 #### 8.1 スコアランキング画面
 - [ ] `/app/(dashboard)/scores/page.tsx` 作成

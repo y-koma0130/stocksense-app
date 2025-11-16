@@ -1,17 +1,44 @@
+import { config } from "dotenv";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "./schema";
+import type postgres from "postgres";
 
-if (!process.env.DATABASE_URL) {
-	throw new Error("DATABASE_URL environment variable is not set");
-}
+config({ path: ".env.local" });
+
+let dbInstance: PostgresJsDatabase<Record<string, never>> | null = null;
 
 /**
- * Supabase Transaction pool mode用の接続設定
- * prepare: false を指定して prepared statements を無効化
+ * データベース接続を取得する
+ * ビルド時にエラーを防ぐため、遅延初期化を採用
  */
-const client = postgres(process.env.DATABASE_URL, {
-	prepare: false,
-});
+function getDb(): PostgresJsDatabase<Record<string, never>> {
+  if (dbInstance) {
+    return dbInstance;
+  }
 
-export const db = drizzle({ client, schema });
+  // DATABASE_URLを取得（未設定の場合はエラー）
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not defined in environment variables");
+  }
+
+  // ローカル環境かどうかを判定
+  const isLocal = databaseUrl.includes("127.0.0.1") || databaseUrl.includes("localhost");
+
+  // Supabaseの接続プールでは prepare: false が必要
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const postgresModule = require("postgres") as typeof postgres;
+  const client = postgresModule(databaseUrl, {
+    prepare: false,
+    ssl: isLocal ? false : "require",
+  });
+
+  dbInstance = drizzle(client);
+  return dbInstance;
+}
+
+export const db = new Proxy({} as PostgresJsDatabase<Record<string, never>>, {
+  get(_, prop) {
+    return getDb()[prop as keyof PostgresJsDatabase<Record<string, never>>];
+  },
+});

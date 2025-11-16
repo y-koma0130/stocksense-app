@@ -1,0 +1,19 @@
+# JPX銘柄データ配置用ディレクトリ
+
+このディレクトリにJPX公式サイトからダウンロードしたExcelファイルを配置してください。
+
+## ダウンロード方法
+
+1. JPX公式サイトにアクセス
+   https://www.jpx.co.jp/markets/statistics-equities/misc/01.html
+
+2. 「東証上場銘柄一覧」のExcelファイルをダウンロード
+   - ファイル名例: `data_j.xls`
+
+3. このディレクトリに配置
+
+## インポート方法
+
+```bash
+pnpm import:stocks ./data/data_j.xls
+```

@@ -42,3 +42,9 @@ next-env.d.ts
 
 # panda css
 /styled-system
+
+# data files
+/data/*.xls
+/data/*.xlsx
+
+.claude/

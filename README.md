@@ -116,3 +116,94 @@
 | v1.1 | 売却目安レンジと中期／長期切替表示 |
 | v1.2 | 週次マーケット要約（AI自動生成）をダッシュボードに掲載 |
 | v2.0 | ユーザー間ウォッチリスト共有・人気スコア表示 |
+
+---
+
+## 🚀 セットアップ
+
+### 前提条件
+
+- Node.js 20以上
+- pnpm
+- Supabase アカウント
+
+### 環境変数の設定
+
+`.env.local` ファイルを作成:
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+DATABASE_URL=your-database-url
+
+# Inngest
+INNGEST_SIGNING_KEY=your-signing-key
+INNGEST_EVENT_KEY=your-event-key
+```
+
+### インストール
+
+```bash
+pnpm install
+```
+
+### データベース設定
+
+```bash
+# スキーマを適用
+pnpm db:push
+
+# Drizzle Studioでデータベースを確認
+pnpm db:studio
+```
+
+### 銘柄マスターデータのインポート
+
+1. JPX公式サイトから銘柄一覧をダウンロード
+   https://www.jpx.co.jp/markets/statistics-equities/misc/01.html
+
+2. `data/` ディレクトリに配置
+
+3. インポート実行
+
+```bash
+pnpm import:stocks ./data/data_j.xls
+```
+
+### 開発サーバー起動
+
+```bash
+# Next.js開発サーバー
+pnpm dev
+
+# Inngest開発サーバー（別ターミナル）
+pnpm inngest
+```
+
+---
+
+## 📝 使い方
+
+### スコアリングジョブ
+
+- **週次スコアリング**: 毎週土曜日 0:00 (JST) に自動実行
+- **月次スコアリング**: 毎月1日 0:00 (JST) に自動実行
+
+スコア0.6以上の銘柄が自動的にデータベースに保存されます。
+
+### データベース操作
+
+```bash
+# スキーマの生成
+pnpm db:generate
+
+# マイグレーション実行
+pnpm db:migrate
+
+# スキーマを直接プッシュ
+pnpm db:push
+
+# Drizzle Studio起動
+pnpm db:studio
+```

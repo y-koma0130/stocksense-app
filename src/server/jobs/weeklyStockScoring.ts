@@ -2,6 +2,7 @@ import { isNull } from "drizzle-orm";
 import { inngest } from "../../../inngest/client";
 import { db } from "../../db";
 import { stocks } from "../../db/schema";
+import { getLatestSectorAverages } from "../features/marketData/infrastructure/queryServices/getLatestSectorAverages.queryService";
 import { createScoringInput } from "../features/valueStockScoring/domain/entities/scoringInput";
 import { calculateRSI } from "../features/valueStockScoring/domain/services/calculateRSI";
 import { calculateTotalScore } from "../features/valueStockScoring/domain/services/scoreCalculators/calculateTotalScore";
@@ -34,9 +35,14 @@ export const weeklyStockScoring = inngest.createFunction(
     console.log(`Processing ${activeStocks.length} active stocks`);
 
     // ステップ2: 業種平均データを取得（最新）
-    // TODO: 業種平均テーブルから最新データを取得
-    // 現時点では空のMapを使用
-    const sectorAverages = new Map<string, { avgPer: number; avgPbr: number }>();
+    const sectorAveragesData = await step.run("fetch-sector-averages", async () => {
+      const data = await getLatestSectorAverages();
+      // MapをシリアライズできるようにArrayに変換
+      return Array.from(data.entries());
+    });
+
+    // Arrayから再度Mapに変換
+    const sectorAverages = new Map<string, { avgPer: number; avgPbr: number }>(sectorAveragesData);
 
     // ステップ3: バッチごとに銘柄を処理
     const batchSize = 50; // レート制限対策

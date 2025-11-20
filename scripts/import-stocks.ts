@@ -14,8 +14,8 @@
 import { and, eq, isNull, notInArray } from "drizzle-orm";
 import { db } from "../src/db";
 import { stocks } from "../src/db/schema";
-import { parseJPXStockList } from "../src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList";
 import type { ParsedStockDataDto } from "../src/server/features/valueStockScoring/application/dto/jpx.dto";
+import { parseJPXStockList } from "../src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList";
 
 type ImportResult = {
   total: number;
@@ -74,7 +74,9 @@ const importStocksData = async (stocksData: ParsedStockDataDto[]): Promise<Impor
       );
       result.created = toCreate.length;
     } catch (error) {
-      result.errors.push(`一括挿入エラー: ${error instanceof Error ? error.message : String(error)}`);
+      result.errors.push(
+        `一括挿入エラー: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -103,7 +105,9 @@ const importStocksData = async (stocksData: ParsedStockDataDto[]): Promise<Impor
 
         // 100件ごとに進捗表示
         if (processed % 100 === 0) {
-          console.log(`    進捗: ${processed}/${toUpdate.length}件 (${Math.round((processed / toUpdate.length) * 100)}%)`);
+          console.log(
+            `    進捗: ${processed}/${toUpdate.length}件 (${Math.round((processed / toUpdate.length) * 100)}%)`,
+          );
         }
       } catch (error) {
         result.errors.push(

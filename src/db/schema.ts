@@ -87,7 +87,7 @@ export const stockScores = pgTable(
     pbrScore: integer("pbr_score").notNull(),
     rsiScore: integer("rsi_score").notNull(),
     priceRangeScore: integer("price_range_score").notNull(),
-    sectorScore: integer("sector_score").notNull(),
+    sectorScore: decimal("sector_score", { precision: 5, scale: 2 }).notNull(), // 0.00〜100.00
     totalScore: decimal("total_score", { precision: 5, scale: 4 }).notNull(), // 0.0000〜1.0000
 
     createdAt: timestamp("created_at").defaultNow().notNull(),

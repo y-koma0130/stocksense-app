@@ -19,7 +19,7 @@ export const saveStockScore: SaveStockScore = async (score, scoreDate) => {
     pbrScore: score.pbrScore,
     rsiScore: score.rsiScore,
     priceRangeScore: score.priceRangeScore,
-    sectorScore: score.sectorScore,
+    sectorScore: score.sectorScore.toString(),
     totalScore: score.totalScore.toString(),
   });
 };

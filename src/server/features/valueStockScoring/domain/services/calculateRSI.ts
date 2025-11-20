@@ -1,14 +1,13 @@
 import { RSI } from "technicalindicators";
-import type { HistoricalDataPoint } from "../yahoo-finance/historical";
+import type { HistoricalDataPointDto } from "../../application/dto/yahooFinance.dto";
 
 /**
  * RSI (Relative Strength Index) を計算
- *
- * @param historicalData - ヒストリカルデータの配列
- * @param period - RSI期間（デフォルト: 14）
- * @returns RSI値（0-100）、データ不足の場合はnull
  */
-export function calculateRSI(historicalData: HistoricalDataPoint[], period = 14): number | null {
+export const calculateRSI = (
+  historicalData: HistoricalDataPointDto[],
+  period = 14,
+): number | null => {
   if (historicalData.length < period + 1) {
     console.warn("RSI計算に必要なデータが不足しています");
     return null;
@@ -32,26 +31,18 @@ export function calculateRSI(historicalData: HistoricalDataPoint[], period = 14)
   }
 
   return rsiValues[rsiValues.length - 1];
-}
+};
 
 /**
  * RSI値から売られすぎ判定を行う
- *
- * @param rsi - RSI値
- * @param threshold - 売られすぎ判定の閾値（デフォルト: 30）
- * @returns 売られすぎの場合true
  */
-export function isOversold(rsi: number, threshold = 30): boolean {
+export const isOversold = (rsi: number, threshold = 30): boolean => {
   return rsi < threshold;
-}
+};
 
 /**
  * RSI値から買われすぎ判定を行う
- *
- * @param rsi - RSI値
- * @param threshold - 買われすぎ判定の閾値（デフォルト: 70）
- * @returns 買われすぎの場合true
  */
-export function isOverbought(rsi: number, threshold = 70): boolean {
+export const isOverbought = (rsi: number, threshold = 70): boolean => {
   return rsi > threshold;
-}
+};

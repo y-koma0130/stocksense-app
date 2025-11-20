@@ -1,6 +1,6 @@
 import { getBitcoinPrice } from "@/lib/coingecko/client";
 import { getUSDJPYRate } from "@/lib/exchange-rate/client";
-import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahoo-finance/client";
+import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahooFinance/client";
 import { publicProcedure, router } from "./init";
 
 export interface MarketData {

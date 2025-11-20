@@ -11,10 +11,20 @@
  * pnpm tsx scripts/import-stocks.ts ./data/data_j.xls
  */
 
-import { importStocks, markDelistedStocks } from "../src/lib/jpx/stock-importer";
-import { parseJPXStockList } from "../src/lib/jpx/stock-list-parser";
+// TODO: JPXインポーター機能は再実装が必要
+// DDD構造に合わせて以下に移動:
+// - parseJPXStockList: src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList.ts
+// - importStocks, markDelistedStocks: 新しいリポジトリ関数として実装予定
+// import { parseJPXStockList } from "../src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList";
+// import { importStocks, markDelistedStocks } from "../src/lib/jpx/stock-importer";
 
 async function main() {
+  console.error("❌ このスクリプトは現在利用できません");
+  console.error("TODO: DDD構造に合わせてリポジトリ層を実装する必要があります");
+  console.error("参照: src/server/features/valueStockScoring/infrastructure/repositories/");
+  process.exit(1);
+
+  /* TODO: 以下の機能を再実装
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
@@ -82,6 +92,7 @@ async function main() {
     console.error(error);
     process.exit(1);
   }
+  */
 }
 
 main();

@@ -1,3 +1,3 @@
-// Export scoring functions
-export { monthlyScoring } from "./functions/monthly-scoring";
-export { weeklyScoring } from "./functions/weekly-scoring";
+// Export scoring functions (新しいDDD構造)
+export { monthlyStockScoring } from "../src/server/jobs/monthlyStockScoring";
+export { weeklyStockScoring } from "../src/server/jobs/weeklyStockScoring";

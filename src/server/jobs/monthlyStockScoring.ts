@@ -1,22 +1,26 @@
 import { isNull } from "drizzle-orm";
-import { db } from "../../src/db";
-import { stockScores, stocks } from "../../src/db/schema";
-import { calculateRSI } from "../../src/lib/indicators/rsi";
-import { calculateScore } from "../../src/lib/scoring/calculator";
-import { LONG_TERM_CONFIG, SCORE_THRESHOLD } from "../../src/lib/scoring/config";
-import type { ScoringInput, ScoringResult } from "../../src/lib/scoring/types";
-import { getFundamentals } from "../../src/lib/yahoo-finance/fundamentals";
-import { getDailyData } from "../../src/lib/yahoo-finance/historical";
-import { inngest } from "../client";
+import { inngest } from "../../../inngest/client";
+import { db } from "../../db";
+import { stocks } from "../../db/schema";
+import { createScoringInput } from "../features/valueStockScoring/domain/entities/scoringInput";
+import { calculateRSI } from "../features/valueStockScoring/domain/services/calculateRSI";
+import { calculateTotalScore } from "../features/valueStockScoring/domain/services/scoreCalculators/calculateTotalScore";
+import {
+  LONG_TERM_CONFIG,
+  SCORE_THRESHOLD,
+} from "../features/valueStockScoring/domain/values/scoringConfig";
+import { getDailyData } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getDailyData";
+import { getFundamentals } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getFundamentals";
+import { saveStockScore } from "../features/valueStockScoring/infrastructure/repositories/saveStockScore.repository";
 
 /**
  * 月次スコアリングジョブ
  * 毎月1日0:00 (JST)に実行
  * 全銘柄に対して長期（月次）スコアを計算
  */
-export const monthlyScoring = inngest.createFunction(
+export const monthlyStockScoring = inngest.createFunction(
   {
-    id: "monthly-scoring",
+    id: "monthly-stock-scoring",
     name: "Monthly Stock Scoring",
     retries: 3,
   },
@@ -36,19 +40,22 @@ export const monthlyScoring = inngest.createFunction(
 
     // ステップ3: バッチごとに銘柄を処理
     const batchSize = 50; // レート制限対策
-    const highScoreResults: ScoringResult[] = [];
+    let totalHighScores = 0;
+    let totalSaved = 0;
 
     for (let i = 0; i < activeStocks.length; i += batchSize) {
       const batch = activeStocks.slice(i, i + batchSize);
       const batchNumber = Math.floor(i / batchSize) + 1;
       const totalBatches = Math.ceil(activeStocks.length / batchSize);
 
-      const batchResults = await step.run(`process-batch-${batchNumber}`, async () => {
-        const results: ScoringResult[] = [];
+      const batchResult = await step.run(`process-batch-${batchNumber}`, async () => {
+        let highScoreCount = 0;
+        let savedCount = 0;
+        const scoreDate = new Date().toISOString().split("T")[0];
 
         for (const stock of batch) {
           try {
-            // 基本データ取得
+            // 基本データ取得（DTO）
             const fundamentals = await getFundamentals(stock.tickerSymbol);
 
             // 現在価格がない場合はスキップ
@@ -57,15 +64,15 @@ export const monthlyScoring = inngest.createFunction(
               continue;
             }
 
-            // RSI計算用の日足データ取得
+            // RSI計算用の日足データ取得（DTO）
             const dailyData = await getDailyData(stock.tickerSymbol, 30);
             const rsi = calculateRSI(dailyData, 14);
 
             // 業種平均データ取得
             const sectorAvg = stock.sectorCode ? sectorAverages.get(stock.sectorCode) : undefined;
 
-            // スコアリング入力データ作成
-            const scoringInput: ScoringInput = {
+            // エンティティ生成（バリデーション付き）
+            const scoringInput = createScoringInput({
               tickerSymbol: stock.tickerSymbol,
               stockId: stock.id,
               currentPrice: fundamentals.currentPrice,
@@ -77,14 +84,22 @@ export const monthlyScoring = inngest.createFunction(
               sectorCode: stock.sectorCode,
               sectorAvgPer: sectorAvg?.avgPer ?? null,
               sectorAvgPbr: sectorAvg?.avgPbr ?? null,
-            };
+            });
 
-            // スコア計算
-            const scoreResult = calculateScore(scoringInput, LONG_TERM_CONFIG, "long_term");
+            // ドメインサービスでスコア計算 → 集約生成
+            const stockScore = calculateTotalScore(scoringInput, LONG_TERM_CONFIG, "long_term");
 
             // 閾値以上のスコアのみ保存
-            if (scoreResult.totalScore >= SCORE_THRESHOLD) {
-              results.push(scoreResult);
+            if (stockScore.totalScore >= SCORE_THRESHOLD) {
+              highScoreCount++;
+              try {
+                // リポジトリで永続化
+                await saveStockScore(stockScore, scoreDate);
+                savedCount++;
+              } catch (error) {
+                // UNIQUE constraint違反などは無視
+                console.error(`Error saving score for ${stock.tickerSymbol}:`, error);
+              }
             }
           } catch (error) {
             console.error(`Error processing ${stock.tickerSymbol}:`, error);
@@ -94,50 +109,22 @@ export const monthlyScoring = inngest.createFunction(
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        return results;
+        return { highScoreCount, savedCount };
       });
 
-      highScoreResults.push(...batchResults);
+      totalHighScores += batchResult.highScoreCount;
+      totalSaved += batchResult.savedCount;
 
       console.log(
-        `Batch ${batchNumber}/${totalBatches}: Found ${batchResults.length} high-score stocks`,
+        `Batch ${batchNumber}/${totalBatches}: Found ${batchResult.highScoreCount} high-score stocks, saved ${batchResult.savedCount}`,
       );
     }
-
-    // ステップ4: スコアをデータベースに保存
-    const savedCount = await step.run("save-scores", async () => {
-      const today = new Date();
-      const scoreDate = today.toISOString().split("T")[0];
-
-      let count = 0;
-      for (const result of highScoreResults) {
-        try {
-          await db.insert(stockScores).values({
-            stockId: result.stockId,
-            scoreDate,
-            scoreType: result.scoreType,
-            perScore: result.perScore,
-            pbrScore: result.pbrScore,
-            rsiScore: result.rsiScore,
-            priceRangeScore: result.priceRangeScore,
-            sectorScore: result.sectorScore,
-            totalScore: result.totalScore.toString(),
-          });
-          count++;
-        } catch (error) {
-          // UNIQUE constraint違反などは無視
-          console.error(`Error saving score for ${result.tickerSymbol}:`, error);
-        }
-      }
-
-      return count;
-    });
 
     return {
       message: "Monthly scoring completed",
       processedStocks: activeStocks.length,
-      highScoreStocks: highScoreResults.length,
-      savedScores: savedCount,
+      highScoreStocks: totalHighScores,
+      savedScores: totalSaved,
     };
   },
 );

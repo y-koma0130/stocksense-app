@@ -20,7 +20,7 @@ const normalizeMarket = (market: string): string => {
 /**
  * 行データをパース
  */
-const parseRow = (row: Record<string, string>): ParsedStockDataDto | null => {
+const parseRow = (row: Record<string, unknown>): ParsedStockDataDto | null => {
   const tickerCode = row.コード;
   const companyName = row.銘柄名;
   const market = row["市場・商品区分"];
@@ -38,7 +38,7 @@ const parseRow = (row: Record<string, string>): ParsedStockDataDto | null => {
   }
 
   // 4桁のコードに正規化
-  const normalizedCode = tickerCode.toString().padStart(4, "0");
+  const normalizedCode = String(tickerCode).padStart(4, "0");
 
   // Yahoo Finance用のシンボル（東証は.T）
   const tickerSymbol = `${normalizedCode}.T`;
@@ -46,10 +46,10 @@ const parseRow = (row: Record<string, string>): ParsedStockDataDto | null => {
   return parsedStockDataDtoSchema.parse({
     tickerCode: normalizedCode,
     tickerSymbol,
-    name: companyName,
-    sectorCode: sector33Code || "",
-    sectorName: sector33Name || "",
-    market: normalizeMarket(market),
+    name: String(companyName),
+    sectorCode: String(sector33Code),
+    sectorName: String(sector33Name),
+    market: normalizeMarket(String(market)),
   });
 };
 
@@ -63,7 +63,7 @@ export const parseJPXStockList = (filePath: string): ParsedStockDataDto[] => {
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-  const jsonData = XLSX.utils.sheet_to_json<Record<string, string>>(worksheet);
+  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
   const results: ParsedStockDataDto[] = [];
 
@@ -84,7 +84,7 @@ export const parseJPXStockListFromBuffer = (buffer: Buffer): ParsedStockDataDto[
   const workbook = XLSX.read(buffer, { type: "buffer" });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-  const jsonData = XLSX.utils.sheet_to_json<Record<string, string>>(worksheet);
+  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
   const results: ParsedStockDataDto[] = [];
 

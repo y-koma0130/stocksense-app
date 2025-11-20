@@ -11,20 +11,126 @@
  * pnpm tsx scripts/import-stocks.ts ./data/data_j.xls
  */
 
-// TODO: JPXインポーター機能は再実装が必要
-// DDD構造に合わせて以下に移動:
-// - parseJPXStockList: src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList.ts
-// - importStocks, markDelistedStocks: 新しいリポジトリ関数として実装予定
-// import { parseJPXStockList } from "../src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList";
-// import { importStocks, markDelistedStocks } from "../src/lib/jpx/stock-importer";
+import { and, eq, isNull, notInArray } from "drizzle-orm";
+import { db } from "../src/db";
+import { stocks } from "../src/db/schema";
+import { parseJPXStockList } from "../src/server/features/valueStockScoring/infrastructure/externalServices/parseJPXStockList";
+import type { ParsedStockDataDto } from "../src/server/features/valueStockScoring/application/dto/jpx.dto";
+
+type ImportResult = {
+  total: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+};
+
+const importStocksData = async (stocksData: ParsedStockDataDto[]): Promise<ImportResult> => {
+  const result: ImportResult = {
+    total: stocksData.length,
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    errors: [],
+  };
+
+  console.log("  既存銘柄を確認中...");
+
+  // 全ticker_codeを一度に取得（deletedAtがNULLの上場中銘柄のみ）
+  const existingStocks = await db
+    .select({ tickerCode: stocks.tickerCode })
+    .from(stocks)
+    .where(isNull(stocks.deletedAt));
+
+  const existingTickerCodesSet = new Set(existingStocks.map((s) => s.tickerCode));
+
+  // 新規と更新に分類
+  const toCreate: ParsedStockDataDto[] = [];
+  const toUpdate: ParsedStockDataDto[] = [];
+
+  for (const stockData of stocksData) {
+    if (existingTickerCodesSet.has(stockData.tickerCode)) {
+      toUpdate.push(stockData);
+    } else {
+      toCreate.push(stockData);
+    }
+  }
+
+  console.log(`  新規: ${toCreate.length}件、更新: ${toUpdate.length}件`);
+
+  // 新規銘柄を一括挿入
+  if (toCreate.length > 0) {
+    console.log("  新規銘柄を一括挿入中...");
+    try {
+      await db.insert(stocks).values(
+        toCreate.map((s) => ({
+          tickerCode: s.tickerCode,
+          tickerSymbol: s.tickerSymbol,
+          name: s.name,
+          sectorCode: s.sectorCode,
+          sectorName: s.sectorName,
+          market: s.market,
+        })),
+      );
+      result.created = toCreate.length;
+    } catch (error) {
+      result.errors.push(`一括挿入エラー: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // 既存銘柄を1件ずつ更新（Drizzleは一括UPDATEが難しいため）
+  if (toUpdate.length > 0) {
+    console.log("  既存銘柄を更新中...");
+    let processed = 0;
+
+    for (const stockData of toUpdate) {
+      try {
+        await db
+          .update(stocks)
+          .set({
+            tickerSymbol: stockData.tickerSymbol,
+            name: stockData.name,
+            sectorCode: stockData.sectorCode,
+            sectorName: stockData.sectorName,
+            market: stockData.market,
+            deletedAt: null, // 再上場対応
+            updatedAt: new Date(),
+          })
+          .where(eq(stocks.tickerCode, stockData.tickerCode));
+
+        result.updated++;
+        processed++;
+
+        // 100件ごとに進捗表示
+        if (processed % 100 === 0) {
+          console.log(`    進捗: ${processed}/${toUpdate.length}件 (${Math.round((processed / toUpdate.length) * 100)}%)`);
+        }
+      } catch (error) {
+        result.errors.push(
+          `${stockData.tickerCode}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+  }
+
+  return result;
+};
+
+const markDelistedStocksData = async (currentTickerCodes: string[]): Promise<number> => {
+  if (currentTickerCodes.length === 0) {
+    return 0;
+  }
+
+  const result = await db
+    .update(stocks)
+    .set({ deletedAt: new Date() })
+    .where(and(notInArray(stocks.tickerCode, currentTickerCodes), isNull(stocks.deletedAt)))
+    .returning({ id: stocks.id });
+
+  return result.length;
+};
 
 async function main() {
-  console.error("❌ このスクリプトは現在利用できません");
-  console.error("TODO: DDD構造に合わせてリポジトリ層を実装する必要があります");
-  console.error("参照: src/server/features/valueStockScoring/infrastructure/repositories/");
-  process.exit(1);
-
-  /* TODO: 以下の機能を再実装
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
@@ -57,7 +163,7 @@ async function main() {
     console.log();
 
     console.log("💾 データベースにインポート中...");
-    const result = await importStocks(stocksData);
+    const result = await importStocksData(stocksData);
 
     console.log("\n✅ インポート完了");
     console.log(`  合計: ${result.total}件`);
@@ -78,7 +184,7 @@ async function main() {
     // 上場廃止銘柄の検出
     console.log("\n🔍 上場廃止銘柄を確認中...");
     const currentTickerCodes = stocksData.map((s) => s.tickerCode);
-    const delistedCount = await markDelistedStocks(currentTickerCodes);
+    const delistedCount = await markDelistedStocksData(currentTickerCodes);
 
     if (delistedCount > 0) {
       console.log(`⚠️  ${delistedCount}件の銘柄を上場廃止としてマークしました`);
@@ -92,7 +198,6 @@ async function main() {
     console.error(error);
     process.exit(1);
   }
-  */
 }
 
 main();

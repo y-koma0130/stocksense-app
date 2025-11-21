@@ -1,6 +1,7 @@
 import { getBitcoinPrice } from "@/lib/coingecko/client";
 import { getUSDJPYRate } from "@/lib/exchange-rate/client";
 import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahooFinance/client";
+import { valueStockScoringRouter } from "@/server/features/valueStockScoring/presentation/router";
 import { publicProcedure, router } from "./init";
 
 export interface MarketData {
@@ -87,6 +88,7 @@ export const appRouter = router({
       }
     }),
   }),
+  valueStockScoring: valueStockScoringRouter,
 });
 
 export type AppRouter = typeof appRouter;

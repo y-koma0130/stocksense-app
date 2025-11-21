@@ -51,7 +51,10 @@ const parseRow = (row: Record<string, unknown>): SectorAverageDataDto | null => 
   // JPX公式Excelの実際の列名に対応
   const marketSection = row["__EMPTY"]; // 市場区分名
   const rawSectorName = row["__EMPTY_2"]; // 種別（業種名）例: "3 建設業"
-  const stockCount = row["(注)1.集計対象は、連結財務諸表を作成している会社は連結、作成していない会社は単体の数値。\n    2.「－」は該当数値なし、または、PER・PBRがマイナス値の場合。PER1000倍以上の場合は「＊」を表示"]; // 会社数
+  const stockCount =
+    row[
+      "(注)1.集計対象は、連結財務諸表を作成している会社は連結、作成していない会社は単体の数値。\n    2.「－」は該当数値なし、または、PER・PBRがマイナス値の場合。PER1000倍以上の場合は「＊」を表示"
+    ]; // 会社数
   const avgPer = row["__EMPTY_4"]; // 単純PER
   const avgPbr = row["__EMPTY_5"]; // 単純PBR
 

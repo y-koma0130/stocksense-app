@@ -109,10 +109,7 @@
         "uniq_sector_date": {
           "name": "uniq_sector_date",
           "nullsNotDistinct": false,
-          "columns": [
-            "sector_code",
-            "data_date"
-          ]
+          "columns": ["sector_code", "data_date"]
         }
       },
       "policies": {},
@@ -269,12 +266,8 @@
           "name": "stock_scores_stock_id_stocks_id_fk",
           "tableFrom": "stock_scores",
           "tableTo": "stocks",
-          "columnsFrom": [
-            "stock_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stock_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -284,11 +277,7 @@
         "uniq_stock_date_type": {
           "name": "uniq_stock_date_type",
           "nullsNotDistinct": false,
-          "columns": [
-            "stock_id",
-            "score_date",
-            "score_type"
-          ]
+          "columns": ["stock_id", "score_date", "score_type"]
         }
       },
       "policies": {},
@@ -437,9 +426,7 @@
         "stocks_ticker_code_unique": {
           "name": "stocks_ticker_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "ticker_code"
-          ]
+          "columns": ["ticker_code"]
         }
       },
       "policies": {},
@@ -451,10 +438,7 @@
     "public.score_type": {
       "name": "score_type",
       "schema": "public",
-      "values": [
-        "mid_term",
-        "long_term"
-      ]
+      "values": ["mid_term", "long_term"]
     }
   },
   "schemas": {},

@@ -93,7 +93,7 @@ export const weeklyStockScoring = inngest.createFunction(
             });
 
             // ドメインサービスでスコア計算 → 集約生成
-            const stockScore = calculateTotalScore(scoringInput, LONG_TERM_CONFIG, "long_term");
+            const stockScore = calculateTotalScore(scoringInput, LONG_TERM_CONFIG, "mid_term");
 
             // 閾値以上のスコアのみ保存
             if (stockScore.totalScore >= SCORE_THRESHOLD) {

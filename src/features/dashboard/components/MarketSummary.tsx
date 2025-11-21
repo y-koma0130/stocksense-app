@@ -147,9 +147,13 @@ const gridStyle = css({
 const loadingStyle = css({
   color: "textMuted",
   fontSize: "0.875rem",
+  padding: "2rem",
+  textAlign: "center",
 });
 
 const errorStyle = css({
   color: "error",
   fontSize: "0.875rem",
+  padding: "2rem",
+  textAlign: "center",
 });

@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import { css } from "../../../../styled-system/css";
-import { useTopStockScores } from "../hooks/useTopStockScores";
-import { ScoreTypeToggle } from "./ScoreTypeToggle";
-import { StockScoresTable } from "./StockScoresTable";
+import { useValueStockScoring } from "../hooks/useValueStockScoring";
+import { PeriodTypeToggle } from "./PeriodTypeToggle";
+import { ValueStockTable } from "./ValueStockTable";
 
-export const TopStockScores = () => {
-  const [scoreType, setScoreType] = useState<"mid_term" | "long_term">("long_term");
-  const { data, loading, error } = useTopStockScores({ limit: 20, scoreType });
+export const ValueStockAnalysis = () => {
+  const [periodType, setPeriodType] = useState<"weekly" | "monthly">("monthly");
+  const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
 
   return (
     <section>
       <div className={headerStyle}>
         <h2 className={sectionTitleStyle}>割安株スコア上位</h2>
-        <ScoreTypeToggle scoreType={scoreType} onToggle={setScoreType} />
+        <PeriodTypeToggle periodType={periodType} onToggle={setPeriodType} />
       </div>
 
       {loading ? (
@@ -23,14 +23,14 @@ export const TopStockScores = () => {
         </div>
       ) : error ? (
         <div className={messageContainerStyle}>
-          <p className={errorStyle}>データの取得に失敗しました: {error}</p>
+          <p className={errorStyle}>データの取得に失敗しました: {error.message}</p>
         </div>
       ) : data.length === 0 ? (
         <div className={messageContainerStyle}>
-          <p className={loadingStyle}>スコアデータがありません</p>
+          <p className={loadingStyle}>指標データがありません</p>
         </div>
       ) : (
-        <StockScoresTable data={data} />
+        <ValueStockTable data={data} />
       )}
     </section>
   );

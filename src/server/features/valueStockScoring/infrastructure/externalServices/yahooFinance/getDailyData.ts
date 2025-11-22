@@ -7,12 +7,17 @@ import {
 const yahooFinance = new YahooFinance();
 
 /**
+ * 日足データを取得する関数の型定義
+ */
+export type GetDailyData = (
+  tickerSymbol: string,
+  days?: number,
+) => Promise<HistoricalDataPointDto[]>;
+
+/**
  * 日足データを取得（RSI計算用）
  */
-export const getDailyData = async (
-  tickerSymbol: string,
-  days = 30,
-): Promise<HistoricalDataPointDto[]> => {
+export const getDailyData: GetDailyData = async (tickerSymbol, days = 30) => {
   try {
     const endDate = new Date();
     const startDate = new Date();

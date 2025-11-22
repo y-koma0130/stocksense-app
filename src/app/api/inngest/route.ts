@@ -1,8 +1,8 @@
 import { serve } from "inngest/next";
 import { inngest } from "../../../../inngest/client";
+import { monthlyIndicatorCollection } from "../../../server/jobs/monthlyIndicatorCollection";
 import { monthlySectorAveragesUpdate } from "../../../server/jobs/monthlySectorAveragesUpdate";
-import { monthlyStockScoring } from "../../../server/jobs/monthlyStockScoring";
-import { weeklyStockScoring } from "../../../server/jobs/weeklyStockScoring";
+import { weeklyIndicatorCollection } from "../../../server/jobs/weeklyIndicatorCollection";
 
 /**
  * Inngest API endpoint for handling scheduled jobs
@@ -11,8 +11,8 @@ import { weeklyStockScoring } from "../../../server/jobs/weeklyStockScoring";
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
-    weeklyStockScoring, // Every Saturday 0:00 JST
-    monthlyStockScoring, // Every 1st 0:00 JST
     monthlySectorAveragesUpdate, // Every 1st 14:00 JST
+    weeklyIndicatorCollection, // Every Saturday 0:00 JST
+    monthlyIndicatorCollection, // Every 1st 0:00 JST
   ],
 });

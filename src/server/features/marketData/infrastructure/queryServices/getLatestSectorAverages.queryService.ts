@@ -1,13 +1,23 @@
 import { desc, eq } from "drizzle-orm";
-import { db } from "../../../../../db";
-import { sectorAverages } from "../../../../../db/schema";
+import { z } from "zod";
+import { db } from "@/db";
+import { sectorAverages } from "@/db/schema";
+
+/**
+ * 業種平均データDTO（簡易版）
+ */
+export const sectorAverageSimpleDtoSchema = z.object({
+  sectorCode: z.string(),
+  avgPer: z.number(),
+  avgPbr: z.number(),
+});
+
+export type SectorAverageSimpleDto = z.infer<typeof sectorAverageSimpleDtoSchema>;
 
 /**
  * 最新の業種平均データを取得する型定義
  */
-export type GetLatestSectorAverages = () => Promise<
-  Map<string, { avgPer: number; avgPbr: number }>
->;
+export type GetLatestSectorAverages = () => Promise<SectorAverageSimpleDto[]>;
 
 /**
  * 最新の業種平均データを取得
@@ -21,7 +31,7 @@ export const getLatestSectorAverages: GetLatestSectorAverages = async () => {
     .limit(1);
 
   if (latestRecord.length === 0) {
-    return new Map();
+    return [];
   }
 
   const latestDate = latestRecord[0].dataDate;
@@ -36,17 +46,23 @@ export const getLatestSectorAverages: GetLatestSectorAverages = async () => {
     .from(sectorAverages)
     .where(eq(sectorAverages.dataDate, latestDate));
 
-  // Mapに変換
-  const sectorMap = new Map<string, { avgPer: number; avgPbr: number }>();
+  // DTOに変換
+  const result: SectorAverageSimpleDto[] = [];
 
   for (const sector of sectors) {
     const avgPer = sector.avgPer ? Number.parseFloat(sector.avgPer) : 0;
     const avgPbr = sector.avgPbr ? Number.parseFloat(sector.avgPbr) : 0;
 
     if (avgPer > 0 && avgPbr > 0) {
-      sectorMap.set(sector.sectorCode, { avgPer, avgPbr });
+      result.push(
+        sectorAverageSimpleDtoSchema.parse({
+          sectorCode: sector.sectorCode,
+          avgPer,
+          avgPbr,
+        }),
+      );
     }
   }
 
-  return sectorMap;
+  return result;
 };

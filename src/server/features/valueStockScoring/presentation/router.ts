@@ -1,19 +1,25 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../../../../../trpc/init";
-import { getTopStockScores } from "../infrastructure/queryServices/getTopStockScores";
+import { getTopValueStocks } from "../application/usecases/getTopValueStocks.usecase";
+import { getLatestStockIndicators } from "../infrastructure/queryServices/getStockIndicators.queryService";
 
 export const valueStockScoringRouter = router({
-  getTopScores: publicProcedure
+  /**
+   * 上位割安株を取得
+   * ドメインサービスでスコア計算し、スコア順にソートして返却
+   */
+  getTopValueStocks: publicProcedure
     .input(
       z.object({
-        limit: z.number().int().positive().max(100).default(20),
-        scoreType: z.enum(["mid_term", "long_term"]).optional(),
+        periodType: z.enum(["weekly", "monthly"]),
+        limit: z.number().min(1).max(100).optional().default(20),
       }),
     )
     .query(async ({ input }) => {
-      return await getTopStockScores({
-        limit: input.limit,
-        scoreType: input.scoreType,
-      });
+      const stocks = await getTopValueStocks(
+        { getLatestStockIndicators },
+        { periodType: input.periodType, limit: input.limit },
+      );
+      return stocks;
     }),
 });

@@ -7,9 +7,14 @@ import {
 const yahooFinance = new YahooFinance();
 
 /**
+ * 財務指標を取得する関数の型定義
+ */
+export type GetFundamentals = (tickerSymbol: string) => Promise<FundamentalsDataDto>;
+
+/**
  * Yahoo FinanceからPER/PBR等の財務指標を取得
  */
-export const getFundamentals = async (tickerSymbol: string): Promise<FundamentalsDataDto> => {
+export const getFundamentals: GetFundamentals = async (tickerSymbol) => {
   try {
     const result = await yahooFinance.quoteSummary(tickerSymbol, {
       modules: ["price", "summaryDetail", "defaultKeyStatistics"],

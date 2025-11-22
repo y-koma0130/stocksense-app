@@ -17,6 +17,11 @@ import {
 export const scoreTypeEnum = pgEnum("score_type", ["mid_term", "long_term"]);
 
 /**
+ * 期間タイプのEnum定義
+ */
+export const periodTypeEnum = pgEnum("period_type", ["weekly", "monthly"]);
+
+/**
  * 1. 銘柄マスター
  * 東証全市場（最大約4,000銘柄）の基本情報
  */
@@ -109,6 +114,53 @@ export const stockScores = pgTable(
   }),
 );
 
+/**
+ * 4. 銘柄指標データ
+ * 全銘柄の生の指標値を保存（スコア計算なし）
+ */
+export const stockIndicators = pgTable(
+  "stock_indicators",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    collectedAt: date("collected_at").notNull(),
+    periodType: periodTypeEnum("period_type").notNull(), // 'weekly' or 'monthly'
+
+    // 財務指標
+    currentPrice: decimal("current_price", { precision: 10, scale: 2 }),
+    per: decimal("per", { precision: 10, scale: 2 }),
+    pbr: decimal("pbr", { precision: 10, scale: 2 }),
+
+    // テクニカル指標
+    rsi: decimal("rsi", { precision: 5, scale: 2 }),
+
+    // 価格レンジ指標
+    week52High: decimal("week_52_high", { precision: 10, scale: 2 }),
+    week52Low: decimal("week_52_low", { precision: 10, scale: 2 }),
+
+    // 業種平均（参照データ）
+    sectorCode: varchar("sector_code", { length: 10 }),
+    sectorAvgPer: decimal("sector_avg_per", { precision: 10, scale: 2 }),
+    sectorAvgPbr: decimal("sector_avg_pbr", { precision: 10, scale: 2 }),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    periodCollectedIdx: index("idx_indicators_period_collected").on(
+      table.periodType,
+      table.collectedAt,
+    ),
+    stockIdx: index("idx_indicators_stock").on(table.stockId),
+    uniqStockCollectedPeriod: unique("uniq_stock_collected_period").on(
+      table.stockId,
+      table.collectedAt,
+      table.periodType,
+    ),
+  }),
+);
+
 // Type exports
 export type Stock = typeof stocks.$inferSelect;
 export type NewStock = typeof stocks.$inferInsert;
@@ -118,3 +170,6 @@ export type NewSectorAverage = typeof sectorAverages.$inferInsert;
 
 export type StockScore = typeof stockScores.$inferSelect;
 export type NewStockScore = typeof stockScores.$inferInsert;
+
+export type StockIndicator = typeof stockIndicators.$inferSelect;
+export type NewStockIndicator = typeof stockIndicators.$inferInsert;

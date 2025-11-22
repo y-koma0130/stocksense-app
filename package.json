@@ -5,7 +5,8 @@
   "scripts": {
     "prepare": "panda codegen",
     "dev": "next dev",
-    "build": "panda codegen && next build",
+    "build": "next build",
+    "vercel-build": "panda codegen && next build",
     "start": "next start",
     "inngest": "npx inngest-cli@latest dev",
     "db:generate": "drizzle-kit generate",

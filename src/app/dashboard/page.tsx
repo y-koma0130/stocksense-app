@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
-import { MarketSummary } from "@/features/dashboard/components/MarketSummary";
-import { ValueStockAnalysis } from "@/features/dashboard/components/ValueStockAnalysis";
+import { MarketSummary } from "@/features/marketSummary/components/MarketSummary";
+import { ValueStockRanking } from "@/features/valueStockScoring/components/ValueStockRanking";
 import { createClient } from "@/lib/supabase/server";
 import { css } from "../../../styled-system/css";
 
@@ -22,7 +22,7 @@ export default async function DashboardPage() {
       <div className={containerStyle}>
         <MarketSummary />
         <div className={spacerStyle} />
-        <ValueStockAnalysis />
+        <ValueStockRanking />
       </div>
     </>
   );

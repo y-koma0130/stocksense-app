@@ -6,7 +6,7 @@ import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
 import { ValueStockTable } from "./ValueStockTable";
 
-export const ValueStockAnalysis = () => {
+export const ValueStockRanking = () => {
   const [periodType, setPeriodType] = useState<"weekly" | "monthly">("monthly");
   const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
 

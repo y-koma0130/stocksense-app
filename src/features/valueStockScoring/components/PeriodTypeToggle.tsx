@@ -13,7 +13,5 @@ const periodTypeOptions = [
 ];
 
 export const PeriodTypeToggle = ({ periodType, onToggle }: PeriodTypeToggleProps) => {
-  return (
-    <ToggleButtonGroup options={periodTypeOptions} value={periodType} onChange={onToggle} />
-  );
+  return <ToggleButtonGroup options={periodTypeOptions} value={periodType} onChange={onToggle} />;
 };

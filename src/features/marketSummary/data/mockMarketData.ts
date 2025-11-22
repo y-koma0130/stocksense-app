@@ -1,11 +1,11 @@
-export interface MarketIndex {
+export type MarketIndex = Readonly<{
   id: string;
   title: string;
   price: number;
   change: number;
   changePercent: number;
   currency: string;
-}
+}>;
 
 export const mockMarketData: MarketIndex[] = [
   {

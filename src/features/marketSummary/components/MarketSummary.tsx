@@ -65,11 +65,7 @@ export function MarketSummary() {
     <section>
       <div className={headerStyle}>
         <h2 className={sectionTitleStyle}>マーケットサマリー</h2>
-        <ToggleButtonGroup
-          options={currencyOptions}
-          value={currency}
-          onChange={setCurrency}
-        />
+        <ToggleButtonGroup options={currencyOptions} value={currency} onChange={setCurrency} />
       </div>
 
       {loading ? (

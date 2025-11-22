@@ -1,31 +1,19 @@
-import { Button } from "@/components/ui/Button";
-import { css } from "../../../../styled-system/css";
+import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
+
+type PeriodType = "weekly" | "monthly";
 
 type PeriodTypeToggleProps = Readonly<{
-  periodType: "weekly" | "monthly";
-  onToggle: (periodType: "weekly" | "monthly") => void;
+  periodType: PeriodType;
+  onToggle: (periodType: PeriodType) => void;
 }>;
+
+const periodTypeOptions = [
+  { value: "weekly" as const, label: "週次" },
+  { value: "monthly" as const, label: "月次" },
+];
 
 export const PeriodTypeToggle = ({ periodType, onToggle }: PeriodTypeToggleProps) => {
   return (
-    <div className={toggleContainerStyle}>
-      <Button
-        variant={periodType === "weekly" ? "primary" : "secondary"}
-        onClick={() => onToggle("weekly")}
-      >
-        週次
-      </Button>
-      <Button
-        variant={periodType === "monthly" ? "primary" : "secondary"}
-        onClick={() => onToggle("monthly")}
-      >
-        月次
-      </Button>
-    </div>
+    <ToggleButtonGroup options={periodTypeOptions} value={periodType} onChange={onToggle} />
   );
 };
-
-const toggleContainerStyle = css({
-  display: "flex",
-  gap: "0.5rem",
-});

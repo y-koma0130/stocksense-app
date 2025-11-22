@@ -1,36 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
 import { MarketSummaryCard } from "@/components/ui/MarketSummaryCard";
+import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
 import { css } from "../../../../styled-system/css";
 import { useMarketData } from "../hooks/useMarketData";
+
+const currencyOptions = [
+  { value: "JPY" as const, label: "円" },
+  { value: "USD" as const, label: "ドル" },
+];
 
 export function MarketSummary() {
   const { data, loading, error } = useMarketData();
   const [currency, setCurrency] = useState<"JPY" | "USD">("JPY");
-
-  if (loading) {
-    return (
-      <section>
-        <div className={headerStyle}>
-          <h2 className={sectionTitleStyle}>マーケットサマリー</h2>
-        </div>
-        <p className={loadingStyle}>読み込み中...</p>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section>
-        <div className={headerStyle}>
-          <h2 className={sectionTitleStyle}>マーケットサマリー</h2>
-        </div>
-        <p className={errorStyle}>データの取得に失敗しました: {error}</p>
-      </section>
-    );
-  }
 
   // Find USD/JPY rate
   const usdJpyRate = data.find((m) => m.id === "usdjpy")?.price ?? 150;
@@ -82,36 +65,36 @@ export function MarketSummary() {
     <section>
       <div className={headerStyle}>
         <h2 className={sectionTitleStyle}>マーケットサマリー</h2>
-        <div className={toggleContainerStyle}>
-          <Button
-            size="sm"
-            variant={currency === "JPY" ? "primary" : "secondary"}
-            onClick={() => setCurrency("JPY")}
-          >
-            円
-          </Button>
-          <Button
-            size="sm"
-            variant={currency === "USD" ? "primary" : "secondary"}
-            onClick={() => setCurrency("USD")}
-          >
-            ドル
-          </Button>
+        <ToggleButtonGroup
+          options={currencyOptions}
+          value={currency}
+          onChange={setCurrency}
+        />
+      </div>
+
+      {loading ? (
+        <div className={messageContainerStyle}>
+          <p className={loadingStyle}>読み込み中...</p>
         </div>
-      </div>
-      <div className={gridStyle}>
-        {displayData.map((market) => (
-          <MarketSummaryCard
-            key={market.id}
-            id={market.id}
-            title={market.title}
-            price={market.price}
-            change={market.change}
-            changePercent={market.changePercent}
-            currency={market.currency}
-          />
-        ))}
-      </div>
+      ) : error ? (
+        <div className={messageContainerStyle}>
+          <p className={errorStyle}>データの取得に失敗しました: {error}</p>
+        </div>
+      ) : (
+        <div className={gridStyle}>
+          {displayData.map((market) => (
+            <MarketSummaryCard
+              key={market.id}
+              id={market.id}
+              title={market.title}
+              price={market.price}
+              change={market.change}
+              changePercent={market.changePercent}
+              currency={market.currency}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -129,11 +112,6 @@ const sectionTitleStyle = css({
   color: "text",
 });
 
-const toggleContainerStyle = css({
-  display: "flex",
-  gap: "0.5rem",
-});
-
 const gridStyle = css({
   display: "grid",
   gridTemplateColumns: {
@@ -142,6 +120,12 @@ const gridStyle = css({
     md: "repeat(3, 1fr)",
   },
   gap: "1rem",
+});
+
+const messageContainerStyle = css({
+  backgroundColor: "cardBg",
+  borderRadius: "12px",
+  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
 });
 
 const loadingStyle = css({

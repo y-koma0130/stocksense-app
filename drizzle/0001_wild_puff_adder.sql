@@ -1,0 +1,1 @@
+CREATE TYPE "public"."period_type" AS ENUM('weekly', 'monthly');

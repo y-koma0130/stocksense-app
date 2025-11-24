@@ -1,6 +1,6 @@
 import { inngest } from "../../../inngest/client";
-import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks.queryService";
-import { getLatestSectorAverages } from "../features/marketData/infrastructure/queryServices/getLatestSectorAverages.queryService";
+import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks";
+import { getLatestSectorAverages } from "../features/marketData/infrastructure/queryServices/getLatestSectorAverages";
 import { createStockIndicator } from "../features/valueStockScoring/domain/entities/stockIndicator";
 import { calculateRSI } from "../features/valueStockScoring/domain/services/calculateRSI";
 import { getDailyData } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getDailyData";

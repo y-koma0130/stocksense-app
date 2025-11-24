@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../../../../../trpc/init";
 import { getTopValueStocks } from "../application/usecases/getTopValueStocks.usecase";
-import { getLatestStockIndicators } from "../infrastructure/queryServices/getStockIndicators.queryService";
+import { getLatestStockIndicators } from "../infrastructure/queryServices/getStockIndicators";
 
 export const valueStockScoringRouter = router({
   /**

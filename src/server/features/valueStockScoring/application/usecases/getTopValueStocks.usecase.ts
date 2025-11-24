@@ -1,7 +1,7 @@
 import { calculateValueScore } from "../../domain/services/calculateValueScore.service";
 import { isTrapStock } from "../../domain/services/isTrapStock.service";
 import type { PeriodType } from "../../domain/values/periodType";
-import type { GetLatestStockIndicators } from "../../infrastructure/queryServices/getStockIndicators.queryService";
+import type { GetLatestStockIndicators } from "../../infrastructure/queryServices/getStockIndicators";
 import { type ValueStockDto, valueStockDtoSchema } from "../dto/stockIndicator.dto";
 
 /**

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -8,12 +9,33 @@ import { Input } from "@/components/ui/Input";
 import { css } from "../../../../styled-system/css";
 import { useLogin } from "../hooks/useLogin";
 
-export function LoginCard() {
-  const { email, setEmail, loading, message, login } = useLogin();
+export const LoginCard = () => {
+  const router = useRouter();
+  const {
+    email,
+    setEmail,
+    otpCode,
+    setOtpCode,
+    step,
+    loading,
+    message,
+    sendOtp,
+    verifyOtp,
+    resetToEmail,
+  } = useLogin();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email);
+    await sendOtp(email);
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await verifyOtp(email, otpCode);
+    if (success) {
+      router.push("/dashboard");
+      router.refresh();
+    }
   };
 
   return (
@@ -32,26 +54,55 @@ export function LoginCard() {
         <p className={subtitleStyle}>AIが見つける、買い時の銘柄</p>
       </div>
 
-      <form onSubmit={handleSubmit} className={formStyle}>
-        {message && <Alert variant={message.type}>{message.text}</Alert>}
+      {step === "email" ? (
+        <form onSubmit={handleSendOtp} className={formStyle}>
+          {message && <Alert variant={message.type}>{message.text}</Alert>}
 
-        <Input
-          label="メールアドレス"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
-          required
-          disabled={loading}
-        />
+          <Input
+            label="メールアドレス"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            required
+            disabled={loading}
+          />
 
-        <Button type="submit" disabled={loading} variant="primary">
-          {loading ? "送信中..." : "ログイン"}
-        </Button>
-      </form>
+          <Button type="submit" disabled={loading} variant="primary">
+            {loading ? "送信中..." : "認証コードを送信"}
+          </Button>
+        </form>
+      ) : (
+        <form onSubmit={handleVerifyOtp} className={formStyle}>
+          {message && <Alert variant={message.type}>{message.text}</Alert>}
+
+          <p className={emailDisplayStyle}>{email}</p>
+
+          <Input
+            label="認証コード"
+            type="text"
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value)}
+            placeholder="123456"
+            required
+            disabled={loading}
+            maxLength={6}
+            pattern="[0-9]{6}"
+            inputMode="numeric"
+          />
+
+          <Button type="submit" disabled={loading || otpCode.length !== 6} variant="primary">
+            {loading ? "認証中..." : "ログイン"}
+          </Button>
+
+          <button type="button" onClick={resetToEmail} className={backLinkStyle}>
+            別のメールアドレスを使用
+          </button>
+        </form>
+      )}
     </Card>
   );
-}
+};
 
 const cardWrapperStyle = css({
   maxWidth: "420px",
@@ -85,4 +136,26 @@ const formStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "1.5rem",
+});
+
+const emailDisplayStyle = css({
+  fontSize: "0.95rem",
+  color: "text",
+  textAlign: "center",
+  padding: "0.75rem",
+  backgroundColor: "surfaceHover",
+  borderRadius: "0.5rem",
+});
+
+const backLinkStyle = css({
+  fontSize: "0.875rem",
+  color: "primary",
+  textAlign: "center",
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  textDecoration: "underline",
+  _hover: {
+    opacity: 0.8,
+  },
 });

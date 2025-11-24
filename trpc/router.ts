@@ -1,5 +1,4 @@
 import { getBitcoinPrice } from "@/lib/coingecko/client";
-import { getUSDJPYRate } from "@/lib/exchange-rate/client";
 import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahooFinance/client";
 import { valueStockScoringRouter } from "@/server/features/valueStockScoring/presentation/router";
 import { publicProcedure, router } from "./init";
@@ -18,17 +17,17 @@ export const appRouter = router({
     getAll: publicProcedure.query(async (): Promise<MarketData[]> => {
       try {
         // Fetch all data in parallel
-        const [yahooQuotes, btcPrice, usdJpyRate] = await Promise.all([
-          getYahooQuotes(["^N225", "^DJI", "^IXIC", "GC=F"]), // Nikkei, Dow, NASDAQ, Gold Futures
+        // JPY=X is USD/JPY forex pair from Yahoo Finance
+        const [yahooQuotes, btcPrice] = await Promise.all([
+          getYahooQuotes(["^N225", "^DJI", "^IXIC", "GC=F", "JPY=X"]), // Nikkei, Dow, NASDAQ, Gold Futures, USD/JPY
           getBitcoinPrice(),
-          getUSDJPYRate(),
         ]);
 
-        const [nikkei, dow, nasdaq, goldFutures] = yahooQuotes;
+        const [nikkei, dow, nasdaq, goldFutures, usdJpy] = yahooQuotes;
 
         // Convert gold from USD/oz to JPY/gram
-        const goldPriceJPYPerGram = convertGoldToGramJPY(goldFutures.price, usdJpyRate.rate);
-        const goldChangeJPYPerGram = convertGoldToGramJPY(goldFutures.change, usdJpyRate.rate);
+        const goldPriceJPYPerGram = convertGoldToGramJPY(goldFutures.price, usdJpy.price);
+        const goldChangeJPYPerGram = convertGoldToGramJPY(goldFutures.change, usdJpy.price);
 
         const marketData: MarketData[] = [
           {
@@ -66,17 +65,19 @@ export const appRouter = router({
           {
             id: "usdjpy",
             title: "ドル円",
-            price: usdJpyRate.rate,
-            change: 0, // ExchangeRate API doesn't provide daily change
-            changePercent: 0,
+            price: usdJpy.price,
+            change: usdJpy.change,
+            changePercent: usdJpy.changePercent,
             currency: "¥",
           },
           {
             id: "btc",
             title: "BTC",
             price: btcPrice.priceJPY,
-            change: 0, // CoinGecko free tier doesn't provide change
-            changePercent: 0,
+            // 24時間変動率から変動額を計算
+            change:
+              (btcPrice.priceJPY * btcPrice.changePercent24h) / (100 + btcPrice.changePercent24h),
+            changePercent: btcPrice.changePercent24h,
             currency: "¥",
           },
         ];

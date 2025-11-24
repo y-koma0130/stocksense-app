@@ -1,10 +1,12 @@
-export interface CoinGeckoSimplePrice {
+export type CoinGeckoSimplePrice = {
   [coinId: string]: {
-    [currency: string]: number;
+    jpy: number;
+    jpy_24h_change?: number;
   };
-}
+};
 
-export interface CryptoQuote {
+export type CryptoQuote = {
   symbol: string;
   priceJPY: number;
-}
+  changePercent24h: number;
+};

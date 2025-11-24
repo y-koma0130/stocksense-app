@@ -1,15 +1,46 @@
 import type { StockIndicatorDto } from "../../application/dto/stockIndicator.dto";
 
 /**
- * 罠銘柄除外の閾値設定
+ * 市場タイプ
+ */
+type MarketType = "プライム" | "スタンダード" | "グロース" | "other";
+
+/**
+ * 市場別罠株除外の閾値設定
  */
 const TRAP_STOCK_THRESHOLDS = {
-  /** 自己資本比率の下限(%) - これ以下は除外 */
-  EQUITY_RATIO_MIN: 20,
-  /** 営業利益減少の連続年数上限 - これ以上は除外 */
-  OPERATING_INCOME_DECLINE_YEARS_MAX: 3,
-  /** 営業CF負の連続年数上限 - これ以上は除外 */
-  OPERATING_CASH_FLOW_NEGATIVE_YEARS_MAX: 2,
+  /** プライム市場（大型・安定企業） */
+  プライム: {
+    equityRatioMin: 25, // 自己資本比率の下限(%)
+    roeMin: 3, // ROEの下限(%)
+    operatingIncomeDeclineYearsMax: 3, // 営業利益減少の連続年数上限
+    operatingCashFlowNegativeYearsMax: 2, // 営業CF負の連続年数上限
+    revenueDeclineYearsMax: null, // 売上減少は見ない
+  },
+  /** スタンダード市場（中堅企業） */
+  スタンダード: {
+    equityRatioMin: 20,
+    roeMin: null, // ROEは見ない
+    operatingIncomeDeclineYearsMax: 2,
+    operatingCashFlowNegativeYearsMax: 2,
+    revenueDeclineYearsMax: null,
+  },
+  /** グロース市場（成長企業・赤字可） */
+  グロース: {
+    equityRatioMin: 10,
+    roeMin: null, // ROEは見ない（赤字可）
+    operatingIncomeDeclineYearsMax: null, // 営業利益は見ない（赤字可）
+    operatingCashFlowNegativeYearsMax: 3, // 緩め
+    revenueDeclineYearsMax: 3, // 成長企業なのに縮小は除外
+  },
+  /** その他市場 */
+  other: {
+    equityRatioMin: 20,
+    roeMin: null,
+    operatingIncomeDeclineYearsMax: 3,
+    operatingCashFlowNegativeYearsMax: 2,
+    revenueDeclineYearsMax: null,
+  },
 } as const;
 
 /**
@@ -21,42 +52,81 @@ export type TrapStockCheckResult = Readonly<{
 }>;
 
 /**
- * 罠銘柄かどうかを判定する
+ * 市場名からMarketTypeを取得
+ */
+const getMarketType = (market: string | null): MarketType => {
+  if (!market) return "other";
+  if (market.includes("プライム")) return "プライム";
+  if (market.includes("スタンダード")) return "スタンダード";
+  if (market.includes("グロース")) return "グロース";
+  return "other";
+};
+
+/**
+ * 罠銘柄かどうかを判定する（市場別）
  *
- * 除外条件:
- * 1. 営業利益が3年連続で減少している
- * 2. 営業CFが2年連続で負
- * 3. 自己資本比率が20%未満
+ * プライム市場:
+ * - 自己資本比率 < 25%
+ * - ROE < 3%
+ * - 営業利益が3期連続で減少
+ * - 営業CFが2期連続マイナス
+ *
+ * スタンダード市場:
+ * - 自己資本比率 < 20%
+ * - 営業利益が2期連続減少
+ * - 営業CFが2期連続マイナス
+ *
+ * グロース市場:
+ * - 自己資本比率 < 10%
+ * - 営業CFが3期連続マイナス
+ * - 売上が3期連続マイナス
  */
 export const isTrapStock = (indicator: StockIndicatorDto): TrapStockCheckResult => {
   const reasons: string[] = [];
+  const marketType = getMarketType(indicator.market);
+  const thresholds = TRAP_STOCK_THRESHOLDS[marketType];
 
-  // 1. 自己資本比率チェック（20%未満は除外）
+  // 1. 自己資本比率チェック
   if (
+    thresholds.equityRatioMin !== null &&
     indicator.equityRatio !== null &&
-    indicator.equityRatio < TRAP_STOCK_THRESHOLDS.EQUITY_RATIO_MIN
+    indicator.equityRatio < thresholds.equityRatioMin
   ) {
     reasons.push(
-      `自己資本比率が${TRAP_STOCK_THRESHOLDS.EQUITY_RATIO_MIN}%未満 (${indicator.equityRatio.toFixed(1)}%)`,
+      `自己資本比率が${thresholds.equityRatioMin}%未満 (${indicator.equityRatio.toFixed(1)}%)`,
     );
   }
 
-  // 2. 営業利益減少連続年数チェック（3年以上は除外）
+  // 2. ROEチェック（プライムのみ）
+  if (thresholds.roeMin !== null && indicator.roe !== null && indicator.roe < thresholds.roeMin) {
+    reasons.push(`ROEが${thresholds.roeMin}%未満 (${indicator.roe.toFixed(1)}%)`);
+  }
+
+  // 3. 営業利益減少連続年数チェック
   if (
+    thresholds.operatingIncomeDeclineYearsMax !== null &&
     indicator.operatingIncomeDeclineYears !== null &&
-    indicator.operatingIncomeDeclineYears >=
-      TRAP_STOCK_THRESHOLDS.OPERATING_INCOME_DECLINE_YEARS_MAX
+    indicator.operatingIncomeDeclineYears >= thresholds.operatingIncomeDeclineYearsMax
   ) {
     reasons.push(`営業利益が${indicator.operatingIncomeDeclineYears}年連続で減少`);
   }
 
-  // 3. 営業CF負の連続年数チェック（2年以上は除外）
+  // 4. 営業CF負の連続年数チェック
   if (
+    thresholds.operatingCashFlowNegativeYearsMax !== null &&
     indicator.operatingCashFlowNegativeYears !== null &&
-    indicator.operatingCashFlowNegativeYears >=
-      TRAP_STOCK_THRESHOLDS.OPERATING_CASH_FLOW_NEGATIVE_YEARS_MAX
+    indicator.operatingCashFlowNegativeYears >= thresholds.operatingCashFlowNegativeYearsMax
   ) {
     reasons.push(`営業CFが${indicator.operatingCashFlowNegativeYears}年連続で負`);
+  }
+
+  // 5. 売上減少連続年数チェック（グロースのみ）
+  if (
+    thresholds.revenueDeclineYearsMax !== null &&
+    indicator.revenueDeclineYears !== null &&
+    indicator.revenueDeclineYears >= thresholds.revenueDeclineYearsMax
+  ) {
+    reasons.push(`売上が${indicator.revenueDeclineYears}年連続で減少`);
   }
 
   return {

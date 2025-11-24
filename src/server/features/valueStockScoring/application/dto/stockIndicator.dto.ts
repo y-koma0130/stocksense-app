@@ -11,6 +11,7 @@ export const stockIndicatorDtoSchema = z.object({
   name: z.string(),
   sectorCode: z.string().nullable(),
   sectorName: z.string().nullable(),
+  market: z.string().nullable(),
   collectedAt: z.string(),
   periodType: z.enum(["weekly", "monthly"]),
 
@@ -32,8 +33,10 @@ export const stockIndicatorDtoSchema = z.object({
 
   // 財務健全性指標（罠銘柄除外用）
   equityRatio: z.number().nullable(),
+  roe: z.number().nullable(),
   operatingIncomeDeclineYears: z.number().nullable(),
   operatingCashFlowNegativeYears: z.number().nullable(),
+  revenueDeclineYears: z.number().nullable(),
 });
 
 /**

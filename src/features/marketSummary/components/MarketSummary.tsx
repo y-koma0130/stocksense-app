@@ -24,12 +24,20 @@ export function MarketSummary() {
     if (market.id === "usdjpy") {
       if (currency === "USD") {
         // Show as JPY/USD (円ドル) when in USD mode
+        // 前日のレートを計算: 現在のレート - 変動幅
+        const previousRate = market.price - market.change;
+        const currentInverse = 1 / market.price;
+        const previousInverse = previousRate > 0 ? 1 / previousRate : 0;
+        const inverseChange = currentInverse - previousInverse;
+        // 変動率は反転する（ドル円が上がると円ドルは下がる）
+        const inverseChangePercent =
+          previousInverse > 0 ? (inverseChange / previousInverse) * 100 : 0;
         return {
           ...market,
           title: "円ドル",
-          price: 1 / usdJpyRate,
-          change: 0,
-          changePercent: 0,
+          price: currentInverse,
+          change: inverseChange,
+          changePercent: inverseChangePercent,
           currency: "$",
         };
       }

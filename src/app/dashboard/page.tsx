@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
+import { HeroSection } from "@/components/HeroSection";
 import { MarketSummary } from "@/features/marketSummary/components/MarketSummary";
 import { ValueStockRanking } from "@/features/valueStockScoring/components/ValueStockRanking";
 import { createClient } from "@/lib/supabase/server";
@@ -20,6 +21,7 @@ export default async function DashboardPage() {
     <>
       <Header />
       <div className={containerStyle}>
+        <HeroSection />
         <MarketSummary />
         <div className={spacerStyle} />
         <ValueStockRanking />
@@ -30,7 +32,7 @@ export default async function DashboardPage() {
 
 const containerStyle = css({
   minHeight: "calc(100vh - 68px)",
-  padding: "2rem",
+  padding: "1rem",
   backgroundColor: "background",
 });
 

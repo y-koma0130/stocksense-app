@@ -49,7 +49,9 @@ export const monthlyFinancialHealthCollection = inngest.createFunction(
             if (
               financialHealth.equityRatio !== null ||
               financialHealth.operatingIncomeDeclineYears !== null ||
-              financialHealth.operatingCashFlowNegativeYears !== null
+              financialHealth.operatingCashFlowNegativeYears !== null ||
+              financialHealth.roe !== null ||
+              financialHealth.revenueDeclineYears !== null
             ) {
               // エンティティ生成（バリデーション付き）
               const entity = createStockFinancialHealth({
@@ -57,6 +59,8 @@ export const monthlyFinancialHealthCollection = inngest.createFunction(
                 equityRatio: financialHealth.equityRatio,
                 operatingIncomeDeclineYears: financialHealth.operatingIncomeDeclineYears,
                 operatingCashFlowNegativeYears: financialHealth.operatingCashFlowNegativeYears,
+                roe: financialHealth.roe,
+                revenueDeclineYears: financialHealth.revenueDeclineYears,
               });
 
               // リポジトリで永続化

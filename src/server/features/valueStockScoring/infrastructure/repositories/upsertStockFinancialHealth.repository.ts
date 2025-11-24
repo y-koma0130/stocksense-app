@@ -17,16 +17,20 @@ export const upsertStockFinancialHealth: UpsertStockFinancialHealth = async (ent
     .values({
       stockId: entity.stockId,
       equityRatio: entity.equityRatio?.toString() ?? null,
+      roe: entity.roe?.toString() ?? null,
       operatingIncomeDeclineYears: entity.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: entity.operatingCashFlowNegativeYears,
+      revenueDeclineYears: entity.revenueDeclineYears,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: stockFinancialHealth.stockId,
       set: {
         equityRatio: entity.equityRatio?.toString() ?? null,
+        roe: entity.roe?.toString() ?? null,
         operatingIncomeDeclineYears: entity.operatingIncomeDeclineYears,
         operatingCashFlowNegativeYears: entity.operatingCashFlowNegativeYears,
+        revenueDeclineYears: entity.revenueDeclineYears,
         updatedAt: new Date(),
       },
     });

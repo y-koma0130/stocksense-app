@@ -28,18 +28,28 @@ export type GetTopValueStocks = (
 ) => Promise<ValueStockDto[]>;
 
 /**
+ * PROマーケット（TOKYO PRO Market）かどうかを判定
+ */
+const isProMarket = (market: string | null): boolean => {
+  if (!market) return false;
+  return market.includes("PRO") || market.includes("プロ");
+};
+
+/**
  * 上位割安株を取得するユースケース
  * 1. クエリサービスから最新の指標データを取得
- * 2. 罠銘柄を除外
- * 3. ドメインサービスでスコアを計算
- * 4. スコア順にソートして上位N件を返却
+ * 2. PROマーケットを除外
+ * 3. 罠銘柄を除外
+ * 4. ドメインサービスでスコアを計算
+ * 5. スコア順にソートして上位N件を返却
  */
 export const getTopValueStocks: GetTopValueStocks = async (dependencies, params) => {
   // クエリサービスから全件取得
   const indicators = await dependencies.getLatestStockIndicators(params.periodType);
 
-  // 罠銘柄を除外してスコア計算
+  // PROマーケット除外 → 罠銘柄除外 → スコア計算
   const stocksWithScores = indicators
+    .filter((indicator) => !isProMarket(indicator.market))
     .filter((indicator) => !isTrapStock(indicator).isTrap)
     .map((indicator) => ({
       ...indicator,

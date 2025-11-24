@@ -83,15 +83,15 @@ export const LoginCard = () => {
             type="text"
             value={otpCode}
             onChange={(e) => setOtpCode(e.target.value)}
-            placeholder="123456"
+            placeholder="12345678"
             required
             disabled={loading}
-            maxLength={6}
-            pattern="[0-9]{6}"
+            maxLength={8}
+            pattern="[0-9]{6,8}"
             inputMode="numeric"
           />
 
-          <Button type="submit" disabled={loading || otpCode.length !== 6} variant="primary">
+          <Button type="submit" disabled={loading || otpCode.length < 6} variant="primary">
             {loading ? "認証中..." : "ログイン"}
           </Button>
 

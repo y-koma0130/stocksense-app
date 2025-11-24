@@ -34,7 +34,7 @@ export const useLogin = () => {
 
       setMessage({
         type: "success",
-        text: "認証コードをメールで送信しました。6桁のコードを入力してください。",
+        text: "認証コードをメールで送信しました。コードを入力してください。",
       });
       setStep("otp");
       return true;

@@ -15,7 +15,8 @@
       "!build",
       "!styled-system",
       "!*.config.js",
-      "!*.config.mjs"
+      "!*.config.mjs",
+      "!supabase/templates"
     ]
   },
   "formatter": {

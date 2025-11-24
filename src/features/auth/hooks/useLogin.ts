@@ -3,27 +3,28 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-interface LoginMessage {
+type LoginMessage = {
   type: "success" | "error";
   text: string;
-}
+};
 
-export function useLogin() {
+type LoginStep = "email" | "otp";
+
+export const useLogin = () => {
   const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [step, setStep] = useState<LoginStep>("email");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<LoginMessage | null>(null);
   const supabase = createClient();
 
-  const login = async (emailAddress: string) => {
+  const sendOtp = async (emailAddress: string) => {
     setLoading(true);
     setMessage(null);
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: emailAddress,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
       });
 
       if (error) {
@@ -33,9 +34,9 @@ export function useLogin() {
 
       setMessage({
         type: "success",
-        text: "メールを確認してください。ログインリンクを送信しました。",
+        text: "認証コードをメールで送信しました。6桁のコードを入力してください。",
       });
-      setEmail("");
+      setStep("otp");
       return true;
     } catch {
       setMessage({
@@ -48,11 +49,50 @@ export function useLogin() {
     }
   };
 
+  const verifyOtp = async (emailAddress: string, token: string) => {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: emailAddress,
+        token,
+        type: "email",
+      });
+
+      if (error) {
+        setMessage({ type: "error", text: error.message });
+        return false;
+      }
+
+      return true;
+    } catch {
+      setMessage({
+        type: "error",
+        text: "認証に失敗しました。もう一度お試しください。",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetToEmail = () => {
+    setStep("email");
+    setOtpCode("");
+    setMessage(null);
+  };
+
   return {
     email,
     setEmail,
+    otpCode,
+    setOtpCode,
+    step,
     loading,
     message,
-    login,
+    sendOtp,
+    verifyOtp,
+    resetToEmail,
   };
-}
+};

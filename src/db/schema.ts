@@ -151,3 +151,25 @@ export type NewStockIndicator = typeof stockIndicators.$inferInsert;
 
 export type StockFinancialHealth = typeof stockFinancialHealth.$inferSelect;
 export type NewStockFinancialHealth = typeof stockFinancialHealth.$inferInsert;
+
+/**
+ * 5. LINE連携ユーザー
+ * LINEユーザーIDとアプリユーザーの紐付け
+ */
+export const lineUsers = pgTable(
+  "line_users",
+  {
+    lineUserId: varchar("line_user_id", { length: 50 }).primaryKey(), // LINE UserID (U...)
+    userId: uuid("user_id"), // Supabase Auth のユーザーID（紐付け後に設定）
+    displayName: varchar("display_name", { length: 100 }), // LINE表示名
+    notificationEnabled: integer("notification_enabled").default(1).notNull(), // 通知ON/OFF (1=ON, 0=OFF)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("idx_line_users_user_id").on(table.userId),
+  }),
+);
+
+export type LineUser = typeof lineUsers.$inferSelect;
+export type NewLineUser = typeof lineUsers.$inferInsert;

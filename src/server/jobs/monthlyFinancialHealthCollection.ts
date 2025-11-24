@@ -1,5 +1,5 @@
 import { inngest } from "../../../inngest/client";
-import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks.queryService";
+import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks";
 import { createStockFinancialHealth } from "../features/valueStockScoring/domain/entities/stockFinancialHealth";
 import { getFinancialHealth } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getFinancialHealth";
 import { upsertStockFinancialHealth } from "../features/valueStockScoring/infrastructure/repositories/upsertStockFinancialHealth.repository";

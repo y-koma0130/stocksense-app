@@ -1,4 +1,5 @@
 import { calculateValueScore } from "../../domain/services/calculateValueScore.service";
+import { isTrapStock } from "../../domain/services/isTrapStock.service";
 import type { PeriodType } from "../../domain/values/periodType";
 import type { GetLatestStockIndicators } from "../../infrastructure/queryServices/getStockIndicators.queryService";
 import { type ValueStockDto, valueStockDtoSchema } from "../dto/stockIndicator.dto";
@@ -29,15 +30,17 @@ export type GetTopValueStocks = (
 /**
  * 上位割安株を取得するユースケース
  * 1. クエリサービスから最新の指標データを取得
- * 2. ドメインサービスでスコアを計算
- * 3. スコア順にソートして上位N件を返却
+ * 2. 罠銘柄を除外
+ * 3. ドメインサービスでスコアを計算
+ * 4. スコア順にソートして上位N件を返却
  */
 export const getTopValueStocks: GetTopValueStocks = async (dependencies, params) => {
   // クエリサービスから全件取得
   const indicators = await dependencies.getLatestStockIndicators(params.periodType);
 
-  // スコア計算とソート
+  // 罠銘柄を除外してスコア計算
   const stocksWithScores = indicators
+    .filter((indicator) => !isTrapStock(indicator).isTrap)
     .map((indicator) => ({
       ...indicator,
       valueScore: calculateValueScore(indicator),

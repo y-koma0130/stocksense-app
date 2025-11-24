@@ -22,6 +22,20 @@
       "when": 1763692535313,
       "tag": "0002_romantic_aaron_stack",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763861975790,
+      "tag": "0003_nebulous_amazoness",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1763941655406,
+      "tag": "0004_woozy_arachne",
+      "breakpoints": true
     }
   ]
 }

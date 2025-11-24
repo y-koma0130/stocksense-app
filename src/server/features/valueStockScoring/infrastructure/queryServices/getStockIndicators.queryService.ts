@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { stockIndicators, stocks } from "@/db/schema";
+import { stockFinancialHealth, stockIndicators, stocks } from "@/db/schema";
 import {
   type StockIndicatorDto,
   stockIndicatorDtoSchema,
@@ -33,6 +33,7 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
   const latestDate = latestDateResult[0].collectedAt;
 
   // 最新日付かつ指定した期間タイプのデータを取得
+  // 財務健全性データはLEFT JOINで結合（存在しない場合もある）
   const results = await db
     .select({
       stockId: stockIndicators.stockId,
@@ -51,9 +52,14 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
       week52Low: stockIndicators.week52Low,
       sectorAvgPer: stockIndicators.sectorAvgPer,
       sectorAvgPbr: stockIndicators.sectorAvgPbr,
+      // 財務健全性データ（別テーブルからJOIN）
+      equityRatio: stockFinancialHealth.equityRatio,
+      operatingIncomeDeclineYears: stockFinancialHealth.operatingIncomeDeclineYears,
+      operatingCashFlowNegativeYears: stockFinancialHealth.operatingCashFlowNegativeYears,
     })
     .from(stockIndicators)
     .innerJoin(stocks, eq(stockIndicators.stockId, stocks.id))
+    .leftJoin(stockFinancialHealth, eq(stockIndicators.stockId, stockFinancialHealth.stockId))
     .where(
       and(eq(stockIndicators.collectedAt, latestDate), eq(stockIndicators.periodType, periodType)),
     );
@@ -77,6 +83,9 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
       week52Low: row.week52Low ? Number(row.week52Low) : null,
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
       sectorAvgPbr: row.sectorAvgPbr ? Number(row.sectorAvgPbr) : null,
+      equityRatio: row.equityRatio ? Number(row.equityRatio) : null,
+      operatingIncomeDeclineYears: row.operatingIncomeDeclineYears,
+      operatingCashFlowNegativeYears: row.operatingCashFlowNegativeYears,
     }),
   );
 };

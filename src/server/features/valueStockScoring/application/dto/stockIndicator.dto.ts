@@ -29,6 +29,11 @@ export const stockIndicatorDtoSchema = z.object({
   // 業種平均
   sectorAvgPer: z.number().nullable(),
   sectorAvgPbr: z.number().nullable(),
+
+  // 財務健全性指標（罠銘柄除外用）
+  equityRatio: z.number().nullable(),
+  operatingIncomeDeclineYears: z.number().nullable(),
+  operatingCashFlowNegativeYears: z.number().nullable(),
 });
 
 /**

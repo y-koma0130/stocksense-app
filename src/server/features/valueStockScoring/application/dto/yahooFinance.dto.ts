@@ -28,3 +28,15 @@ export const fundamentalsDataDtoSchema = z.object({
 });
 
 export type FundamentalsDataDto = z.infer<typeof fundamentalsDataDtoSchema>;
+
+/**
+ * 財務健全性データのDTO（罠銘柄除外用）
+ */
+export const financialHealthDataDtoSchema = z.object({
+  tickerSymbol: z.string(),
+  equityRatio: z.number().nullable(), // 自己資本比率(%)
+  operatingIncomeDeclineYears: z.number().nullable(), // 営業利益減少連続年数
+  operatingCashFlowNegativeYears: z.number().nullable(), // 営業CF負の連続年数
+});
+
+export type FinancialHealthDataDto = z.infer<typeof financialHealthDataDtoSchema>;

@@ -12,11 +12,6 @@ import {
 } from "drizzle-orm/pg-core";
 
 /**
- * スコアタイプのEnum定義
- */
-export const scoreTypeEnum = pgEnum("score_type", ["mid_term", "long_term"]);
-
-/**
  * 期間タイプのEnum定義
  */
 export const periodTypeEnum = pgEnum("period_type", ["weekly", "monthly"]);
@@ -74,48 +69,7 @@ export const sectorAverages = pgTable(
 );
 
 /**
- * 3. スコア結果
- * 高スコア（0.6以上）の銘柄のみ保存
- */
-export const stockScores = pgTable(
-  "stock_scores",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    stockId: uuid("stock_id")
-      .notNull()
-      .references(() => stocks.id, { onDelete: "cascade" }),
-    scoreDate: date("score_date").notNull(),
-    scoreType: scoreTypeEnum("score_type").notNull(), // 'mid_term' or 'long_term'
-
-    // スコア内訳
-    perScore: integer("per_score").notNull(),
-    pbrScore: integer("pbr_score").notNull(),
-    rsiScore: integer("rsi_score").notNull(),
-    priceRangeScore: integer("price_range_score").notNull(),
-    sectorScore: decimal("sector_score", { precision: 5, scale: 2 }).notNull(), // 0.00〜100.00
-    totalScore: decimal("total_score", { precision: 5, scale: 4 }).notNull(), // 0.0000〜1.0000
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => ({
-    typeTotalIdx: index("idx_scores_type_total").on(
-      table.scoreType,
-      table.totalScore,
-      table.scoreDate,
-    ),
-    stockIdx: index("idx_scores_stock").on(table.stockId, table.scoreDate),
-    dateIdx: index("idx_scores_date").on(table.scoreDate, table.totalScore),
-    // UNIQUE constraint
-    uniqStockDateType: unique("uniq_stock_date_type").on(
-      table.stockId,
-      table.scoreDate,
-      table.scoreType,
-    ),
-  }),
-);
-
-/**
- * 4. 銘柄指標データ
+ * 3. 銘柄指標データ
  * 全銘柄の生の指標値を保存（スコア計算なし）
  */
 export const stockIndicators = pgTable(
@@ -161,6 +115,30 @@ export const stockIndicators = pgTable(
   }),
 );
 
+/**
+ * 4. 銘柄財務健全性データ
+ * 月次で更新される財務健全性指標（罠銘柄除外用）
+ * 銘柄ごとに1レコード（最新のみ保持）
+ */
+export const stockFinancialHealth = pgTable(
+  "stock_financial_health",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" })
+      .unique(),
+    equityRatio: decimal("equity_ratio", { precision: 5, scale: 2 }), // 自己資本比率(%)
+    operatingIncomeDeclineYears: integer("operating_income_decline_years"), // 営業利益減少連続年数
+    operatingCashFlowNegativeYears: integer("operating_cash_flow_negative_years"), // 営業CF負の連続年数
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    stockIdx: index("idx_financial_health_stock").on(table.stockId),
+  }),
+);
+
 // Type exports
 export type Stock = typeof stocks.$inferSelect;
 export type NewStock = typeof stocks.$inferInsert;
@@ -168,8 +146,8 @@ export type NewStock = typeof stocks.$inferInsert;
 export type SectorAverage = typeof sectorAverages.$inferSelect;
 export type NewSectorAverage = typeof sectorAverages.$inferInsert;
 
-export type StockScore = typeof stockScores.$inferSelect;
-export type NewStockScore = typeof stockScores.$inferInsert;
-
 export type StockIndicator = typeof stockIndicators.$inferSelect;
 export type NewStockIndicator = typeof stockIndicators.$inferInsert;
+
+export type StockFinancialHealth = typeof stockFinancialHealth.$inferSelect;
+export type NewStockFinancialHealth = typeof stockFinancialHealth.$inferInsert;

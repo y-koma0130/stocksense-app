@@ -20,14 +20,14 @@ export const monthlyIndicatorCollection = inngest.createFunction(
   },
   { cron: "TZ=Asia/Tokyo 0 0 1 * *" }, // 毎月1日0:00 JST
   async ({ step }) => {
-    // ステップ1: 上場中の銘柄を取得（クエリサービス経由・DTO）
+    // ステップ1: 上場中の銘柄を取得
     const activeStocks = await step.run("fetch-active-stocks", async () => {
       return await getActiveStocks();
     });
 
     console.log(`Processing ${activeStocks.length} active stocks`);
 
-    // ステップ2: 業種平均データを取得（DTO配列）
+    // ステップ2: 業種平均データを取得
     const sectorAverages = await step.run("fetch-sector-averages", async () => {
       return await getLatestSectorAverages();
     });
@@ -49,7 +49,7 @@ export const monthlyIndicatorCollection = inngest.createFunction(
 
         for (const stock of batch) {
           try {
-            // 基本データ取得（DTO）
+            // 基本データ取得
             const fundamentals = await getFundamentals(stock.tickerSymbol);
 
             // 現在価格がない場合はスキップ
@@ -58,16 +58,16 @@ export const monthlyIndicatorCollection = inngest.createFunction(
               continue;
             }
 
-            // RSI計算用の日足データ取得（DTO）
+            // RSI計算用の日足データ取得
             const dailyData = await getDailyData(stock.tickerSymbol, 30);
             const rsi = calculateRSI(dailyData, 14);
 
-            // 業種平均データ取得（DTO配列から検索）
+            // 業種平均データ取得
             const sectorAvg = stock.sectorCode
               ? sectorAverages.find((s) => s.sectorCode === stock.sectorCode)
               : undefined;
 
-            // エンティティ生成（バリデーション付き）
+            // エンティティ生成
             const indicator = createStockIndicator({
               stockId: stock.id,
               collectedAt,
@@ -97,8 +97,8 @@ export const monthlyIndicatorCollection = inngest.createFunction(
             console.error(`Error processing ${stock.tickerSymbol}:`, error);
           }
 
-          // レート制限対策: 100msの遅延
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          // レート制限対策: 200msの遅延
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
 
         return { collectedCount, savedCount };

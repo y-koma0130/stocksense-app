@@ -1,19 +1,35 @@
 "use client";
 
 import { useState } from "react";
+import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
 import { css } from "../../../../styled-system/css";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
+import { ValueStockDrawer } from "./ValueStockDrawer";
 import { ValueStockTable } from "./ValueStockTable";
 
 export const ValueStockRanking = () => {
   const [periodType, setPeriodType] = useState<"weekly" | "monthly">("monthly");
+  const [selectedStock, setSelectedStock] = useState<ValueStockDto | null>(null);
   const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
+
+  // 収集日をフォーマット
+  const collectedAt = data[0]?.collectedAt;
+  const formattedDate = collectedAt
+    ? new Date(collectedAt).toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
   return (
     <section>
       <div className={headerStyle}>
-        <h2 className={sectionTitleStyle}>割安株スコア上位</h2>
+        <div className={titleContainerStyle}>
+          <h2 className={sectionTitleStyle}>割安株スコア上位</h2>
+          {formattedDate && <span className={dateStyle}>{formattedDate}時点</span>}
+        </div>
         <PeriodTypeToggle periodType={periodType} onToggle={setPeriodType} />
       </div>
 
@@ -30,8 +46,14 @@ export const ValueStockRanking = () => {
           <p className={loadingStyle}>指標データがありません</p>
         </div>
       ) : (
-        <ValueStockTable data={data} />
+        <ValueStockTable data={data} onRowClick={setSelectedStock} />
       )}
+
+      <ValueStockDrawer
+        stock={selectedStock}
+        isOpen={selectedStock !== null}
+        onClose={() => setSelectedStock(null)}
+      />
     </section>
   );
 };
@@ -43,10 +65,22 @@ const headerStyle = css({
   marginBottom: "1rem",
 });
 
+const titleContainerStyle = css({
+  display: "flex",
+  alignItems: "baseline",
+  gap: "0.75rem",
+});
+
 const sectionTitleStyle = css({
   fontSize: "1.25rem",
   fontWeight: "600",
   color: "text",
+});
+
+const dateStyle = css({
+  fontSize: "0.875rem",
+  color: "textMuted",
+  fontWeight: "400",
 });
 
 const messageContainerStyle = css({

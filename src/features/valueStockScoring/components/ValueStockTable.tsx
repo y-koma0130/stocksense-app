@@ -1,130 +1,87 @@
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
-import type { IndicatorScore } from "@/server/features/valueStockScoring/domain/services/calculateValueScore.service";
 import { css } from "../../../../styled-system/css";
 
 type ValueStockTableProps = Readonly<{
   data: readonly ValueStockDto[];
+  onRowClick: (stock: ValueStockDto) => void;
 }>;
 
 /**
- * スコアに応じた色を返す
+ * トータルスコアに応じた色を返す（0〜1のスケール）
  */
-const getScoreColor = (score: IndicatorScore): string => {
-  if (score === 100) return "#22c55e"; // 緑
-  if (score === 75) return "#84cc16"; // 黄緑
-  if (score === 50) return "#eab308"; // 黄
-  if (score === 25) return "#f97316"; // オレンジ
-  return "#ef4444"; // 赤
+const getTotalScoreColor = (score: number): string => {
+  if (score >= 0.8) return "#22c55e";
+  if (score >= 0.6) return "#84cc16";
+  if (score >= 0.4) return "#eab308";
+  if (score >= 0.2) return "#f97316";
+  return "#ef4444";
 };
 
-/**
- * 価格レンジ位置を計算（0〜100%）
- */
-const calculatePriceRangePosition = (
-  currentPrice: number | null,
-  week52High: number | null,
-  week52Low: number | null,
-): number | null => {
-  if (currentPrice === null || week52High === null || week52Low === null) {
-    return null;
-  }
-  if (week52High === week52Low) return null;
-  return ((currentPrice - week52Low) / (week52High - week52Low)) * 100;
-};
-
-/**
- * 業種比率を計算（業種平均に対する比率）
- */
-const calculateSectorRatio = (value: number | null, sectorAvg: number | null): number | null => {
-  if (value === null || sectorAvg === null || sectorAvg === 0) {
-    return null;
-  }
-  return (value / sectorAvg) * 100;
-};
-
-export const ValueStockTable = ({ data }: ValueStockTableProps) => {
+export const ValueStockTable = ({ data, onRowClick }: ValueStockTableProps) => {
   return (
     <div className={tableContainerStyle}>
       <table className={tableStyle}>
         <thead>
           <tr>
-            <th className={thLeftStyle}>順位</th>
-            <th className={thLeftStyle}>銘柄コード</th>
-            <th className={thLeftStyle}>銘柄名</th>
-            <th className={thLeftStyle}>業種</th>
-            <th className={thCenterStyle}>総合スコア</th>
-            <th className={thCenterStyle}>現在値</th>
-            <th className={thCenterStyle}>PER</th>
-            <th className={thCenterStyle}>PBR</th>
-            <th className={thCenterStyle}>RSI</th>
-            <th className={thCenterStyle}>
-              <Tooltip content="52週高値・安値の中で現在価格がどの位置にあるか（安値に近いほど割安）">
-                価格位置
+            <th className={thRankStyle}>順位</th>
+            <th className={thTickerStyle}>コード</th>
+            <th className={thNameStyle}>銘柄名</th>
+            <th className={thMarketStyle}>市場</th>
+            <th className={thSectorStyle}>業種</th>
+            <th className={thScoreStyle}>
+              <Tooltip content="複数の指標から算出した割安度のスコアリングです。スコアが高いほど割安と判断されます。業績等を加味して将来性が薄いと判断される企業は除外されています。">
+                割安スコア
               </Tooltip>
             </th>
-            <th className={thCenterStyle}>
-              <Tooltip content="PER・PBRが業種平均と比べてどれだけ低いか（業種平均より低いほど割安）">
-                業種相対
-              </Tooltip>
-            </th>
+            <th className={thPriceStyle}>現在価格</th>
           </tr>
         </thead>
         <tbody>
           {data.map((stock, index) => {
-            const pricePosition = calculatePriceRangePosition(
-              stock.currentPrice,
-              stock.week52High,
-              stock.week52Low,
-            );
-            const perRatio = calculateSectorRatio(stock.per, stock.sectorAvgPer);
-            const pbrRatio = calculateSectorRatio(stock.pbr, stock.sectorAvgPbr);
+            const scorePercent = stock.valueScore.totalScore * 100;
 
             return (
-              <tr key={stock.stockId} className={trStyle}>
-                <td className={tdLeftStyle}>{index + 1}</td>
-                <td className={tdLeftStyle}>{stock.tickerCode}</td>
-                <td className={tdLeftStyle}>{stock.name}</td>
-                <td className={tdLeftStyle}>{stock.sectorName ?? "-"}</td>
-                <td className={tdScoreCenterStyle}>{stock.valueScore.totalScore.toFixed(4)}</td>
-                <td className={tdCenterStyle}>
-                  {stock.currentPrice !== null ? `¥${stock.currentPrice.toFixed(0)}` : "-"}
+              <tr
+                key={stock.stockId}
+                className={trStyle}
+                onClick={() => onRowClick(stock)}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onRowClick(stock);
+                  }
+                }}
+              >
+                <td className={tdRankStyle}>{index + 1}</td>
+                <td className={tdTickerStyle}>{stock.tickerCode}</td>
+                <td className={tdNameStyle}>{stock.name}</td>
+                <td className={tdMarketStyle}>
+                  {stock.market ? <span className={marketBadgeStyle}>{stock.market}</span> : "-"}
                 </td>
-                <td
-                  className={tdCenterStyle}
-                  style={{ color: getScoreColor(stock.valueScore.perScore) }}
-                >
-                  {stock.per !== null ? stock.per.toFixed(2) : "-"}
-                  {perRatio !== null && (
-                    <div className={subTextStyle}>({perRatio.toFixed(0)}%)</div>
-                  )}
-                </td>
-                <td
-                  className={tdCenterStyle}
-                  style={{ color: getScoreColor(stock.valueScore.pbrScore) }}
-                >
-                  {stock.pbr !== null ? stock.pbr.toFixed(2) : "-"}
-                  {pbrRatio !== null && (
-                    <div className={subTextStyle}>({pbrRatio.toFixed(0)}%)</div>
-                  )}
-                </td>
-                <td
-                  className={tdCenterStyle}
-                  style={{ color: getScoreColor(stock.valueScore.rsiScore) }}
-                >
-                  {stock.rsi !== null ? stock.rsi.toFixed(1) : "-"}
-                </td>
-                <td
-                  className={tdCenterStyle}
-                  style={{ color: getScoreColor(stock.valueScore.priceRangeScore) }}
-                >
-                  {pricePosition !== null ? `${pricePosition.toFixed(1)}%` : "-"}
-                </td>
-                <td className={tdCenterStyle}>
-                  {stock.valueScore.sectorScore.toFixed(0)}
-                  <div className={subTextStyle}>
-                    (PER:{stock.valueScore.perScore}, PBR:{stock.valueScore.pbrScore})
+                <td className={tdSectorStyle}>{stock.sectorName ?? "-"}</td>
+                <td className={tdScoreStyle}>
+                  <div className={scoreContainerStyle}>
+                    <div className={scoreBarBgStyle}>
+                      <div
+                        className={scoreBarStyle}
+                        style={{
+                          width: `${scorePercent}%`,
+                          backgroundColor: getTotalScoreColor(stock.valueScore.totalScore),
+                        }}
+                      />
+                    </div>
+                    <span
+                      className={scoreValueStyle}
+                      style={{ color: getTotalScoreColor(stock.valueScore.totalScore) }}
+                    >
+                      {scorePercent.toFixed(0)}
+                    </span>
                   </div>
+                </td>
+                <td className={tdPriceStyle}>
+                  {stock.currentPrice !== null ? `¥${stock.currentPrice.toLocaleString()}` : "-"}
                 </td>
               </tr>
             );
@@ -146,75 +103,160 @@ const tableStyle = css({
   width: "100%",
   borderCollapse: "collapse",
   fontSize: "0.875rem",
-  tableLayout: "fixed",
 });
 
-const thLeftStyle = css({
+const thBaseStyle = {
   padding: "1rem",
-  textAlign: "left",
   fontWeight: "600",
   color: "accent",
   borderBottom: "2px solid",
   borderColor: "border",
-  whiteSpace: "nowrap",
+  whiteSpace: "nowrap" as const,
   backgroundColor: "cardBg",
-  "&:nth-child(1)": { width: "4%" }, // 順位
-  "&:nth-child(2)": { width: "7%" }, // 銘柄コード
-  "&:nth-child(3)": { width: "12%" }, // 銘柄名
-  "&:nth-child(4)": { width: "10%" }, // 業種
-});
+};
 
-const thCenterStyle = css({
-  padding: "1rem",
+const thRankStyle = css({
+  ...thBaseStyle,
   textAlign: "center",
-  fontWeight: "600",
-  color: "accent",
-  borderBottom: "2px solid",
-  borderColor: "border",
-  whiteSpace: "nowrap",
-  backgroundColor: "cardBg",
-  width: "9%", // 各カラム
+  width: "60px",
+});
+
+const thTickerStyle = css({
+  ...thBaseStyle,
+  textAlign: "center",
+  width: "80px",
+});
+
+const thNameStyle = css({
+  ...thBaseStyle,
+  textAlign: "left",
+  width: "140px",
+});
+
+const thMarketStyle = css({
+  ...thBaseStyle,
+  textAlign: "center",
+  width: "100px",
+});
+
+const thSectorStyle = css({
+  ...thBaseStyle,
+  textAlign: "left",
+  width: "120px",
+});
+
+const thScoreStyle = css({
+  ...thBaseStyle,
+  textAlign: "center",
+  width: "140px",
+});
+
+const thPriceStyle = css({
+  ...thBaseStyle,
+  textAlign: "right",
+  width: "100px",
 });
 
 const trStyle = css({
   borderBottom: "1px solid",
   borderColor: "border",
   transition: "background-color 0.2s ease",
+  cursor: "pointer",
   _hover: {
     backgroundColor: "cardBgHover",
   },
+  _focus: {
+    outline: "2px solid",
+    outlineColor: "accent",
+    outlineOffset: "-2px",
+  },
 });
 
-const tdLeftStyle = css({
-  padding: "1rem",
-  textAlign: "left",
+const tdBaseStyle = {
+  padding: "0.875rem 1rem",
   color: "text",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-});
-
-const tdCenterBaseStyle = {
-  padding: "1rem",
-  textAlign: "center" as const,
-  whiteSpace: "nowrap" as const,
 };
 
-const tdCenterStyle = css({
-  ...tdCenterBaseStyle,
+const tdRankStyle = css({
+  ...tdBaseStyle,
+  textAlign: "center",
+  fontWeight: "600",
+  color: "textMuted",
+});
+
+const tdTickerStyle = css({
+  ...tdBaseStyle,
+  textAlign: "center",
+  fontSize: "0.8125rem",
+  fontWeight: "600",
+  color: "accent",
+});
+
+const tdNameStyle = css({
+  ...tdBaseStyle,
+  textAlign: "left",
+  fontWeight: "500",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const tdMarketStyle = css({
+  ...tdBaseStyle,
+  textAlign: "center",
+});
+
+const marketBadgeStyle = css({
+  fontSize: "0.75rem",
   color: "text",
+  backgroundColor: "surfaceHover",
+  padding: "0.25rem 0.5rem",
+  borderRadius: "4px",
   fontWeight: "500",
 });
 
-const tdScoreCenterStyle = css({
-  ...tdCenterBaseStyle,
-  color: "accent",
-  fontWeight: "600",
-  fontSize: "1rem",
+const tdSectorStyle = css({
+  ...tdBaseStyle,
+  textAlign: "left",
+  fontSize: "0.8125rem",
+  color: "textMuted",
 });
 
-const subTextStyle = css({
-  fontSize: "0.75rem",
-  opacity: 0.7,
-  marginTop: "0.25rem",
+const tdScoreStyle = css({
+  ...tdBaseStyle,
+  textAlign: "center",
+});
+
+const scoreContainerStyle = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "0.5rem",
+});
+
+const scoreBarBgStyle = css({
+  flex: 1,
+  height: "8px",
+  backgroundColor: "surfaceHover",
+  borderRadius: "4px",
+  overflow: "hidden",
+});
+
+const scoreBarStyle = css({
+  height: "100%",
+  borderRadius: "4px",
+  transition: "width 0.3s ease",
+});
+
+const scoreValueStyle = css({
+  fontSize: "0.875rem",
+  fontWeight: "700",
+  minWidth: "28px",
+  textAlign: "right",
+});
+
+const tdPriceStyle = css({
+  ...tdBaseStyle,
+  textAlign: "right",
+  fontWeight: "500",
+  fontFeatureSettings: '"tnum"',
 });

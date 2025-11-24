@@ -129,8 +129,10 @@ export const stockFinancialHealth = pgTable(
       .references(() => stocks.id, { onDelete: "cascade" })
       .unique(),
     equityRatio: decimal("equity_ratio", { precision: 5, scale: 2 }), // 自己資本比率(%)
+    roe: decimal("roe", { precision: 6, scale: 2 }), // ROE(%)
     operatingIncomeDeclineYears: integer("operating_income_decline_years"), // 営業利益減少連続年数
     operatingCashFlowNegativeYears: integer("operating_cash_flow_negative_years"), // 営業CF負の連続年数
+    revenueDeclineYears: integer("revenue_decline_years"), // 売上減少連続年数
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

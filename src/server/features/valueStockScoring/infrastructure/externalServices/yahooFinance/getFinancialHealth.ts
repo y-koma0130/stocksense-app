@@ -15,6 +15,8 @@ type AnnualFinancialRecord = {
   operatingCashFlow?: number;
   stockholdersEquity?: number;
   totalAssets?: number;
+  totalRevenue?: number;
+  netIncome?: number;
 };
 
 /**
@@ -100,6 +102,54 @@ const calculateLatestEquityRatio = (records: AnnualFinancialRecord[]): number | 
 };
 
 /**
+ * 最新のROEを計算
+ * @param records - 日付順（古い順）にソートされたレコード
+ * @returns ROE(%)
+ */
+const calculateLatestROE = (records: AnnualFinancialRecord[]): number | null => {
+  // 最新のレコードから有効なデータを探す
+  for (let i = records.length - 1; i >= 0; i--) {
+    const record = records[i];
+    if (
+      typeof record.netIncome === "number" &&
+      typeof record.stockholdersEquity === "number" &&
+      record.stockholdersEquity > 0
+    ) {
+      return (record.netIncome / record.stockholdersEquity) * 100;
+    }
+  }
+  return null;
+};
+
+/**
+ * 売上の減少連続年数を計算
+ * @param records - 日付順（古い順）にソートされたレコード
+ * @returns 減少連続年数
+ */
+const calculateRevenueDeclineYears = (records: AnnualFinancialRecord[]): number | null => {
+  const validRecords = records.filter(
+    (r) => typeof r.totalRevenue === "number" && !Number.isNaN(r.totalRevenue),
+  );
+
+  if (validRecords.length < 2) return null;
+
+  let declineYears = 0;
+  // 最新から過去に向かって減少が続いているかチェック
+  for (let i = validRecords.length - 1; i > 0; i--) {
+    const current = validRecords[i].totalRevenue as number;
+    const previous = validRecords[i - 1].totalRevenue as number;
+
+    if (current < previous) {
+      declineYears++;
+    } else {
+      break; // 減少が途切れたら終了
+    }
+  }
+
+  return declineYears;
+};
+
+/**
  * Yahoo Financeから財務健全性データを取得
  * fundamentalsTimeSeriesを使用（バリデーションスキップ）
  */
@@ -124,8 +174,10 @@ export const getFinancialHealth: GetFinancialHealth = async (tickerSymbol) => {
       return financialHealthDataDtoSchema.parse({
         tickerSymbol,
         equityRatio: null,
+        roe: null,
         operatingIncomeDeclineYears: null,
         operatingCashFlowNegativeYears: null,
+        revenueDeclineYears: null,
       });
     }
 
@@ -137,22 +189,28 @@ export const getFinancialHealth: GetFinancialHealth = async (tickerSymbol) => {
     });
 
     const equityRatio = calculateLatestEquityRatio(records);
+    const roe = calculateLatestROE(records);
     const operatingIncomeDeclineYears = calculateOperatingIncomeDeclineYears(records);
     const operatingCashFlowNegativeYears = calculateOperatingCashFlowNegativeYears(records);
+    const revenueDeclineYears = calculateRevenueDeclineYears(records);
 
     return financialHealthDataDtoSchema.parse({
       tickerSymbol,
       equityRatio,
+      roe,
       operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears,
+      revenueDeclineYears,
     });
   } catch (error) {
     console.error(`Error fetching financial health for ${tickerSymbol}:`, error);
     return {
       tickerSymbol,
       equityRatio: null,
+      roe: null,
       operatingIncomeDeclineYears: null,
       operatingCashFlowNegativeYears: null,
+      revenueDeclineYears: null,
     };
   }
 };

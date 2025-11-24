@@ -42,6 +42,7 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
       name: stocks.name,
       sectorCode: stocks.sectorCode,
       sectorName: stocks.sectorName,
+      market: stocks.market,
       collectedAt: stockIndicators.collectedAt,
       periodType: stockIndicators.periodType,
       currentPrice: stockIndicators.currentPrice,
@@ -54,8 +55,10 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
       sectorAvgPbr: stockIndicators.sectorAvgPbr,
       // 財務健全性データ（別テーブルからJOIN）
       equityRatio: stockFinancialHealth.equityRatio,
+      roe: stockFinancialHealth.roe,
       operatingIncomeDeclineYears: stockFinancialHealth.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: stockFinancialHealth.operatingCashFlowNegativeYears,
+      revenueDeclineYears: stockFinancialHealth.revenueDeclineYears,
     })
     .from(stockIndicators)
     .innerJoin(stocks, eq(stockIndicators.stockId, stocks.id))
@@ -73,6 +76,7 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
       name: row.name,
       sectorCode: row.sectorCode,
       sectorName: row.sectorName,
+      market: row.market,
       collectedAt: row.collectedAt,
       periodType: row.periodType,
       currentPrice: row.currentPrice ? Number(row.currentPrice) : null,
@@ -84,8 +88,10 @@ export const getLatestStockIndicators: GetLatestStockIndicators = async (periodT
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
       sectorAvgPbr: row.sectorAvgPbr ? Number(row.sectorAvgPbr) : null,
       equityRatio: row.equityRatio ? Number(row.equityRatio) : null,
+      roe: row.roe ? Number(row.roe) : null,
       operatingIncomeDeclineYears: row.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: row.operatingCashFlowNegativeYears,
+      revenueDeclineYears: row.revenueDeclineYears,
     }),
   );
 };

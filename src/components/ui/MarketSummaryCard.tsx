@@ -22,10 +22,11 @@ export function MarketSummaryCard({
 }: MarketSummaryCardProps) {
   const isPositive = change >= 0;
 
-  // Use more decimal places for JPY/USD (円ドル) display
-  const isJpyUsd = id === "usdjpy" && currency === "$";
-  const priceDecimals = isJpyUsd ? 5 : 2;
-  const changeDecimals = isJpyUsd ? 5 : 2;
+  // Use decimal places for forex only (USD/JPY or JPY/USD)
+  const isUsdjpy = id === "usdjpy";
+  const isJpyUsd = isUsdjpy && currency === "$";
+  const priceDecimals = isUsdjpy ? (isJpyUsd ? 5 : 2) : 0;
+  const changeDecimals = isUsdjpy ? (isJpyUsd ? 5 : 2) : 0;
 
   const formattedPrice = new Intl.NumberFormat("ja-JP", {
     minimumFractionDigits: priceDecimals,
@@ -52,6 +53,7 @@ export function MarketSummaryCard({
         {formattedPrice}
       </p>
       <div className={changeContainerStyle}>
+        <span className={changeLabelStyle}>前日比</span>
         <span className={cx(changeStyle, isPositive ? positiveStyle : negativeStyle)}>
           {formattedChange}
         </span>
@@ -112,4 +114,9 @@ const positiveStyle = css({
 
 const negativeStyle = css({
   color: "error",
+});
+
+const changeLabelStyle = css({
+  color: "textMuted",
+  fontWeight: "400",
 });

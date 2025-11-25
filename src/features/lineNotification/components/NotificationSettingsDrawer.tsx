@@ -112,15 +112,15 @@ export const NotificationSettingsDrawer = ({
                 <ol className={stepsListStyle}>
                   <li className={stepItemStyle}>
                     <span className={stepNumberStyle}>1</span>
-                    <span>QRコードを読み取るか、ボタンから友だち追加</span>
+                    <span>QRコードを読み取るか、ボタンからLINE公式アカウントを友だち追加</span>
                   </li>
                   <li className={stepItemStyle}>
                     <span className={stepNumberStyle}>2</span>
-                    <span>LINEでアカウントを連携</span>
+                    <span>LINEで届いたメッセージのリンクから、ログインまたは新規登録</span>
                   </li>
                   <li className={stepItemStyle}>
                     <span className={stepNumberStyle}>3</span>
-                    <span>通知設定を完了</span>
+                    <span>自動的にアカウントが連携され、通知設定が完了</span>
                   </li>
                 </ol>
               </div>

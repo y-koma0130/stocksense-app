@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -11,6 +11,9 @@ import { useLogin } from "../hooks/useLogin";
 
 export const LoginCard = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const lineUserId = searchParams.get("lineUserId");
+
   const {
     email,
     setEmail,
@@ -22,7 +25,7 @@ export const LoginCard = () => {
     sendOtp,
     verifyOtp,
     resetToEmail,
-  } = useLogin();
+  } = useLogin({ lineUserId });
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +55,12 @@ export const LoginCard = () => {
           />
         </div>
         <p className={subtitleStyle}>AIが見つける、買い時の銘柄</p>
+        {lineUserId && (
+          <div className={lineNoticeStyle}>
+            <span className={lineIconStyle}>LINE</span>
+            <span>LINE連携モード</span>
+          </div>
+        )}
       </div>
 
       {step === "email" ? (
@@ -158,4 +167,27 @@ const backLinkStyle = css({
   _hover: {
     opacity: 0.8,
   },
+});
+
+const lineNoticeStyle = css({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "0.5rem",
+  marginTop: "1rem",
+  padding: "0.75rem 1rem",
+  backgroundColor: "rgba(6, 199, 85, 0.1)",
+  borderRadius: "8px",
+  fontSize: "0.875rem",
+  fontWeight: "600",
+  color: "#06c755",
+});
+
+const lineIconStyle = css({
+  padding: "0.25rem 0.5rem",
+  backgroundColor: "#06c755",
+  color: "white",
+  borderRadius: "4px",
+  fontSize: "0.75rem",
+  fontWeight: "700",
 });

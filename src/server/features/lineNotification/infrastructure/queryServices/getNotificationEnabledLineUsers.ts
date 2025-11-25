@@ -1,12 +1,16 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { lineUsers } from "@/db/schema";
-import type { LineUserDto } from "../../application/dto/lineUserDto";
+
+type NotificationTargetUser = {
+  lineUserId: string;
+  displayName: string | null;
+};
 
 /**
  * 通知が有効なLINEユーザーを取得する関数の型定義
  */
-export type GetNotificationEnabledLineUsers = () => Promise<LineUserDto[]>;
+export type GetNotificationEnabledLineUsers = () => Promise<NotificationTargetUser[]>;
 
 export const getNotificationEnabledLineUsers: GetNotificationEnabledLineUsers = async () => {
   const users = await db

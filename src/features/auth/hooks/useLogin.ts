@@ -10,7 +10,11 @@ type LoginMessage = {
 
 type LoginStep = "email" | "otp";
 
-export const useLogin = () => {
+type UseLoginParams = {
+  lineUserId?: string | null;
+};
+
+export const useLogin = (params?: UseLoginParams) => {
   const [email, setEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [step, setStep] = useState<LoginStep>("email");
@@ -23,8 +27,14 @@ export const useLogin = () => {
     setMessage(null);
 
     try {
+      // LINE連携がある場合はコールバックURLにlineUserIdを含める
+      const redirectTo = params?.lineUserId
+        ? `${window.location.origin}/auth/callback?lineUserId=${params.lineUserId}`
+        : undefined;
+
       const { error } = await supabase.auth.signInWithOtp({
         email: emailAddress,
+        options: redirectTo ? { emailRedirectTo: redirectTo } : undefined,
       });
 
       if (error) {

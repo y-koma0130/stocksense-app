@@ -36,7 +36,7 @@ export const Drawer = ({ isOpen, onClose, children, title, width = "400px" }: Dr
     };
   }, [isOpen]);
 
-  if (typeof document === "undefined") {
+  if (typeof document === "undefined" || !isOpen) {
     return null;
   }
 
@@ -44,13 +44,13 @@ export const Drawer = ({ isOpen, onClose, children, title, width = "400px" }: Dr
     <>
       {/* オーバーレイ */}
       <div
-        className={cx(overlayStyle, isOpen && overlayOpenStyle)}
+        className={cx(overlayStyle, overlayOpenStyle)}
         onClick={onClose}
         aria-hidden="true"
       />
       {/* ドロワー本体 */}
       <div
-        className={cx(drawerStyle, isOpen && drawerOpenStyle)}
+        className={cx(drawerStyle, drawerOpenStyle)}
         style={{ width }}
         role="dialog"
         aria-modal="true"

@@ -59,13 +59,16 @@ export async function POST(request: Request) {
       if (event.type === "follow" && event.source.type === "user") {
         const lineUserId = event.source.userId;
 
-        // 既存ユーザーかどうかを確認
+        // 既存ユーザーかどうかを確認（メッセージ送信前にチェック）
         const existingUser = await getLineUserByLineUserId(lineUserId);
 
         // DBにLINEユーザーを登録または更新
+        // 既存ユーザーの場合はuserIdを保持、新規の場合はnull
         const entity = createLineUser({
           lineUserId,
-          displayName: null,
+          userId: existingUser?.userId ?? null,
+          displayName: existingUser?.displayName ?? null,
+          notificationEnabled: existingUser?.notificationEnabled ?? true,
         });
         await upsertLineUser(entity);
 
@@ -77,21 +80,21 @@ export async function POST(request: Request) {
         let welcomeMessage: string;
 
         if (existingUser?.userId) {
-          // 既にアカウント登録済みのユーザー
+          // 既にLINE連携済みのユーザー
           welcomeMessage = `StockSenseへようこそ！
 
 すでにアカウントをお持ちですね。以下のリンクからログインしてLINE通知を有効にできます。
 
 ${authUrl}`;
         } else {
-          // 新規ユーザー
+          // 新規ユーザーまたはLINE未連携ユーザー
           welcomeMessage = `StockSenseへようこそ！
 
-割安株の通知を受け取るには、以下のリンクからアカウント登録をお願いします。
+割安株の通知を受け取るには、以下のリンクからログインまたは新規登録をお願いします。
 
 ${authUrl}
 
-※このリンクから登録すると、自動的にLINE通知が有効になります。`;
+※LINE通知が自動的に有効になります。`;
         }
 
         await sendLineMessage(lineUserId, [

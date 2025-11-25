@@ -43,11 +43,7 @@ export const Drawer = ({ isOpen, onClose, children, title, width = "400px" }: Dr
   return createPortal(
     <>
       {/* オーバーレイ */}
-      <div
-        className={cx(overlayStyle, overlayOpenStyle)}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className={cx(overlayStyle, overlayOpenStyle)} onClick={onClose} aria-hidden="true" />
       {/* ドロワー本体 */}
       <div
         className={cx(drawerStyle, drawerOpenStyle)}

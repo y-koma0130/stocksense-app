@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const body = await request.text();
     const signature = request.headers.get("x-line-signature");
 
-    console.log("[LINE Webhook] Received request");
+    console.info("[LINE Webhook] Received request");
 
     if (!signature || !verifySignature(body, signature)) {
       console.error("[LINE Webhook] Invalid signature");
@@ -48,15 +48,14 @@ export async function POST(request: Request) {
     }
 
     const webhookBody: LineWebhookBody = JSON.parse(body);
-    console.log("[LINE Webhook] Events:", JSON.stringify(webhookBody.events));
+    console.info("[LINE Webhook] Events:", JSON.stringify(webhookBody.events));
 
     for (const event of webhookBody.events) {
-      console.log("[LINE Webhook] Processing event type:", event.type);
+      console.info("[LINE Webhook] Processing event type:", event.type);
 
       if (event.type === "follow" && event.source.type === "user") {
         const lineUserId = event.source.userId;
-        console.log("[LINE Webhook] Follow event for user:", lineUserId);
-
+        console.info("[LINE Webhook] Follow event for user:", lineUserId);
         // DBにLINEユーザーを登録
         const entity = createLineUser({
           lineUserId,

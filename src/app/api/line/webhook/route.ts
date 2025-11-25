@@ -32,15 +32,26 @@ const verifySignature = (body: string, signature: string): boolean => {
 };
 
 /**
+ * Webhook URLの疎通確認用
+ */
+export async function GET() {
+  return NextResponse.json({ status: "ok", message: "LINE Webhook endpoint is ready" });
+}
+
+/**
  * LINE Webhookエンドポイント
  * 友だち追加時にLINEユーザーを登録
  */
 export async function POST(request: Request) {
   try {
+    console.info("[LINE Webhook] POST handler called");
+    console.info("[LINE Webhook] Request URL:", request.url);
+
     const body = await request.text();
     const signature = request.headers.get("x-line-signature");
 
     console.info("[LINE Webhook] Received request");
+    console.info("[LINE Webhook] Has signature:", !!signature);
 
     if (!signature || !verifySignature(body, signature)) {
       console.error("[LINE Webhook] Invalid signature");

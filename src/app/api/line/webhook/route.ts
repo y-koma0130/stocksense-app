@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { createLineUser } from "@/server/features/lineNotification/domain/entities/lineUser";
+import { sendLineMessage } from "@/server/features/lineNotification/infrastructure/externalServices/sendLineMessage";
 import { upsertLineUser } from "@/server/features/lineNotification/infrastructure/repositories/upsertLineUser.repository";
 
 type LineEvent = {
@@ -46,12 +47,35 @@ export async function POST(request: Request) {
 
   for (const event of webhookBody.events) {
     if (event.type === "follow" && event.source.type === "user") {
+      const lineUserId = event.source.userId;
+
+      // DBにLINEユーザーを登録
       const entity = createLineUser({
-        lineUserId: event.source.userId,
+        lineUserId,
         displayName: null,
       });
 
       await upsertLineUser(entity);
+
+      // サインアップリンクを送信
+      const serviceDomain = process.env.SERVICE_DOMAIN;
+      const baseUrl = serviceDomain ? `https://${serviceDomain}` : "http://localhost:3000";
+      const signupUrl = `${baseUrl}/login?lineUserId=${lineUserId}`;
+
+      const welcomeMessage = `StockSenseへようこそ！
+
+割安株の通知を受け取るには、以下のリンクからアカウント登録をお願いします。
+
+${signupUrl}
+
+※このリンクから登録すると、自動的にLINE通知が有効になります。`;
+
+      await sendLineMessage(lineUserId, [
+        {
+          type: "text",
+          text: welcomeMessage,
+        },
+      ]);
     }
   }
 

@@ -1,21 +1,17 @@
 import Image from "next/image";
-import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { css } from "../../styled-system/css";
-import { HelpButton } from "./HelpButton";
+import { HeaderActions } from "./HeaderActions";
 
-export function Header() {
+export const Header = () => {
   return (
     <header className={headerStyle}>
       <div className={logoContainerStyle}>
         <Image src="/Logo.svg" alt="StockSense Logo" width={150} height={45} priority />
       </div>
-      <div className={actionsStyle}>
-        <HelpButton />
-        <LogoutButton />
-      </div>
+      <HeaderActions />
     </header>
   );
-}
+};
 
 const headerStyle = css({
   display: "flex",
@@ -32,10 +28,4 @@ const headerStyle = css({
 const logoContainerStyle = css({
   display: "flex",
   alignItems: "center",
-});
-
-const actionsStyle = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "0.75rem",
 });

@@ -12,13 +12,17 @@ export const upsertLineUser: UpsertLineUser = async (entity) => {
     .insert(lineUsers)
     .values({
       lineUserId: entity.lineUserId,
+      userId: entity.userId,
       displayName: entity.displayName,
+      notificationEnabled: entity.notificationEnabled ? 1 : 0,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: lineUsers.lineUserId,
       set: {
+        userId: entity.userId,
         displayName: entity.displayName,
+        notificationEnabled: entity.notificationEnabled ? 1 : 0,
         updatedAt: new Date(),
       },
     });

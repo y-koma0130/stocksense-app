@@ -1,17 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { css } from "../../../../styled-system/css";
+import { trpc } from "../../../../trpc/client";
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [error, setError] = useState<string | null>(null);
 
+  const linkLineAccountMutation = trpc.lineNotification.linkLineAccount.useMutation();
+
   useEffect(() => {
     const handleAuthCallback = async () => {
+      // URLクエリパラメータからlineUserIdを取得
+      const lineUserId = searchParams.get("lineUserId");
+
       // URLのハッシュフラグメントからトークンを処理
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get("access_token");
@@ -30,6 +37,16 @@ export default function AuthCallbackPage() {
           return;
         }
 
+        // LINE連携がある場合は自動紐付け
+        if (lineUserId) {
+          try {
+            await linkLineAccountMutation.mutateAsync({ lineUserId });
+          } catch (linkError) {
+            console.error("LINE連携エラー:", linkError);
+            // LINE連携失敗してもログインは継続
+          }
+        }
+
         router.push("/dashboard");
         return;
       }
@@ -43,16 +60,40 @@ export default function AuthCallbackPage() {
         return;
       }
 
+      // LINE連携がある場合は自動紐付け
+      if (lineUserId) {
+        try {
+          await linkLineAccountMutation.mutateAsync({ lineUserId });
+        } catch (linkError) {
+          console.error("LINE連携エラー:", linkError);
+          // LINE連携失敗してもログインは継続
+        }
+      }
+
       router.push("/dashboard");
     };
 
     handleAuthCallback();
-  }, [router, supabase.auth]);
+  }, [router, supabase.auth, searchParams, linkLineAccountMutation]);
 
   return (
     <div className={containerStyle}>
       <p>{error ?? "認証中..."}</p>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className={containerStyle}>
+          <p>認証中...</p>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
 

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { authenticatedProcedure, router } from "../../../../../trpc/init";
 import { linkLineAccountUsecase } from "../application/usecases/linkLineAccount.usecase";
 import { updateNotificationEnabledUsecase } from "../application/usecases/updateNotificationEnabled.usecase";
+import { validateNotificationUpdate } from "../domain/services/validateNotificationUpdate.service";
 import { getLineUserByLineUserId } from "../infrastructure/queryServices/getLineUserByLineUserId";
 import { getLineUserByUserId } from "../infrastructure/queryServices/getLineUserByUserId";
 import { upsertLineUser } from "../infrastructure/repositories/upsertLineUser.repository";
@@ -25,7 +26,7 @@ export const lineNotificationRouter = router({
 
   /**
    * 通知設定のON/OFFを更新
-   * router -> ユースケース (クエリサービスで取得 → エンティティ再生成) -> リポジトリでupsert
+   * router -> ユースケース (クエリサービスで取得 → ドメインサービスでバリデーション → エンティティ再生成) -> リポジトリでupsert
    */
   updateNotificationEnabled: authenticatedProcedure
     .input(
@@ -35,7 +36,7 @@ export const lineNotificationRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       return updateNotificationEnabledUsecase(
-        { getLineUserByUserId, upsertLineUser },
+        { getLineUserByUserId, upsertLineUser, validateNotificationUpdate },
         { userId: ctx.user.id, enabled: input.enabled },
       );
     }),

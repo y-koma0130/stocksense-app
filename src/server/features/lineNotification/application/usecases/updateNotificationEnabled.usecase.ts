@@ -1,10 +1,12 @@
 import { createLineUser } from "../../domain/entities/lineUser";
+import type { ValidateNotificationUpdate } from "../../domain/services/validateNotificationUpdate.service";
 import type { GetLineUserByUserId } from "../../infrastructure/queryServices/getLineUserByUserId";
 import type { UpsertLineUser } from "../../infrastructure/repositories/upsertLineUser.repository";
 
 type Dependencies = Readonly<{
   getLineUserByUserId: GetLineUserByUserId;
   upsertLineUser: UpsertLineUser;
+  validateNotificationUpdate: ValidateNotificationUpdate;
 }>;
 
 type Params = Readonly<{
@@ -27,6 +29,13 @@ export const updateNotificationEnabledUsecase: UpdateNotificationEnabledUsecase 
   if (!existingRecord) {
     throw new Error("LINE連携が完了していません");
   }
+
+  // ドメインサービスでバリデーション
+  dependencies.validateNotificationUpdate({
+    lineUserId: existingRecord.lineUserId,
+    userId: existingRecord.userId,
+    requestUserId: params.userId,
+  });
 
   // 新しい状態でエンティティを再生成
   const updatedEntity = createLineUser({

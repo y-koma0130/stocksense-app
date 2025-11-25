@@ -14,7 +14,11 @@ export const NotificationSettingsDrawerContainer = () => {
   const isOpen = useNotificationDrawerOpen();
   const setIsOpen = useSetNotificationDrawerOpen();
 
-  const { data: settings, refetch } = trpc.lineNotification.getSettings.useQuery(undefined, {
+  const {
+    data: settings,
+    refetch,
+    isLoading,
+  } = trpc.lineNotification.getSettings.useQuery(undefined, {
     enabled: isOpen,
   });
 
@@ -38,6 +42,7 @@ export const NotificationSettingsDrawerContainer = () => {
     <NotificationSettingsDrawer
       isOpen={isOpen}
       onClose={handleClose}
+      isLoading={isLoading}
       isLinked={!!settings}
       notificationEnabled={settings?.notificationEnabled ?? false}
       onToggleNotification={handleToggleNotification}

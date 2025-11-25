@@ -7,6 +7,7 @@ import { css } from "../../../../styled-system/css";
 type NotificationSettingsDrawerProps = Readonly<{
   isOpen: boolean;
   onClose: () => void;
+  isLoading: boolean;
   isLinked: boolean;
   notificationEnabled: boolean;
   onToggleNotification: () => void;
@@ -16,6 +17,7 @@ type NotificationSettingsDrawerProps = Readonly<{
 export const NotificationSettingsDrawer = ({
   isOpen,
   onClose,
+  isLoading,
   isLinked,
   notificationEnabled,
   onToggleNotification,
@@ -23,101 +25,136 @@ export const NotificationSettingsDrawer = ({
 }: NotificationSettingsDrawerProps) => {
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="LINE通知設定" width="400px">
-      {/* 連携状態 */}
-      <div className={sectionStyle}>
-        <h4 className={sectionTitleStyle}>連携状態</h4>
-        <div className={statusContainerStyle}>
-          <span className={isLinked ? statusLinkedStyle : statusUnlinkedStyle}>
-            {isLinked ? "連携済み" : "未連携"}
-          </span>
+      {isLoading ? (
+        <div className={loadingContainerStyle}>
+          <div className={spinnerStyle} />
+          <p className={loadingTextStyle}>読み込み中...</p>
         </div>
-      </div>
-
-      {isLinked ? (
-        <>
-          {/* 通知ON/OFF */}
-          <div className={sectionStyle}>
-            <h4 className={sectionTitleStyle}>通知設定</h4>
-            <div className={toggleContainerStyle}>
-              <span className={toggleLabelStyle}>週次・月次の割安株通知</span>
-              <button
-                type="button"
-                onClick={onToggleNotification}
-                className={toggleButtonStyle}
-                aria-pressed={notificationEnabled}
-              >
-                <span className={toggleTrackStyle} data-enabled={notificationEnabled} />
-                <span className={toggleThumbStyle} data-enabled={notificationEnabled} />
-              </button>
-            </div>
-            <p className={toggleDescriptionStyle}>
-              {notificationEnabled
-                ? "毎週・毎月の割安株ランキングをLINEでお届けします"
-                : "通知はオフになっています"}
-            </p>
-          </div>
-
-          {/* 将来の絞り込み設定（プレースホルダー） */}
-          <div className={sectionStyle}>
-            <h4 className={sectionTitleStyle}>通知対象（Coming Soon）</h4>
-            <p className={comingSoonTextStyle}>市場や業種で通知銘柄を絞り込む機能を準備中です</p>
-          </div>
-        </>
       ) : (
         <>
-          {/* LINE友だち追加 */}
+          {/* 連携状態 */}
           <div className={sectionStyle}>
-            <h4 className={sectionTitleStyle}>LINEで通知を受け取る</h4>
-            <p className={descriptionStyle}>
-              LINE公式アカウントを友だち追加すると、割安株の通知を受け取れます。
-            </p>
-
-            {/* QRコード */}
-            <div className={qrContainerStyle}>
-              <Image
-                src="/LINE_QR_CODE.png"
-                alt="LINE友だち追加QRコード"
-                width={160}
-                height={160}
-                className={qrImageStyle}
-              />
-              <p className={qrCaptionStyle}>スマートフォンで読み取ってください</p>
+            <h4 className={sectionTitleStyle}>連携状態</h4>
+            <div className={statusContainerStyle}>
+              <span className={isLinked ? statusLinkedStyle : statusUnlinkedStyle}>
+                {isLinked ? "連携済み" : "未連携"}
+              </span>
             </div>
-
-            {/* リンクボタン */}
-            <a
-              href={lineAddFriendUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={lineButtonStyle}
-            >
-              LINEアプリで開く
-            </a>
           </div>
 
-          {/* 連携手順 */}
-          <div className={sectionStyle}>
-            <h4 className={sectionTitleStyle}>連携手順</h4>
-            <ol className={stepsListStyle}>
-              <li className={stepItemStyle}>
-                <span className={stepNumberStyle}>1</span>
-                <span>QRコードを読み取るか、ボタンから友だち追加</span>
-              </li>
-              <li className={stepItemStyle}>
-                <span className={stepNumberStyle}>2</span>
-                <span>LINEでアカウントを連携</span>
-              </li>
-              <li className={stepItemStyle}>
-                <span className={stepNumberStyle}>3</span>
-                <span>通知設定を完了</span>
-              </li>
-            </ol>
-          </div>
+          {isLinked ? (
+            <>
+              {/* 通知ON/OFF */}
+              <div className={sectionStyle}>
+                <h4 className={sectionTitleStyle}>通知設定</h4>
+                <div className={toggleContainerStyle}>
+                  <span className={toggleLabelStyle}>週次・月次の割安株通知</span>
+                  <button
+                    type="button"
+                    onClick={onToggleNotification}
+                    className={toggleButtonStyle}
+                    aria-pressed={notificationEnabled}
+                  >
+                    <span className={toggleTrackStyle} data-enabled={notificationEnabled} />
+                    <span className={toggleThumbStyle} data-enabled={notificationEnabled} />
+                  </button>
+                </div>
+                <p className={toggleDescriptionStyle}>
+                  {notificationEnabled
+                    ? "毎週・毎月の割安株ランキングをLINEでお届けします"
+                    : "通知はオフになっています"}
+                </p>
+              </div>
+
+              {/* 将来の絞り込み設定（プレースホルダー） */}
+              <div className={sectionStyle}>
+                <h4 className={sectionTitleStyle}>通知対象（Coming Soon）</h4>
+                <p className={comingSoonTextStyle}>
+                  市場や業種で通知銘柄を絞り込む機能を準備中です
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* LINE友だち追加 */}
+              <div className={sectionStyle}>
+                <h4 className={sectionTitleStyle}>LINEで通知を受け取る</h4>
+                <p className={descriptionStyle}>
+                  LINE公式アカウントを友だち追加すると、割安株の通知を受け取れます。
+                </p>
+
+                {/* QRコード */}
+                <div className={qrContainerStyle}>
+                  <Image
+                    src="/LINE_QR_CODE.png"
+                    alt="LINE友だち追加QRコード"
+                    width={160}
+                    height={160}
+                    className={qrImageStyle}
+                  />
+                  <p className={qrCaptionStyle}>スマートフォンで読み取ってください</p>
+                </div>
+
+                {/* リンクボタン */}
+                <a
+                  href={lineAddFriendUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={lineButtonStyle}
+                >
+                  LINEアプリで開く
+                </a>
+              </div>
+
+              {/* 連携手順 */}
+              <div className={sectionStyle}>
+                <h4 className={sectionTitleStyle}>連携手順</h4>
+                <ol className={stepsListStyle}>
+                  <li className={stepItemStyle}>
+                    <span className={stepNumberStyle}>1</span>
+                    <span>QRコードを読み取るか、ボタンからLINE公式アカウントを友だち追加</span>
+                  </li>
+                  <li className={stepItemStyle}>
+                    <span className={stepNumberStyle}>2</span>
+                    <span>LINEで届いたメッセージのリンクから、ログインまたは新規登録</span>
+                  </li>
+                  <li className={stepItemStyle}>
+                    <span className={stepNumberStyle}>3</span>
+                    <span>自動的にアカウントが連携され、通知設定が完了</span>
+                  </li>
+                </ol>
+              </div>
+            </>
+          )}
         </>
       )}
     </Drawer>
   );
 };
+
+const loadingContainerStyle = css({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "3rem 1rem",
+  gap: "1rem",
+});
+
+const spinnerStyle = css({
+  width: "40px",
+  height: "40px",
+  border: "4px solid",
+  borderColor: "surfaceHover",
+  borderTopColor: "accent",
+  borderRadius: "50%",
+  animation: "spin 0.8s linear infinite",
+});
+
+const loadingTextStyle = css({
+  fontSize: "0.875rem",
+  color: "textMuted",
+});
 
 const sectionStyle = css({
   marginBottom: "1.5rem",

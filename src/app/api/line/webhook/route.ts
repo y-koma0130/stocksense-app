@@ -59,9 +59,7 @@ export async function POST(request: Request) {
 
       // サインアップリンクを送信
       const serviceDomain = process.env.SERVICE_DOMAIN;
-      const baseUrl = serviceDomain
-        ? `https://${serviceDomain}`
-        : "http://localhost:3000";
+      const baseUrl = serviceDomain ? `https://${serviceDomain}` : "http://localhost:3000";
       const signupUrl = `${baseUrl}/login?lineUserId=${lineUserId}`;
 
       const welcomeMessage = `StockSenseへようこそ！

@@ -7,12 +7,15 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { css } from "../../../../styled-system/css";
+import { trpc } from "../../../../trpc/client";
 import { useLogin } from "../hooks/useLogin";
 
 export const LoginCard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lineUserId = searchParams.get("lineUserId");
+
+  const linkLineAccountMutation = trpc.lineNotification.linkLineAccount.useMutation();
 
   const {
     email,
@@ -36,6 +39,17 @@ export const LoginCard = () => {
     e.preventDefault();
     const success = await verifyOtp(email, otpCode);
     if (success) {
+      // LINE連携がある場合は自動紐付け
+      if (lineUserId) {
+        try {
+          console.log("[LoginCard] Linking LINE account after OTP:", lineUserId);
+          await linkLineAccountMutation.mutateAsync({ lineUserId });
+          console.log("[LoginCard] LINE account linked successfully");
+        } catch (linkError) {
+          console.error("[LoginCard] LINE連携エラー:", linkError);
+          // LINE連携失敗してもログインは継続
+        }
+      }
       router.push("/dashboard");
       router.refresh();
     }

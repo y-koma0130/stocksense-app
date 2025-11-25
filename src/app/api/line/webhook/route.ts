@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { createLineUser } from "@/server/features/lineNotification/domain/entities/lineUser";
 import { sendLineMessage } from "@/server/features/lineNotification/infrastructure/externalServices/sendLineMessage";
+import { getLineUserByLineUserId } from "@/server/features/lineNotification/infrastructure/queryServices/getLineUserByLineUserId";
 import { upsertLineUser } from "@/server/features/lineNotification/infrastructure/repositories/upsertLineUser.repository";
 
 type LineEvent = {
@@ -44,14 +45,8 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
-    console.info("[LINE Webhook] POST handler called");
-    console.info("[LINE Webhook] Request URL:", request.url);
-
     const body = await request.text();
     const signature = request.headers.get("x-line-signature");
-
-    console.info("[LINE Webhook] Received request");
-    console.info("[LINE Webhook] Has signature:", !!signature);
 
     if (!signature || !verifySignature(body, signature)) {
       console.error("[LINE Webhook] Invalid signature");
@@ -59,35 +54,45 @@ export async function POST(request: Request) {
     }
 
     const webhookBody: LineWebhookBody = JSON.parse(body);
-    console.info("[LINE Webhook] Events:", JSON.stringify(webhookBody.events));
 
     for (const event of webhookBody.events) {
-      console.info("[LINE Webhook] Processing event type:", event.type);
-
       if (event.type === "follow" && event.source.type === "user") {
         const lineUserId = event.source.userId;
-        console.info("[LINE Webhook] Follow event for user:", lineUserId);
-        // DBにLINEユーザーを登録
+
+        // 既存ユーザーかどうかを確認
+        const existingUser = await getLineUserByLineUserId(lineUserId);
+
+        // DBにLINEユーザーを登録または更新
         const entity = createLineUser({
           lineUserId,
           displayName: null,
         });
-
         await upsertLineUser(entity);
-        console.log("[LINE Webhook] User upserted to DB");
 
-        // サインアップリンクを送信
+        // メッセージを送信
         const serviceDomain = process.env.SERVICE_DOMAIN;
         const baseUrl = serviceDomain ? `https://${serviceDomain}` : "http://localhost:3000";
-        const signupUrl = `${baseUrl}/login?lineUserId=${lineUserId}`;
+        const authUrl = `${baseUrl}/login?lineUserId=${lineUserId}`;
 
-        const welcomeMessage = `StockSenseへようこそ！
+        let welcomeMessage: string;
+
+        if (existingUser?.userId) {
+          // 既にアカウント登録済みのユーザー
+          welcomeMessage = `StockSenseへようこそ！
+
+すでにアカウントをお持ちですね。以下のリンクからログインしてLINE通知を有効にできます。
+
+${authUrl}`;
+        } else {
+          // 新規ユーザー
+          welcomeMessage = `StockSenseへようこそ！
 
 割安株の通知を受け取るには、以下のリンクからアカウント登録をお願いします。
 
-${signupUrl}
+${authUrl}
 
 ※このリンクから登録すると、自動的にLINE通知が有効になります。`;
+        }
 
         await sendLineMessage(lineUserId, [
           {
@@ -95,7 +100,6 @@ ${signupUrl}
             text: welcomeMessage,
           },
         ]);
-        console.log("[LINE Webhook] Welcome message sent");
       }
     }
 

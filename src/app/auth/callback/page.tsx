@@ -40,9 +40,11 @@ function AuthCallbackContent() {
         // LINE連携がある場合は自動紐付け
         if (lineUserId) {
           try {
-            await linkLineAccountMutation.mutateAsync({ lineUserId });
+            console.log("[Auth Callback] Linking LINE account (hash flow):", lineUserId);
+            const result = await linkLineAccountMutation.mutateAsync({ lineUserId });
+            console.log("[Auth Callback] LINE account linked successfully (hash flow):", result);
           } catch (linkError) {
-            console.error("LINE連携エラー:", linkError);
+            console.error("[Auth Callback] LINE連携エラー (hash flow):", linkError);
             // LINE連携失敗してもログインは継続
           }
         }
@@ -63,9 +65,11 @@ function AuthCallbackContent() {
       // LINE連携がある場合は自動紐付け
       if (lineUserId) {
         try {
-          await linkLineAccountMutation.mutateAsync({ lineUserId });
+          console.log("[Auth Callback] Linking LINE account:", lineUserId);
+          const result = await linkLineAccountMutation.mutateAsync({ lineUserId });
+          console.log("[Auth Callback] LINE account linked successfully:", result);
         } catch (linkError) {
-          console.error("LINE連携エラー:", linkError);
+          console.error("[Auth Callback] LINE連携エラー:", linkError);
           // LINE連携失敗してもログインは継続
         }
       }

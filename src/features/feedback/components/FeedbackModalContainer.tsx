@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import type { FeedbackType } from "@/server/features/feedback/domain/values/feedbackType";
 import { trpc } from "../../../../trpc/client";
 import { useFeedbackModalOpen, useSetFeedbackModalOpen } from "../stores/feedbackModal";
 import { FeedbackModal } from "./FeedbackModal";
-import type { FeedbackType } from "@/server/features/feedback/domain/values/feedbackType";
 
 export const FeedbackModalContainer = () => {
   const isOpen = useFeedbackModalOpen();

@@ -1,10 +1,16 @@
+"use client";
+
 import Image from "next/image";
-import { css } from "../../styled-system/css";
+import { css, cx } from "../../styled-system/css";
 import { HeaderActions } from "./HeaderActions";
 
-export const Header = () => {
+type HeaderProps = Readonly<{
+  isVisible: boolean;
+}>;
+
+export const Header = ({ isVisible }: HeaderProps) => {
   return (
-    <header className={headerStyle}>
+    <header className={cx(headerStyle, isVisible ? headerVisibleStyle : headerHiddenStyle)}>
       <div className={logoContainerStyle}>
         {/* モバイル: アイコンのみ */}
         <Image
@@ -40,6 +46,15 @@ const headerStyle = css({
   position: "sticky",
   top: 0,
   zIndex: 50,
+  transition: "transform 0.3s ease-in-out",
+});
+
+const headerVisibleStyle = css({
+  transform: "translateY(0)",
+});
+
+const headerHiddenStyle = css({
+  transform: "translateY(-100%)",
 });
 
 const logoContainerStyle = css({

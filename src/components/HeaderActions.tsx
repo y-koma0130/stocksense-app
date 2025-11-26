@@ -42,5 +42,5 @@ export const HeaderActions = () => {
 const actionsStyle = css({
   display: "flex",
   alignItems: "center",
-  gap: "0.75rem",
+  gap: { base: "0.5rem", md: "0.75rem" },
 });

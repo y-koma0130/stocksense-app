@@ -20,7 +20,7 @@ export default defineConfig({
           accent: { value: "#E9F355" },
           accentHover: { value: "#F5FF7A" },
           text: { value: "#E5E5E5" },
-          textMuted: { value: "#999" },
+          textMuted: { value: "#CCCCCC" },
           cardBg: { value: "#2E2E2E" },
           cardBgHover: { value: "#3A3A3A" },
           border: { value: "#555" },

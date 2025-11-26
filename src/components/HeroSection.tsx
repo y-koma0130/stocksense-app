@@ -43,7 +43,7 @@ export const HeroSection = () => {
         className={closeButtonStyle}
         aria-label="閉じる"
       >
-        ×
+        ✕
       </button>
       <h1 className={titleStyle}>StockSense</h1>
       <p className={taglineStyle}>割安株を自動検出し、LINEでお届け</p>
@@ -67,14 +67,14 @@ const heroStyle = css({
 
 const closeButtonStyle = css({
   position: "absolute",
-  top: "0.75rem",
-  right: "0.75rem",
+  top: "0.5rem",
+  right: "0.5rem",
   background: "none",
   border: "none",
   fontSize: "1.25rem",
   color: "textMuted",
   cursor: "pointer",
-  padding: "0.25rem 0.5rem",
+  padding: "0.5rem",
   borderRadius: "4px",
   transition: "background-color 0.2s, color 0.2s",
   _hover: {

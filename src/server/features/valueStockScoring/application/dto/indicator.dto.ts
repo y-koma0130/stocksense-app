@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { valueScoreSchema } from "../../domain/services/calculateValueScore.service";
-import { periodTypeSchema } from "../../domain/values/periodType";
+import { periodTypeSchema } from "@/constants/periodTypes";
+import { valueStockScoreSchema } from "../../domain/entities/valueStockScore";
 
 /**
  * 共通の指標DTOベーススキーマ
@@ -73,7 +73,7 @@ export type LongTermIndicatorDto = z.infer<typeof longTermIndicatorDtoSchema>;
  */
 export const valueStockDtoSchema = baseIndicatorDtoSchema.extend({
   periodType: periodTypeSchema,
-  valueScore: valueScoreSchema,
+  valueScore: valueStockScoreSchema,
 });
 
 /**

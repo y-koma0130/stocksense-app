@@ -1,8 +1,9 @@
-import { calculateScores } from "../../domain/services/calculateScores.service";
+import type { PeriodType } from "@/constants/periodTypes";
+import { PERIOD_TYPES } from "@/constants/periodTypes";
+import { calculateValueStockScore } from "../../domain/services/calculateValueStockScore.service";
 import { filterProMarket } from "../../domain/services/filterProMarket.service";
-import { filterTrapStocks } from "../../domain/services/filterTrapStocks.service";
+import { isTrapStock } from "../../domain/services/isTrapStock.service";
 import { rankByScore } from "../../domain/services/rankByScore.service";
-import type { PeriodType } from "../../domain/values/periodType";
 import { LONG_TERM_CONFIG, MID_TERM_CONFIG } from "../../domain/values/scoringConfig";
 import type { GetLatestIndicators } from "../../infrastructure/queryServices/getIndicators";
 import { type ValueStockDto, valueStockDtoSchema } from "../dto/valueStock.dto";
@@ -43,14 +44,23 @@ export const getTopValueStocks: GetTopValueStocks = async (dependencies, params)
   const indicators = await dependencies.getLatestIndicators(params.periodType);
 
   // 2. 期間タイプに応じたスコアリング設定を取得
-  const config = params.periodType === "mid_term" ? MID_TERM_CONFIG : LONG_TERM_CONFIG;
+  const config = params.periodType === PERIOD_TYPES.MID_TERM ? MID_TERM_CONFIG : LONG_TERM_CONFIG;
 
-  // 3. ドメインサービスを使った処理フロー
+  // 3. PROマーケット除外
   const filteredByMarket = filterProMarket(indicators);
-  const filteredByTrap = filterTrapStocks(filteredByMarket);
-  const scoredStocks = calculateScores(filteredByTrap, config);
+
+  // 4. 罠銘柄除外
+  const filteredByTrap = filteredByMarket.filter((indicator) => !isTrapStock(indicator).isTrap);
+
+  // 5. スコア計算（各指標にスコアを付与）
+  const scoredStocks = filteredByTrap.map((indicator) => ({
+    ...indicator,
+    valueScore: calculateValueStockScore(indicator, config),
+  }));
+
+  // 6. ランキング
   const rankedStocks = rankByScore(scoredStocks, params.limit);
 
-  // 4. DTOとしてバリデーション
+  // 7. DTOとしてバリデーション
   return rankedStocks.map((stock) => valueStockDtoSchema.parse(stock));
 };

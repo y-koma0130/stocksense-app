@@ -1,4 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
+import type { PeriodType } from "@/constants/periodTypes";
+import { PERIOD_TYPES } from "@/constants/periodTypes";
 import { db } from "@/db";
 import {
   longTermIndicators,
@@ -12,7 +14,6 @@ import {
   longTermIndicatorDtoSchema,
   midTermIndicatorDtoSchema,
 } from "../../application/dto/indicator.dto";
-import type { PeriodType } from "../../domain/values/periodType";
 
 /**
  * 指定した期間タイプの最新の指標データを全件取得する関数の型定義
@@ -194,7 +195,7 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
  * 指定した期間タイプの最新の指標データを全件取得する
  */
 export const getLatestIndicators: GetLatestIndicators = async (periodType) => {
-  if (periodType === "mid_term") {
+  if (periodType === PERIOD_TYPES.MID_TERM) {
     return getLatestMidTermIndicators();
   } else {
     return getLatestLongTermIndicators();

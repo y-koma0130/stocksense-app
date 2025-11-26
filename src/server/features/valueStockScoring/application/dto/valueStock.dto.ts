@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { valueScoreSchema } from "../../domain/services/calculateValueScore.service";
+import { valueStockScoreSchema } from "../../domain/entities/valueStockScore";
 import { indicatorDtoSchema } from "./indicator.dto";
 
 /**
@@ -9,7 +9,7 @@ import { indicatorDtoSchema } from "./indicator.dto";
 export const valueStockDtoSchema = z.intersection(
   indicatorDtoSchema,
   z.object({
-    valueScore: valueScoreSchema,
+    valueScore: valueStockScoreSchema,
   }),
 );
 

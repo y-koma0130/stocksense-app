@@ -1,9 +1,9 @@
-import type { ValueScore } from "./calculateValueScore.service";
+import type { ValueStockScore } from "../entities/valueStockScore";
 
 /**
  * スコア付き指標の型
  */
-type ScoredIndicator<T> = T & { valueScore: ValueScore };
+type ScoredIndicator<T> = T & { valueScore: ValueStockScore };
 
 /**
  * スコア順ランキング関数の型定義

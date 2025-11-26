@@ -1,5 +1,5 @@
 import { Drawer } from "@/components/ui/Drawer";
-import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
+import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { css } from "../../../../styled-system/css";
 
 type ValueStockDrawerProps = Readonly<{
@@ -49,8 +49,8 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose }: ValueStockDrawerPro
 
   const pricePosition = calculatePriceRangePosition(
     stock.currentPrice,
-    stock.week52High,
-    stock.week52Low,
+    stock.priceHigh,
+    stock.priceLow,
   );
   const perRatio = calculateSectorRatio(stock.per, stock.sectorAvgPer);
   const pbrRatio = calculateSectorRatio(stock.pbr, stock.sectorAvgPbr);
@@ -174,15 +174,15 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose }: ValueStockDrawerPro
             </span>
           </div>
           <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>52週高値</span>
+            <span className={priceLabelStyle}>期間高値</span>
             <span className={priceValueStyle}>
-              {stock.week52High !== null ? `¥${stock.week52High.toLocaleString()}` : "-"}
+              {stock.priceHigh !== null ? `¥${stock.priceHigh.toLocaleString()}` : "-"}
             </span>
           </div>
           <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>52週安値</span>
+            <span className={priceLabelStyle}>期間安値</span>
             <span className={priceValueStyle}>
-              {stock.week52Low !== null ? `¥${stock.week52Low.toLocaleString()}` : "-"}
+              {stock.priceLow !== null ? `¥${stock.priceLow.toLocaleString()}` : "-"}
             </span>
           </div>
         </div>

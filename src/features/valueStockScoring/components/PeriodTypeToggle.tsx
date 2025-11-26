@@ -1,6 +1,6 @@
 import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
 
-type PeriodType = "weekly" | "monthly";
+type PeriodType = "mid_term" | "long_term";
 
 type PeriodTypeToggleProps = Readonly<{
   periodType: PeriodType;
@@ -8,8 +8,8 @@ type PeriodTypeToggleProps = Readonly<{
 }>;
 
 const periodTypeOptions = [
-  { value: "weekly" as const, label: "週次" },
-  { value: "monthly" as const, label: "月次" },
+  { value: "mid_term" as const, label: "中期" },
+  { value: "long_term" as const, label: "長期" },
 ];
 
 export const PeriodTypeToggle = ({ periodType, onToggle }: PeriodTypeToggleProps) => {

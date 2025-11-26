@@ -1,5 +1,5 @@
 import { Tooltip } from "@/components/ui/Tooltip";
-import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
+import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { css } from "../../../../styled-system/css";
 
 type ValueStockTableProps = Readonly<{

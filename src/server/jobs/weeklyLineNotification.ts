@@ -2,19 +2,19 @@ import { inngest } from "../../../inngest/client";
 import { sendLineMessage } from "../features/lineNotification/infrastructure/externalServices/sendLineMessage";
 import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
 import { getTopValueStocks } from "../features/valueStockScoring/application/usecases/getTopValueStocks.usecase";
-import { getLatestStockIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getStockIndicators";
+import { getLatestIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
 
 const getDashboardUrl = () => `https://${process.env.SERVICE_DOMAIN}/dashboard`;
 
 /**
- * 週次LINE通知ジョブ
+ * 中期LINE通知ジョブ（旧: 週次）
  * 毎週月曜8:00 (JST)に実行
- * 週次上位10銘柄をLINE通知で送信
+ * 中期上位10銘柄をLINE通知で送信
  */
 export const weeklyLineNotification = inngest.createFunction(
   {
-    id: "weekly-line-notification",
-    name: "Weekly LINE Notification",
+    id: "mid-term-line-notification",
+    name: "Mid-Term LINE Notification",
     retries: 3,
   },
   { cron: "TZ=Asia/Tokyo 0 8 * * 1" }, // 毎週月曜8:00 JST
@@ -31,8 +31,8 @@ export const weeklyLineNotification = inngest.createFunction(
     // ステップ2: 上位10銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
       return await getTopValueStocks(
-        { getLatestStockIndicators },
-        { periodType: "weekly", limit: 10 },
+        { getLatestIndicators },
+        { periodType: "mid_term", limit: 10 },
       );
     });
 
@@ -57,7 +57,7 @@ export const weeklyLineNotification = inngest.createFunction(
     }
 
     return {
-      message: "Weekly LINE notification completed",
+      message: "Mid-term LINE notification completed",
       totalUsers: lineUsers.length,
       sentCount,
       failedCount,
@@ -75,11 +75,11 @@ const buildNotificationMessage = (stocks: TopStock[]): string => {
   const stockLines = stocks
     .map(
       (stock, index) =>
-        `${index + 1}. ${stock.tickerCode} ${stock.name} (${stock.valueScore.totalScore.toFixed(1)}点)`,
+        `${index + 1}. ${stock.tickerCode} ${stock.name} (${(stock.valueScore.totalScore * 100).toFixed(1)}点)`,
     )
     .join("\n");
 
-  return `📊 週次バリュー株ランキング
+  return `📊 中期バリュー株ランキング
 
 ${stockLines}
 

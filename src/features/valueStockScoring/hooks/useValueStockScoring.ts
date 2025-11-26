@@ -1,8 +1,8 @@
-import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
+import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { trpc } from "../../../../trpc/client";
 
 type UseValueStockScoringParams = {
-  periodType: "weekly" | "monthly";
+  periodType: "mid_term" | "long_term";
   limit?: number;
 };
 

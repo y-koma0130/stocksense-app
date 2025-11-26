@@ -2,7 +2,7 @@ import { inngest } from "../../../inngest/client";
 import { sendLineMessage } from "../features/lineNotification/infrastructure/externalServices/sendLineMessage";
 import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
 import { getTopValueStocks } from "../features/valueStockScoring/application/usecases/getTopValueStocks.usecase";
-import { getLatestStockIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getStockIndicators";
+import { getLatestIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
 
 const getDashboardUrl = () => `https://${process.env.SERVICE_DOMAIN}/dashboard`;
 
@@ -35,14 +35,14 @@ const isFirstWeekdayOfMonth = (): boolean => {
 };
 
 /**
- * 月次LINE通知ジョブ
+ * 長期LINE通知ジョブ（旧: 月次）
  * 毎月1日〜3日の8:00 (JST)に実行
- * 最初の平日のみ月次上位10銘柄をLINE通知で送信
+ * 最初の平日のみ長期上位10銘柄をLINE通知で送信
  */
 export const monthlyLineNotification = inngest.createFunction(
   {
-    id: "monthly-line-notification",
-    name: "Monthly LINE Notification",
+    id: "long-term-line-notification",
+    name: "Long-Term LINE Notification",
     retries: 3,
   },
   { cron: "TZ=Asia/Tokyo 0 8 1-3 * *" }, // 毎月1日〜3日の8:00 JST
@@ -70,8 +70,8 @@ export const monthlyLineNotification = inngest.createFunction(
     // ステップ3: 上位10銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
       return await getTopValueStocks(
-        { getLatestStockIndicators },
-        { periodType: "monthly", limit: 10 },
+        { getLatestIndicators },
+        { periodType: "long_term", limit: 10 },
       );
     });
 
@@ -96,7 +96,7 @@ export const monthlyLineNotification = inngest.createFunction(
     }
 
     return {
-      message: "Monthly LINE notification completed",
+      message: "Long-term LINE notification completed",
       totalUsers: lineUsers.length,
       sentCount,
       failedCount,
@@ -114,11 +114,11 @@ const buildNotificationMessage = (stocks: TopStock[]): string => {
   const stockLines = stocks
     .map(
       (stock, index) =>
-        `${index + 1}. ${stock.tickerCode} ${stock.name} (${stock.valueScore.totalScore.toFixed(1)}点)`,
+        `${index + 1}. ${stock.tickerCode} ${stock.name} (${(stock.valueScore.totalScore * 100).toFixed(1)}点)`,
     )
     .join("\n");
 
-  return `📊 月次バリュー株ランキング
+  return `📊 長期バリュー株ランキング
 
 ${stockLines}
 

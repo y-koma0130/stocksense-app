@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
+import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { css } from "../../../../styled-system/css";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
@@ -9,7 +9,7 @@ import { ValueStockDrawer } from "./ValueStockDrawer";
 import { ValueStockTable } from "./ValueStockTable";
 
 export const ValueStockRanking = () => {
-  const [periodType, setPeriodType] = useState<"weekly" | "monthly">("monthly");
+  const [periodType, setPeriodType] = useState<"mid_term" | "long_term">("long_term");
   const [selectedStock, setSelectedStock] = useState<ValueStockDto | null>(null);
   const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
 

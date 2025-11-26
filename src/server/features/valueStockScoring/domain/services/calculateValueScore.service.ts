@@ -1,9 +1,10 @@
 import { z } from "zod";
+import type { MarketAdjustments, ScoringConfig } from "../values/scoringConfig";
 
 /**
  * 市場タイプ
  */
-type MarketType = "プライム" | "スタンダード" | "グロース" | "other";
+type MarketType = "prime" | "standard" | "growth" | "other";
 
 /**
  * スコア計算に必要な指標データの型
@@ -15,8 +16,8 @@ export type ScoringIndicator = Readonly<{
   per: number | null;
   pbr: number | null;
   rsi: number | null;
-  week52High: number | null;
-  week52Low: number | null;
+  priceHigh: number | null;
+  priceLow: number | null;
   sectorAvgPer: number | null;
   sectorAvgPbr: number | null;
   market: string | null;
@@ -37,7 +38,7 @@ export const valueScoreSchema = z.object({
   pbrScore: indicatorScoreSchema,
   rsiScore: indicatorScoreSchema,
   priceRangeScore: indicatorScoreSchema,
-  sectorScore: z.number(), // 0.00〜100.00
+  sectorScore: z.number(), // 0.00〜100.00 (将来の業種トレンドスコア用)
   totalScore: z.number(), // 0.0000〜1.0000
 });
 
@@ -48,142 +49,174 @@ export type ValueScore = z.infer<typeof valueScoreSchema>;
  */
 const getMarketType = (market: string | null): MarketType => {
   if (!market) return "other";
-  if (market.includes("プライム")) return "プライム";
-  if (market.includes("スタンダード")) return "スタンダード";
-  if (market.includes("グロース")) return "グロース";
+  if (market.includes("プライム")) return "prime";
+  if (market.includes("スタンダード")) return "standard";
+  if (market.includes("グロース")) return "growth";
   return "other";
 };
 
 /**
- * 市場別の補正係数
+ * 値をmin〜maxの範囲にクリップ
  */
-const MARKET_ADJUSTMENTS = {
-  プライム: { per: 1.0, pbr: 1.0, priceRange: 1.0 },
-  スタンダード: { per: 1.05, pbr: 1.0, priceRange: 1.05 },
-  グロース: { per: 1.1, pbr: 0.8, priceRange: 0.9 },
-  other: { per: 1.0, pbr: 1.0, priceRange: 1.0 },
-} as const;
+const clamp = (value: number, min: number, max: number): number => {
+  return Math.max(min, Math.min(max, value));
+};
 
 /**
- * PERスコアを計算（10段階）
- * 業種平均との比率で評価
+ * PERスコアを計算（線形スケール 0-100）
+ * 業種平均との比率で評価し、市場別補正を適用
  */
 const calculatePERScore = (
   per: number | null,
   sectorAvgPer: number | null,
-  marketType: MarketType,
+  config: ScoringConfig,
+  marketAdjustments: MarketAdjustments,
 ): IndicatorScore => {
   if (per === null || per <= 0 || sectorAvgPer === null || sectorAvgPer <= 0) {
     return 0;
   }
 
   const ratio = (per / sectorAvgPer) * 100; // パーセント表示
+  const { excellent, good } = config.perThresholds;
+
   let baseScore: number;
 
-  if (ratio <= 65) baseScore = 100;
-  else if (ratio <= 75) baseScore = 90;
-  else if (ratio <= 85) baseScore = 80;
-  else if (ratio <= 95) baseScore = 70;
-  else if (ratio <= 105) baseScore = 60;
-  else if (ratio <= 115) baseScore = 50;
-  else if (ratio <= 125) baseScore = 40;
-  else if (ratio <= 140) baseScore = 30;
-  else if (ratio <= 160) baseScore = 20;
-  else baseScore = 0;
+  if (ratio <= excellent) {
+    // 優良ゾーン: 100点
+    baseScore = 100;
+  } else if (ratio <= good) {
+    // 優良〜良好の間: 線形補間
+    baseScore = 100 - ((ratio - excellent) / (good - excellent)) * 50;
+  } else if (ratio <= 150) {
+    // 良好〜標準の間: 線形補間
+    baseScore = 50 - ((ratio - good) / (150 - good)) * 50;
+  } else {
+    // 割高: 0点
+    baseScore = 0;
+  }
 
-  // 市場別補正（上限100）
-  const adjusted = Math.min(100, baseScore * MARKET_ADJUSTMENTS[marketType].per);
+  // 市場別補正を適用してクリップ
+  const adjusted = clamp(baseScore * marketAdjustments.per, 0, 100);
   return Math.round(adjusted);
 };
 
 /**
- * PBRスコアを計算（10段階）
- * 業種平均との比率で評価
+ * PBRスコアを計算（線形スケール 0-100）
+ * 業種平均との比率で評価し、市場別補正を適用
  */
 const calculatePBRScore = (
   pbr: number | null,
   sectorAvgPbr: number | null,
-  marketType: MarketType,
+  config: ScoringConfig,
+  marketAdjustments: MarketAdjustments,
 ): IndicatorScore => {
   if (pbr === null || pbr <= 0 || sectorAvgPbr === null || sectorAvgPbr <= 0) {
     return 0;
   }
 
   const ratio = (pbr / sectorAvgPbr) * 100;
+  const { excellent, good } = config.pbrThresholds;
+
   let baseScore: number;
 
-  if (ratio <= 65) baseScore = 100;
-  else if (ratio <= 75) baseScore = 90;
-  else if (ratio <= 85) baseScore = 80;
-  else if (ratio <= 95) baseScore = 70;
-  else if (ratio <= 105) baseScore = 60;
-  else if (ratio <= 115) baseScore = 50;
-  else if (ratio <= 125) baseScore = 40;
-  else if (ratio <= 140) baseScore = 30;
-  else if (ratio <= 160) baseScore = 20;
-  else baseScore = 0;
+  if (ratio <= excellent) {
+    // 優良ゾーン: 100点
+    baseScore = 100;
+  } else if (ratio <= good) {
+    // 優良〜良好の間: 線形補間
+    baseScore = 100 - ((ratio - excellent) / (good - excellent)) * 50;
+  } else if (ratio <= 150) {
+    // 良好〜標準の間: 線形補間
+    baseScore = 50 - ((ratio - good) / (150 - good)) * 50;
+  } else {
+    // 割高: 0点
+    baseScore = 0;
+  }
 
-  // 市場別補正（上限100）
-  const adjusted = Math.min(100, baseScore * MARKET_ADJUSTMENTS[marketType].pbr);
+  // 市場別補正を適用してクリップ
+  const adjusted = clamp(baseScore * marketAdjustments.pbr, 0, 100);
   return Math.round(adjusted);
 };
 
 /**
- * RSIスコアを計算（10段階）
+ * RSIスコアを計算（線形スケール 0-100）
  * RSI値そのもので評価（市場別補正なし）
  */
-const calculateRSIScore = (rsi: number | null): IndicatorScore => {
+const calculateRSIScore = (rsi: number | null, config: ScoringConfig): IndicatorScore => {
   if (rsi === null) return 0;
 
-  if (rsi <= 25) return 100;
-  if (rsi <= 30) return 90;
-  if (rsi <= 35) return 80;
-  if (rsi <= 40) return 70;
-  if (rsi <= 45) return 60;
-  if (rsi <= 50) return 50;
-  if (rsi <= 55) return 40;
-  if (rsi <= 60) return 30;
-  if (rsi <= 70) return 15;
-  return 0;
+  const { oversold, neutral } = config.rsiThresholds;
+
+  let score: number;
+
+  if (rsi <= oversold) {
+    // 売られすぎ: 100点
+    score = 100;
+  } else if (rsi <= neutral) {
+    // 売られすぎ〜中立の間: 線形補間
+    score = 100 - ((rsi - oversold) / (neutral - oversold)) * 50;
+  } else if (rsi <= 70) {
+    // 中立〜買われすぎの間: 線形補間
+    score = 50 - ((rsi - neutral) / (70 - neutral)) * 50;
+  } else {
+    // 買われすぎ: 0点
+    score = 0;
+  }
+
+  return Math.round(clamp(score, 0, 100));
 };
 
 /**
- * 価格レンジスコアを計算（10段階）
- * 52週の安値からの位置で評価
+ * 価格レンジスコアを計算（線形スケール 0-100）
+ * 安値からの位置で評価し、市場別補正を適用
  */
 const calculatePriceRangeScore = (
   currentPrice: number | null,
-  week52High: number | null,
-  week52Low: number | null,
-  marketType: MarketType,
+  priceHigh: number | null,
+  priceLow: number | null,
+  config: ScoringConfig,
+  marketAdjustments: MarketAdjustments,
 ): IndicatorScore => {
-  if (currentPrice === null || week52High === null || week52Low === null) {
+  if (currentPrice === null || priceHigh === null || priceLow === null) {
     return 0;
   }
 
-  if (week52High === week52Low) return 0;
+  if (priceHigh === priceLow) return 0;
 
-  const rangePosition = ((currentPrice - week52Low) / (week52High - week52Low)) * 100;
+  // 異常値チェック: 現在価格が期間レンジ外の場合
+  if (currentPrice < priceLow || currentPrice > priceHigh) {
+    console.warn(
+      `[calculatePriceRangeScore] Price out of range: current=${currentPrice}, range=[${priceLow}, ${priceHigh}]`,
+    );
+    return 0;
+  }
+
+  const rangePosition = ((currentPrice - priceLow) / (priceHigh - priceLow)) * 100;
+  const { bottom, low } = config.priceRangeThresholds;
+
   let baseScore: number;
 
-  if (rangePosition <= 10) baseScore = 100;
-  else if (rangePosition <= 20) baseScore = 90;
-  else if (rangePosition <= 30) baseScore = 80;
-  else if (rangePosition <= 40) baseScore = 70;
-  else if (rangePosition <= 50) baseScore = 60;
-  else if (rangePosition <= 60) baseScore = 50;
-  else if (rangePosition <= 70) baseScore = 30;
-  else if (rangePosition <= 80) baseScore = 15;
-  else if (rangePosition <= 90) baseScore = 5;
-  else baseScore = 0;
+  if (rangePosition <= bottom) {
+    // 底値圏: 100点
+    baseScore = 100;
+  } else if (rangePosition <= low) {
+    // 底値圏〜安値圏の間: 線形補間
+    baseScore = 100 - ((rangePosition - bottom) / (low - bottom)) * 50;
+  } else if (rangePosition <= 100) {
+    // 安値圏〜高値圏の間: 線形補間
+    baseScore = 50 - ((rangePosition - low) / (100 - low)) * 50;
+  } else {
+    baseScore = 0;
+  }
 
-  // 市場別補正（上限100）
-  const adjusted = Math.min(100, baseScore * MARKET_ADJUSTMENTS[marketType].priceRange);
+  // 市場別補正を適用してクリップ
+  const adjusted = clamp(baseScore * marketAdjustments.priceRange, 0, 100);
   return Math.round(adjusted);
 };
 
 /**
  * 業種相対スコアを計算（PERとPBRの平均）
+ * TODO: 将来的には業種指数のMA13/MA26を使った業種トレンドスコアに置き換え
  */
 const calculateSectorScore = (perScore: IndicatorScore, pbrScore: IndicatorScore): number => {
   return (perScore + pbrScore) / 2;
@@ -192,32 +225,49 @@ const calculateSectorScore = (perScore: IndicatorScore, pbrScore: IndicatorScore
 /**
  * 割安株スコアを計算する関数の型定義
  */
-export type CalculateValueScore = (indicator: ScoringIndicator) => ValueScore;
+export type CalculateValueScore = (
+  indicator: ScoringIndicator,
+  config: ScoringConfig,
+) => ValueScore;
 
 /**
  * 割安株スコアを計算
- * - 割安性: PER (30%), PBR (30%)
- * - テクニカル: RSI (20%)
- * - 価格レンジ: 価格位置 (20%)
+ * 設定された重み付けに基づいて各指標のスコアを算出
  */
-export const calculateValueScore: CalculateValueScore = (indicator) => {
+export const calculateValueScore: CalculateValueScore = (indicator, config) => {
   const marketType = getMarketType(indicator.market);
+  const marketAdjustments = config.marketAdjustments[marketType];
 
-  const perScore = calculatePERScore(indicator.per, indicator.sectorAvgPer, marketType);
-  const pbrScore = calculatePBRScore(indicator.pbr, indicator.sectorAvgPbr, marketType);
-  const rsiScore = calculateRSIScore(indicator.rsi);
+  const perScore = calculatePERScore(
+    indicator.per,
+    indicator.sectorAvgPer,
+    config,
+    marketAdjustments,
+  );
+  const pbrScore = calculatePBRScore(
+    indicator.pbr,
+    indicator.sectorAvgPbr,
+    config,
+    marketAdjustments,
+  );
+  const rsiScore = calculateRSIScore(indicator.rsi, config);
   const priceRangeScore = calculatePriceRangeScore(
     indicator.currentPrice,
-    indicator.week52High,
-    indicator.week52Low,
-    marketType,
+    indicator.priceHigh,
+    indicator.priceLow,
+    config,
+    marketAdjustments,
   );
 
   const sectorScore = calculateSectorScore(perScore, pbrScore);
 
-  // 重み付け平均でトータルスコア算出
+  // 設定された重み付けでトータルスコア算出（重み合計は100%）
   const totalScore =
-    (perScore * 0.3 + pbrScore * 0.3 + rsiScore * 0.2 + priceRangeScore * 0.2) / 100;
+    (perScore * (config.perWeight / 100) +
+      pbrScore * (config.pbrWeight / 100) +
+      rsiScore * (config.rsiWeight / 100) +
+      priceRangeScore * (config.priceRangeWeight / 100)) /
+    100;
 
   return valueScoreSchema.parse({
     perScore,

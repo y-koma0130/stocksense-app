@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../../../../../trpc/init";
 import { getTopValueStocks } from "../application/usecases/getTopValueStocks.usecase";
-import { getLatestStockIndicators } from "../infrastructure/queryServices/getStockIndicators";
+import { getLatestIndicators } from "../infrastructure/queryServices/getIndicators";
 
 export const valueStockScoringRouter = router({
   /**
@@ -11,13 +11,13 @@ export const valueStockScoringRouter = router({
   getTopValueStocks: publicProcedure
     .input(
       z.object({
-        periodType: z.enum(["weekly", "monthly"]),
+        periodType: z.enum(["mid_term", "long_term"]),
         limit: z.number().min(1).max(100).optional().default(20),
       }),
     )
     .query(async ({ input }) => {
       const stocks = await getTopValueStocks(
-        { getLatestStockIndicators },
+        { getLatestIndicators },
         { periodType: input.periodType, limit: input.limit },
       );
       return stocks;

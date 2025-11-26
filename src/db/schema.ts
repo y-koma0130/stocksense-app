@@ -3,18 +3,12 @@ import {
   decimal,
   index,
   integer,
-  pgEnum,
   pgTable,
   timestamp,
   unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-
-/**
- * 期間タイプのEnum定義
- */
-export const periodTypeEnum = pgEnum("period_type", ["weekly", "monthly"]);
 
 /**
  * 1. 銘柄マスター
@@ -69,48 +63,83 @@ export const sectorAverages = pgTable(
 );
 
 /**
- * 3. 銘柄指標データ
- * 全銘柄の生の指標値を保存（スコア計算なし）
+ * 3. 中期指標データ（1-6ヶ月向け）
+ * - RSI: 14週
+ * - 価格レンジ: 26週（約6ヶ月）
  */
-export const stockIndicators = pgTable(
-  "stock_indicators",
+export const midTermIndicators = pgTable(
+  "mid_term_indicators",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     stockId: uuid("stock_id")
       .notNull()
       .references(() => stocks.id, { onDelete: "cascade" }),
     collectedAt: date("collected_at").notNull(),
-    periodType: periodTypeEnum("period_type").notNull(), // 'weekly' or 'monthly'
 
     // 財務指標
     currentPrice: decimal("current_price", { precision: 10, scale: 2 }),
     per: decimal("per", { precision: 10, scale: 2 }),
     pbr: decimal("pbr", { precision: 10, scale: 2 }),
 
-    // テクニカル指標
+    // テクニカル指標（週足・14週RSI）
     rsi: decimal("rsi", { precision: 5, scale: 2 }),
 
-    // 価格レンジ指標
-    week52High: decimal("week_52_high", { precision: 10, scale: 2 }),
-    week52Low: decimal("week_52_low", { precision: 10, scale: 2 }),
+    // 価格レンジ指標（26週）
+    priceHigh: decimal("price_high", { precision: 10, scale: 2 }),
+    priceLow: decimal("price_low", { precision: 10, scale: 2 }),
 
-    // 業種平均（参照データ）
+    // 業種コード（sector_averages参照用）
     sectorCode: varchar("sector_code", { length: 10 }),
-    sectorAvgPer: decimal("sector_avg_per", { precision: 10, scale: 2 }),
-    sectorAvgPbr: decimal("sector_avg_pbr", { precision: 10, scale: 2 }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
-    periodCollectedIdx: index("idx_indicators_period_collected").on(
-      table.periodType,
-      table.collectedAt,
-    ),
-    stockIdx: index("idx_indicators_stock").on(table.stockId),
-    uniqStockCollectedPeriod: unique("uniq_stock_collected_period").on(
+    collectedIdx: index("idx_mid_term_collected").on(table.collectedAt),
+    stockIdx: index("idx_mid_term_stock").on(table.stockId),
+    uniqStockCollected: unique("uniq_mid_term_stock_collected").on(
       table.stockId,
       table.collectedAt,
-      table.periodType,
+    ),
+  }),
+);
+
+/**
+ * 4. 長期指標データ（6ヶ月-3年向け）
+ * - RSI: 52週
+ * - 価格レンジ: 52週（1年）
+ */
+export const longTermIndicators = pgTable(
+  "long_term_indicators",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    collectedAt: date("collected_at").notNull(),
+
+    // 財務指標
+    currentPrice: decimal("current_price", { precision: 10, scale: 2 }),
+    per: decimal("per", { precision: 10, scale: 2 }),
+    pbr: decimal("pbr", { precision: 10, scale: 2 }),
+
+    // テクニカル指標（週足・52週RSI）
+    rsi: decimal("rsi", { precision: 5, scale: 2 }),
+
+    // 価格レンジ指標（52週）
+    priceHigh: decimal("price_high", { precision: 10, scale: 2 }),
+    priceLow: decimal("price_low", { precision: 10, scale: 2 }),
+
+    // 業種コード（sector_averages参照用）
+    sectorCode: varchar("sector_code", { length: 10 }),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    collectedIdx: index("idx_long_term_collected").on(table.collectedAt),
+    stockIdx: index("idx_long_term_stock").on(table.stockId),
+    uniqStockCollected: unique("uniq_long_term_stock_collected").on(
+      table.stockId,
+      table.collectedAt,
     ),
   }),
 );
@@ -148,8 +177,11 @@ export type NewStock = typeof stocks.$inferInsert;
 export type SectorAverage = typeof sectorAverages.$inferSelect;
 export type NewSectorAverage = typeof sectorAverages.$inferInsert;
 
-export type StockIndicator = typeof stockIndicators.$inferSelect;
-export type NewStockIndicator = typeof stockIndicators.$inferInsert;
+export type MidTermIndicator = typeof midTermIndicators.$inferSelect;
+export type NewMidTermIndicator = typeof midTermIndicators.$inferInsert;
+
+export type LongTermIndicator = typeof longTermIndicators.$inferSelect;
+export type NewLongTermIndicator = typeof longTermIndicators.$inferInsert;
 
 export type StockFinancialHealth = typeof stockFinancialHealth.$inferSelect;
 export type NewStockFinancialHealth = typeof stockFinancialHealth.$inferInsert;

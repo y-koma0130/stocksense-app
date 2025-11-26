@@ -1,4 +1,4 @@
-import type { StockIndicatorDto } from "../../application/dto/stockIndicator.dto";
+import type { IndicatorDto } from "../../application/dto/indicator.dto";
 
 /**
  * 市場タイプ
@@ -81,7 +81,7 @@ const getMarketType = (market: string | null): MarketType => {
  * - 営業CFが3期連続マイナス
  * - 売上が3期連続マイナス
  */
-export const isTrapStock = (indicator: StockIndicatorDto): TrapStockCheckResult => {
+export const isTrapStock = (indicator: IndicatorDto): TrapStockCheckResult => {
   const reasons: string[] = [];
   const marketType = getMarketType(indicator.market);
   const thresholds = TRAP_STOCK_THRESHOLDS[marketType];

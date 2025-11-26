@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
+import { Footer } from "@/components/layout/Footer";
 import { MarketSummary } from "@/features/marketSummary/components/MarketSummary";
 import { ValueStockRanking } from "@/features/valueStockScoring/components/ValueStockRanking";
 import { createClient } from "@/lib/supabase/server";
@@ -18,7 +19,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <>
+    <div className={pageWrapperStyle}>
       <Header />
       <div className={containerStyle}>
         <HeroSection />
@@ -26,12 +27,19 @@ export default async function DashboardPage() {
         <div className={spacerStyle} />
         <ValueStockRanking />
       </div>
-    </>
+      <Footer />
+    </div>
   );
 }
 
+const pageWrapperStyle = css({
+  display: "flex",
+  flexDirection: "column",
+  minHeight: "100vh",
+});
+
 const containerStyle = css({
-  minHeight: "calc(100vh - 68px)",
+  flex: 1,
   padding: "1rem",
   backgroundColor: "background",
 });

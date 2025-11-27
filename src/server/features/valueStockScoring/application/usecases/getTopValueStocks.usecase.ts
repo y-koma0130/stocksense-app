@@ -1,14 +1,18 @@
-import { calculateValueScore } from "../../domain/services/calculateValueScore.service";
+import type { PeriodType } from "@/constants/periodTypes";
+import { PERIOD_TYPES } from "@/constants/periodTypes";
+import { calculateValueStockScore } from "../../domain/services/calculateValueStockScore.service";
+import { filterProMarket } from "../../domain/services/filterProMarket.service";
 import { isTrapStock } from "../../domain/services/isTrapStock.service";
-import type { PeriodType } from "../../domain/values/periodType";
-import type { GetLatestStockIndicators } from "../../infrastructure/queryServices/getStockIndicators";
-import { type ValueStockDto, valueStockDtoSchema } from "../dto/stockIndicator.dto";
+import { rankByScore } from "../../domain/services/rankByScore.service";
+import { LONG_TERM_CONFIG, MID_TERM_CONFIG } from "../../domain/values/scoringConfig";
+import type { GetLatestIndicators } from "../../infrastructure/queryServices/getIndicators";
+import { type ValueStockDto, valueStockDtoSchema } from "../dto/valueStock.dto";
 
 /**
  * ユースケースの依存関係
  */
 type Dependencies = Readonly<{
-  getLatestStockIndicators: GetLatestStockIndicators;
+  getLatestIndicators: GetLatestIndicators;
 }>;
 
 /**
@@ -28,36 +32,35 @@ export type GetTopValueStocks = (
 ) => Promise<ValueStockDto[]>;
 
 /**
- * PROマーケット（TOKYO PRO Market）かどうかを判定
- */
-const isProMarket = (market: string | null): boolean => {
-  if (!market) return false;
-  return market.includes("PRO") || market.includes("プロ");
-};
-
-/**
  * 上位割安株を取得するユースケース
  * 1. クエリサービスから最新の指標データを取得
- * 2. PROマーケットを除外
- * 3. 罠銘柄を除外
- * 4. ドメインサービスでスコアを計算
- * 5. スコア順にソートして上位N件を返却
+ * 2. ドメインサービスでフィルタリング（PROマーケット、罠銘柄）
+ * 3. ドメインサービスでスコア計算
+ * 4. ドメインサービスでランキング
+ * 5. DTOにパースして返却
  */
 export const getTopValueStocks: GetTopValueStocks = async (dependencies, params) => {
-  // クエリサービスから全件取得
-  const indicators = await dependencies.getLatestStockIndicators(params.periodType);
+  // 1. クエリサービスから全件取得
+  const indicators = await dependencies.getLatestIndicators(params.periodType);
 
-  // PROマーケット除外 → 罠銘柄除外 → スコア計算
-  const stocksWithScores = indicators
-    .filter((indicator) => !isProMarket(indicator.market))
-    .filter((indicator) => !isTrapStock(indicator).isTrap)
-    .map((indicator) => ({
-      ...indicator,
-      valueScore: calculateValueScore(indicator),
-    }))
-    .sort((a, b) => b.valueScore.totalScore - a.valueScore.totalScore)
-    .slice(0, params.limit);
+  // 2. 期間タイプに応じたスコアリング設定を取得
+  const config = params.periodType === PERIOD_TYPES.MID_TERM ? MID_TERM_CONFIG : LONG_TERM_CONFIG;
 
-  // DTOとしてバリデーション
-  return stocksWithScores.map((stock) => valueStockDtoSchema.parse(stock));
+  // 3. PROマーケット除外
+  const filteredByMarket = filterProMarket(indicators);
+
+  // 4. 罠銘柄除外
+  const filteredByTrap = filteredByMarket.filter((indicator) => !isTrapStock(indicator).isTrap);
+
+  // 5. スコア計算（各指標にスコアを付与）
+  const scoredStocks = filteredByTrap.map((indicator) => ({
+    ...indicator,
+    valueScore: calculateValueStockScore(indicator, config),
+  }));
+
+  // 6. ランキング
+  const rankedStocks = rankByScore(scoredStocks, params.limit);
+
+  // 7. DTOとしてバリデーション
+  return rankedStocks.map((stock) => valueStockDtoSchema.parse(stock));
 };

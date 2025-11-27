@@ -8,7 +8,7 @@ type DrawerProps = Readonly<{
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
-  title?: string;
+  title?: ReactNode;
   width?: string;
 }>;
 
@@ -47,7 +47,7 @@ export const Drawer = ({ isOpen, onClose, children, title, width = "400px" }: Dr
       {/* ドロワー本体 */}
       <div
         className={cx(drawerStyle, drawerOpenStyle)}
-        style={{ width }}
+        style={{ width: window.innerWidth < 768 ? "100%" : width }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "drawer-title" : undefined}

@@ -1,21 +1,20 @@
 import { inngest } from "../../../inngest/client";
 import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks";
-import { getLatestSectorAverages } from "../features/marketData/infrastructure/queryServices/getLatestSectorAverages";
-import { createStockIndicator } from "../features/valueStockScoring/domain/entities/stockIndicator";
+import { createMidTermIndicator } from "../features/valueStockScoring/domain/entities/midTermIndicator";
 import { calculateRSI } from "../features/valueStockScoring/domain/services/calculateRSI";
-import { getDailyData } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getDailyData";
 import { getFundamentals } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getFundamentals";
-import { saveStockIndicator } from "../features/valueStockScoring/infrastructure/repositories/saveStockIndicator.repository";
+import { getWeeklyData } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getWeeklyData";
+import { saveMidTermIndicator } from "../features/valueStockScoring/infrastructure/repositories/saveMidTermIndicator.repository";
 
 /**
- * 週次指標収集ジョブ
+ * 中期指標収集ジョブ（旧: 週次）
  * 毎週土曜日0:00 (JST)に実行
- * 全銘柄の指標データを収集してDBに保存
+ * 全銘柄の中期指標データ（26週レンジ、14週RSI）を収集してDBに保存
  */
 export const weeklyIndicatorCollection = inngest.createFunction(
   {
-    id: "weekly-indicator-collection",
-    name: "Weekly Indicator Collection",
+    id: "mid-term-indicator-collection",
+    name: "Mid-Term Indicator Collection",
     retries: 3,
   },
   { cron: "TZ=Asia/Tokyo 0 0 * * 6" }, // 毎週土曜日0:00 JST
@@ -27,12 +26,7 @@ export const weeklyIndicatorCollection = inngest.createFunction(
 
     console.log(`Processing ${activeStocks.length} active stocks`);
 
-    // ステップ2: 業種平均データを取得
-    const sectorAverages = await step.run("fetch-sector-averages", async () => {
-      return await getLatestSectorAverages();
-    });
-
-    // ステップ3: バッチごとに銘柄を処理
+    // ステップ2: バッチごとに銘柄を処理
     const batchSize = 50; // レート制限対策
     let totalCollected = 0;
     let totalSaved = 0;
@@ -58,36 +52,37 @@ export const weeklyIndicatorCollection = inngest.createFunction(
               continue;
             }
 
-            // RSI計算用の日足データ取得
-            const dailyData = await getDailyData(stock.tickerSymbol, 30);
-            const rsi = calculateRSI(dailyData, 14);
+            // 週足データ取得（26週分 + 余裕）
+            const weeklyData = await getWeeklyData(stock.tickerSymbol, 30);
 
-            // 業種平均データ取得
-            const sectorAvg = stock.sectorCode
-              ? sectorAverages.find((s) => s.sectorCode === stock.sectorCode)
-              : undefined;
+            // 14週RSI計算
+            const rsi = calculateRSI(weeklyData, 14);
+
+            // 26週の高値・安値を計算
+            const last26Weeks = weeklyData.slice(0, 26);
+            const priceHigh =
+              last26Weeks.length > 0 ? Math.max(...last26Weeks.map((d) => d.high)) : null;
+            const priceLow =
+              last26Weeks.length > 0 ? Math.min(...last26Weeks.map((d) => d.low)) : null;
 
             // エンティティ生成
-            const indicator = createStockIndicator({
+            const indicator = createMidTermIndicator({
               stockId: stock.id,
               collectedAt,
-              periodType: "weekly",
               currentPrice: fundamentals.currentPrice,
               per: fundamentals.per,
               pbr: fundamentals.pbr,
               rsi,
-              week52High: fundamentals.fiftyTwoWeekHigh,
-              week52Low: fundamentals.fiftyTwoWeekLow,
+              priceHigh,
+              priceLow,
               sectorCode: stock.sectorCode,
-              sectorAvgPer: sectorAvg?.avgPer ?? null,
-              sectorAvgPbr: sectorAvg?.avgPbr ?? null,
             });
 
             collectedCount++;
 
             try {
               // リポジトリで永続化
-              await saveStockIndicator(indicator);
+              await saveMidTermIndicator(indicator);
               savedCount++;
             } catch (error) {
               // UNIQUE constraint違反などは無視
@@ -113,7 +108,7 @@ export const weeklyIndicatorCollection = inngest.createFunction(
     }
 
     return {
-      message: "Weekly indicator collection completed",
+      message: "Mid-term indicator collection completed",
       processedStocks: activeStocks.length,
       collectedIndicators: totalCollected,
       savedIndicators: totalSaved,

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { AccountMenu } from "@/components/account/AccountMenu";
+import { FeedbackModalContainer } from "@/features/feedback/components/FeedbackModalContainer";
 import { NotificationButton } from "@/features/lineNotification/components/NotificationButton";
 import { NotificationSettingsDrawerContainer } from "@/features/lineNotification/components/NotificationSettingsDrawerContainer";
-import { FeedbackModalContainer } from "@/features/feedback/components/FeedbackModalContainer";
+import { createClient } from "@/lib/supabase/client";
 import { css } from "../../styled-system/css";
 import { HelpButton } from "./HelpButton";
 
@@ -42,5 +42,5 @@ export const HeaderActions = () => {
 const actionsStyle = css({
   display: "flex",
   alignItems: "center",
-  gap: "0.75rem",
+  gap: { base: "0.5rem", md: "0.75rem" },
 });

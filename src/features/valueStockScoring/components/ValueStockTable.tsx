@@ -1,5 +1,6 @@
 import { Tooltip } from "@/components/ui/Tooltip";
-import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/stockIndicator.dto";
+import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
+import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
 import { css } from "../../../../styled-system/css";
 
 type ValueStockTableProps = Readonly<{
@@ -56,7 +57,33 @@ export const ValueStockTable = ({ data, onRowClick }: ValueStockTableProps) => {
               >
                 <td className={tdRankStyle}>{index + 1}</td>
                 <td className={tdTickerStyle}>{stock.tickerCode}</td>
-                <td className={tdNameStyle}>{stock.name}</td>
+                <td className={tdNameStyle}>
+                  <a
+                    href={getYahooFinanceUrl(stock.tickerCode)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={stockLinkStyle}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {stock.name}
+                    <svg
+                      className={externalLinkIconStyle}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      role="img"
+                      aria-label="外部リンク"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
+                </td>
                 <td className={tdMarketStyle}>
                   {stock.market ? <span className={marketBadgeStyle}>{stock.market}</span> : "-"}
                 </td>
@@ -259,4 +286,27 @@ const tdPriceStyle = css({
   textAlign: "right",
   fontWeight: "500",
   fontFeatureSettings: '"tnum"',
+});
+
+const stockLinkStyle = css({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.25rem",
+  color: "text",
+  textDecoration: "none",
+  transition: "color 0.2s ease",
+  _hover: {
+    color: "accent",
+    textDecoration: "underline",
+  },
+});
+
+const externalLinkIconStyle = css({
+  width: "0.875rem",
+  height: "0.875rem",
+  opacity: 0.6,
+  transition: "opacity 0.2s ease",
+  _groupHover: {
+    opacity: 1,
+  },
 });

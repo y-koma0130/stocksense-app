@@ -32,9 +32,9 @@ export const calculatePriceRangeScore: CalculatePriceRangeScore = (
 
   // 異常値チェック: 現在価格が期間レンジ外の場合
   if (currentPrice < priceLow || currentPrice > priceHigh) {
-    console.warn(
-      `[calculatePriceRangeScore] Price out of range: current=${currentPrice}, range=[${priceLow}, ${priceHigh}]`,
-    );
+    // console.warn(
+    //   `[calculatePriceRangeScore] Price out of range: current=${currentPrice}, range=[${priceLow}, ${priceHigh}]`,
+    // );
     return 0;
   }
 

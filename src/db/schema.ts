@@ -274,3 +274,60 @@ export const marketAnalysis = pgTable(
 
 export type MarketAnalysis = typeof marketAnalysis.$inferSelect;
 export type NewMarketAnalysis = typeof marketAnalysis.$inferInsert;
+
+/**
+ * 9. 個別株分析データ
+ * LLMによる個別銘柄の投資分析結果
+ */
+export const stockAnalyses = pgTable(
+  "stock_analyses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    periodType: varchar("period_type", { length: 20 }).notNull(), // "mid_term" | "long_term"
+    analyzedAt: timestamp("analyzed_at").notNull(),
+
+    // バリュー株としての評価（5段階、上位銘柄間の相対評価）
+    // excellent: 上位銘柄の中でも特に優れる
+    // good: 上位銘柄として十分魅力がある
+    // fair: 上位銘柄の中では平均的
+    // poor: 上位抽出されているが慎重に判断すべき
+    // very_poor: 上位抽出されているが割安株とは言えない
+    valueStockRating: varchar("value_stock_rating", { length: 20 }), // "excellent" | "good" | "fair" | "poor" | "very_poor"
+
+    // 評価理由・総合評価（200字程度）
+    rationale: text("rationale"),
+
+    // 強み・魅力ポイント（JSONB: string[]）
+    strengths: jsonb("strengths"),
+
+    // リスク・懸念点（JSONB: string[]）
+    risks: jsonb("risks"),
+
+    // 財務分析コメント
+    financialAnalysis: text("financial_analysis"),
+
+    // セクター内位置づけ
+    sectorPosition: text("sector_position"),
+
+    // LLM生レスポンス（デバッグ・監査用）
+    llmRawResponse: text("llm_raw_response"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    stockIdx: index("idx_stock_analyses_stock").on(table.stockId),
+    periodTypeIdx: index("idx_stock_analyses_period").on(table.periodType),
+    analyzedAtIdx: index("idx_stock_analyses_analyzed_at").on(table.analyzedAt),
+    stockPeriodIdx: index("idx_stock_analyses_stock_period").on(
+      table.stockId,
+      table.periodType,
+      table.analyzedAt,
+    ),
+  }),
+);
+
+export type StockAnalysis = typeof stockAnalyses.$inferSelect;
+export type NewStockAnalysis = typeof stockAnalyses.$inferInsert;

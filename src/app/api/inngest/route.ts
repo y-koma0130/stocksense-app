@@ -8,6 +8,7 @@ import { monthlySectorAveragesUpdate } from "../../../server/jobs/monthlySectorA
 import { weeklyIndicatorCollection } from "../../../server/jobs/weeklyIndicatorCollection";
 import { weeklyLineNotification } from "../../../server/jobs/weeklyLineNotification";
 import { weeklyMarketAnalysis } from "../../../server/jobs/weeklyMarketAnalysis";
+import { weeklyStockAnalysis } from "../../../server/jobs/weeklyStockAnalysis";
 
 /**
  * Inngest API endpoint for handling scheduled jobs
@@ -22,6 +23,7 @@ export const { GET, POST, PUT } = serve({
     monthlyFinancialHealthCollection, // Every 1st 6:00 JST
     weeklyMarketAnalysis, // Every Monday 7:00 JST (before scoring job)
     monthlyMarketAnalysis, // Every 1st Monday 7:00 JST (before scoring job)
+    weeklyStockAnalysis, // Every Monday 8:30 JST (after market analysis and indicator collection)
     weeklyLineNotification, // Every Monday 8:00 JST
     monthlyLineNotification, // Every 1st-3rd 8:00 JST (first weekday only)
   ],

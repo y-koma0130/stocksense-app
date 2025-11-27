@@ -26,7 +26,7 @@ export default defineConfig({
           border: { value: "#555" },
           error: { value: "#E69A9A" },
           errorBg: { value: "#5C2E2E" },
-          success: { value: "#9AE69A" },
+          success: { value: "#7ED97E" },
           successBg: { value: "#2E5C2E" },
 
           // Light mode (basic setup)

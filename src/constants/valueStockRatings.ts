@@ -18,11 +18,11 @@ export type ValueStockRatingConstant =
  * 評価レベルのラベル（日本語）
  */
 export const VALUE_STOCK_RATING_LABELS: Record<ValueStockRatingConstant, string> = {
-  [VALUE_STOCK_RATINGS.EXCELLENT]: "上位銘柄の中でも特に優れる",
-  [VALUE_STOCK_RATINGS.GOOD]: "上位銘柄として十分魅力がある",
-  [VALUE_STOCK_RATINGS.FAIR]: "上位銘柄の中では平均的",
-  [VALUE_STOCK_RATINGS.POOR]: "上位抽出されているが慎重に判断すべき",
-  [VALUE_STOCK_RATINGS.VERY_POOR]: "上位抽出されているが割安株とは言えない",
+  [VALUE_STOCK_RATINGS.EXCELLENT]: "超おすすめ",
+  [VALUE_STOCK_RATINGS.GOOD]: "おすすめ",
+  [VALUE_STOCK_RATINGS.FAIR]: "中立",
+  [VALUE_STOCK_RATINGS.POOR]: "注意",
+  [VALUE_STOCK_RATINGS.VERY_POOR]: "要注意",
 };
 
 /**
@@ -38,11 +38,12 @@ export const VALUE_STOCK_RATING_SCORES: Record<ValueStockRatingConstant, number>
 
 /**
  * 評価レベルの色（UI表示用）
+ * 実際の色コードは colors.ts の RATING_COLORS を使用
  */
 export const VALUE_STOCK_RATING_COLORS: Record<ValueStockRatingConstant, string> = {
-  [VALUE_STOCK_RATINGS.EXCELLENT]: "green",
-  [VALUE_STOCK_RATINGS.GOOD]: "blue",
-  [VALUE_STOCK_RATINGS.FAIR]: "gray",
-  [VALUE_STOCK_RATINGS.POOR]: "orange",
-  [VALUE_STOCK_RATINGS.VERY_POOR]: "red",
+  [VALUE_STOCK_RATINGS.EXCELLENT]: "excellent",
+  [VALUE_STOCK_RATINGS.GOOD]: "good",
+  [VALUE_STOCK_RATINGS.FAIR]: "fair",
+  [VALUE_STOCK_RATINGS.POOR]: "poor",
+  [VALUE_STOCK_RATINGS.VERY_POOR]: "veryPoor",
 };

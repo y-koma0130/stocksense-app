@@ -25,20 +25,14 @@ export const StockAnalysisResultSchema = z.object({
   // バリュー株としての評価（5段階）
   valueStockRating: ValueStockRatingSchema,
 
-  // 評価理由・総合評価（200字以内）
-  rationale: z.string().max(200),
+  // 総合評価コメント（最大300字厳守）- 割安度の根拠と投資判断の視点
+  summary: z.string().min(50).max(300),
 
-  // 強み・魅力ポイント（3-5項目、各80字以内）
-  strengths: z.array(z.string().max(80)).min(3).max(5),
+  // 投資する場合の魅力ポイント（3-4項目、各80字以内厳守）
+  investmentPoints: z.array(z.string().max(80)).min(3).max(4),
 
-  // リスク・懸念点（2-3項目、各80字以内）
+  // 注意すべきリスク（2-3項目、各80字以内厳守）
   risks: z.array(z.string().max(80)).min(2).max(3),
-
-  // 財務分析コメント（150字以内）
-  financialAnalysis: z.string().max(150),
-
-  // セクター内位置づけ（100字以内）
-  sectorPosition: z.string().max(100),
 });
 
 export type StockAnalysisResult = z.infer<typeof StockAnalysisResultSchema>;

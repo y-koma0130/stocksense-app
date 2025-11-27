@@ -27,11 +27,9 @@ export const saveStockAnalysis: SaveStockAnalysis = async ({
     periodType,
     analyzedAt: new Date(),
     valueStockRating: result.valueStockRating,
-    rationale: result.rationale,
-    strengths: result.strengths,
+    summary: result.summary,
+    investmentPoints: result.investmentPoints,
     risks: result.risks,
-    financialAnalysis: result.financialAnalysis,
-    sectorPosition: result.sectorPosition,
     llmRawResponse: rawResponse,
   });
 };

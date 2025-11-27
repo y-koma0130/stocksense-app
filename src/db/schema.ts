@@ -290,27 +290,16 @@ export const stockAnalyses = pgTable(
     analyzedAt: timestamp("analyzed_at").notNull(),
 
     // バリュー株としての評価（5段階、上位銘柄間の相対評価）
-    // excellent: 上位銘柄の中でも特に優れる
-    // good: 上位銘柄として十分魅力がある
-    // fair: 上位銘柄の中では平均的
-    // poor: 上位抽出されているが慎重に判断すべき
-    // very_poor: 上位抽出されているが割安株とは言えない
     valueStockRating: varchar("value_stock_rating", { length: 20 }), // "excellent" | "good" | "fair" | "poor" | "very_poor"
 
-    // 評価理由・総合評価（200字程度）
-    rationale: text("rationale"),
+    // 総合評価コメント（100-400字）
+    summary: text("summary"),
 
-    // 強み・魅力ポイント（JSONB: string[]）
-    strengths: jsonb("strengths"),
+    // 投資する場合の魅力ポイント（JSONB: string[]、3-4項目、各100字以内）
+    investmentPoints: jsonb("investment_points"),
 
-    // リスク・懸念点（JSONB: string[]）
+    // 注意すべきリスク（JSONB: string[]、2-3項目、各100字以内）
     risks: jsonb("risks"),
-
-    // 財務分析コメント
-    financialAnalysis: text("financial_analysis"),
-
-    // セクター内位置づけ
-    sectorPosition: text("sector_position"),
 
     // LLM生レスポンス（デバッグ・監査用）
     llmRawResponse: text("llm_raw_response"),

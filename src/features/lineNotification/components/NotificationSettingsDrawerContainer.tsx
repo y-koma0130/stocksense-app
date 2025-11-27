@@ -13,18 +13,39 @@ const LINE_ADD_FRIEND_URL =
 export const NotificationSettingsDrawerContainer = () => {
   const isOpen = useNotificationDrawerOpen();
   const setIsOpen = useSetNotificationDrawerOpen();
+  const utils = trpc.useUtils();
 
-  const {
-    data: settings,
-    refetch,
-    isLoading,
-  } = trpc.lineNotification.getSettings.useQuery(undefined, {
+  const { data: settings, isLoading } = trpc.lineNotification.getSettings.useQuery(undefined, {
     enabled: isOpen,
   });
 
   const updateMutation = trpc.lineNotification.updateNotificationEnabled.useMutation({
-    onSuccess: () => {
-      refetch();
+    onMutate: async (variables) => {
+      // 進行中のrefetchをキャンセル
+      await utils.lineNotification.getSettings.cancel();
+
+      // 現在のデータを取得してバックアップ
+      const previousSettings = utils.lineNotification.getSettings.getData();
+
+      // 楽観的更新: UIを即座に更新
+      if (previousSettings) {
+        utils.lineNotification.getSettings.setData(undefined, {
+          ...previousSettings,
+          notificationEnabled: variables.enabled,
+        });
+      }
+
+      return { previousSettings };
+    },
+    onError: (_err, _variables, context) => {
+      // エラー時はロールバック
+      if (context?.previousSettings) {
+        utils.lineNotification.getSettings.setData(undefined, context.previousSettings);
+      }
+    },
+    onSettled: () => {
+      // mutation完了後にキャッシュを無効化して最新データを取得
+      utils.lineNotification.getSettings.invalidate();
     },
   });
 

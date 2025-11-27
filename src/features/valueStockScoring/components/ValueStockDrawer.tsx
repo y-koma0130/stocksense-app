@@ -1,5 +1,6 @@
 import { Drawer } from "@/components/ui/Drawer";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
+import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
 import { css } from "../../../../styled-system/css";
 
 type ValueStockDrawerProps = Readonly<{
@@ -56,13 +57,38 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose }: ValueStockDrawerPro
   const pbrRatio = calculateSectorRatio(stock.pbr, stock.sectorAvgPbr);
   const totalScorePercent = stock.valueScore.totalScore * 100;
 
+  const drawerTitle = (
+    <span className={drawerTitleContainerStyle}>
+      {stock.tickerCode}｜
+      <a
+        href={getYahooFinanceUrl(stock.tickerCode)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={drawerStockLinkStyle}
+      >
+        {stock.name}
+        <svg
+          className={drawerExternalLinkIconStyle}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="外部リンク"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+          />
+        </svg>
+      </a>
+    </span>
+  );
+
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={onClose}
-      width="40%"
-      title={`${stock.tickerCode}｜${stock.name}`}
-    >
+    <Drawer isOpen={isOpen} onClose={onClose} width="40%" title={drawerTitle}>
       {/* 市場・業種情報 */}
       <div className={metaGridStyle}>
         {stock.market && (
@@ -335,4 +361,30 @@ const priceValueStyle = css({
   fontSize: "0.95rem",
   fontWeight: "600",
   color: "text",
+});
+
+const drawerTitleContainerStyle = css({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.25rem",
+});
+
+const drawerStockLinkStyle = css({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.25rem",
+  color: "text",
+  textDecoration: "none",
+  transition: "color 0.2s ease",
+  _hover: {
+    color: "accent",
+    textDecoration: "underline",
+  },
+});
+
+const drawerExternalLinkIconStyle = css({
+  width: "1rem",
+  height: "1rem",
+  opacity: 0.6,
+  transition: "opacity 0.2s ease",
 });

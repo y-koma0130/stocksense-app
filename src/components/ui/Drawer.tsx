@@ -8,7 +8,7 @@ type DrawerProps = Readonly<{
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
-  title?: string;
+  title?: ReactNode;
   width?: string;
 }>;
 

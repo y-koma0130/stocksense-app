@@ -63,6 +63,11 @@ export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSection
         <span className={analyzedDateStyle}>{analyzedDate}時点</span>
       </div>
 
+      {/* AI生成免責事項 */}
+      <div className={disclaimerStyle}>
+        ⓘ この分析はAIによって自動生成されたものです。投資判断の参考情報としてご利用ください。
+      </div>
+
       {/* バリュー株評価と総合評価 */}
       <div className={ratingAndSummaryContainerStyle}>
         <div className={ratingContainerStyle}>
@@ -113,8 +118,8 @@ export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSection
 };
 
 const sectionStyle = css({
-  marginBottom: "1.5rem",
-  paddingTop: "1.5rem",
+  marginBottom: "1rem",
+  paddingTop: "0.5rem",
   borderTop: "1px solid",
   borderColor: "border",
 });
@@ -123,7 +128,6 @@ const headerContainerStyle = css({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  marginBottom: "1rem",
 });
 
 const sectionTitleStyle = css({
@@ -137,6 +141,15 @@ const sectionTitleStyle = css({
 const analyzedDateStyle = css({
   fontSize: "0.75rem",
   color: "textMuted",
+});
+
+const disclaimerStyle = css({
+  fontSize: "0.75rem",
+  color: "textMuted",
+  backgroundColor: "surfaceHover",
+  padding: "0.5rem 0.75rem",
+  borderRadius: "6px",
+  lineHeight: "1.4",
 });
 
 const loadingContainerStyle = css({
@@ -213,15 +226,6 @@ const subsectionTitleStyle = css({
   fontWeight: "600",
   color: "text",
   marginBottom: "0.5rem",
-});
-
-const textContentStyle = css({
-  fontSize: "0.875rem",
-  lineHeight: "1.6",
-  color: "text",
-  backgroundColor: "surfaceHover",
-  padding: "0.75rem 1rem",
-  borderRadius: "6px",
 });
 
 const listStyle = css({

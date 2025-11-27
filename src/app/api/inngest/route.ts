@@ -4,6 +4,7 @@ import { monthlyFinancialHealthCollection } from "../../../server/jobs/monthlyFi
 import { monthlyIndicatorCollection } from "../../../server/jobs/monthlyIndicatorCollection";
 import { monthlyLineNotification } from "../../../server/jobs/monthlyLineNotification";
 import { monthlyMarketAnalysis } from "../../../server/jobs/monthlyMarketAnalysis";
+import { monthlyStockAnalysis } from "../../../server/jobs/monthlyStockAnalysis";
 import { monthlySectorAveragesUpdate } from "../../../server/jobs/monthlySectorAveragesUpdate";
 import { weeklyIndicatorCollection } from "../../../server/jobs/weeklyIndicatorCollection";
 import { weeklyLineNotification } from "../../../server/jobs/weeklyLineNotification";
@@ -24,6 +25,7 @@ export const { GET, POST, PUT } = serve({
     weeklyMarketAnalysis, // Every Monday 7:00 JST (before scoring job)
     monthlyMarketAnalysis, // Every 1st Monday 7:00 JST (before scoring job)
     weeklyStockAnalysis, // Every Monday 8:30 JST (after market analysis and indicator collection)
+    monthlyStockAnalysis, // Every 1st 8:30 JST (after market analysis and indicator collection)
     weeklyLineNotification, // Every Monday 8:00 JST
     monthlyLineNotification, // Every 1st-3rd 8:00 JST (first weekday only)
   ],

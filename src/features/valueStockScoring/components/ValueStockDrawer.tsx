@@ -250,7 +250,7 @@ const metaGridStyle = css({
   display: "grid",
   gridTemplateColumns: "repeat(2, 1fr)",
   gap: "0.75rem",
-  marginBottom: "1.5rem",
+  marginBottom: "1rem",
 });
 
 const metaItemStyle = css({
@@ -271,7 +271,7 @@ const metaValueStyle = css({
 });
 
 const sectionStyle = css({
-  marginBottom: "1.5rem",
+  marginBottom: "1rem",
 });
 
 const sectionTitleStyle = css({

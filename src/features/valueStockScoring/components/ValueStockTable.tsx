@@ -1,7 +1,7 @@
 import { Tooltip } from "@/components/ui/Tooltip";
+import { getScoreColor, SUCCESS_COLOR } from "@/constants/colors";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
-import { getScoreColor, SUCCESS_COLOR } from "@/constants/colors";
 import { css } from "../../../../styled-system/css";
 
 type ValueStockTableProps = Readonly<{

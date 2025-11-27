@@ -7,11 +7,11 @@
 import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "@/server/lib/openai";
 import { inngest } from "../../../inngest/client";
-import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
-import { buildStockAnalysisPrompt } from "./utils/buildStockAnalysisPrompt";
-import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
+import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
+import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
 import { getTopValueStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
+import { buildStockAnalysisPrompt } from "./utils/buildStockAnalysisPrompt";
 
 // 分析対象銘柄数（固定）
 const ANALYSIS_COUNT = 5;

@@ -4,9 +4,9 @@
  */
 
 import type { PeriodType } from "@/constants/periodTypes";
+import type { ValueStockDto } from "../../application/dto/valueStock.dto";
 import { getTopValueStocks as getTopValueStocksUsecase } from "../../application/usecases/getTopValueStocks.usecase";
 import { getLatestIndicators } from "./getIndicators";
-import type { ValueStockDto } from "../../application/dto/valueStock.dto";
 
 type GetTopValueStocksParams = Readonly<{
   periodType: PeriodType;

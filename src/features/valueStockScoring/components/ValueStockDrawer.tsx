@@ -1,11 +1,11 @@
 import { Drawer } from "@/components/ui/Drawer";
+import { getScoreColor } from "@/constants/colors";
 import type { PeriodType } from "@/constants/periodTypes";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
-import { getScoreColor } from "@/constants/colors";
+import { css } from "../../../../styled-system/css";
 import { StockAnalysisSection } from "../../stockAnalysis/components/StockAnalysisSection";
 import { useStockAnalysis } from "../../stockAnalysis/hooks/useStockAnalysis";
-import { css } from "../../../../styled-system/css";
 
 type ValueStockDrawerProps = Readonly<{
   stock: ValueStockDto | null;
@@ -40,13 +40,13 @@ const calculatePriceRangePosition = (
 };
 
 export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueStockDrawerProps) => {
-  if (!stock) return null;
-
-  // 個別株分析を取得
+  // 個別株分析を取得（hookはトップレベルで呼び出す必要がある）
   const { data: analysisData, loading: analysisLoading } = useStockAnalysis({
-    stockId: stock.stockId,
+    stockId: stock?.stockId ?? "",
     periodType,
   });
+
+  if (!stock) return null;
 
   // 期間タイプに応じた表示ラベル
   const periodLabel = periodType === "mid_term" ? "26週" : "52週";

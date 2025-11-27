@@ -182,12 +182,8 @@
           "name": "long_term_indicators_stock_id_stocks_id_fk",
           "tableFrom": "long_term_indicators",
           "tableTo": "stocks",
-          "columnsFrom": [
-            "stock_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stock_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -197,10 +193,7 @@
         "uniq_long_term_stock_collected": {
           "name": "uniq_long_term_stock_collected",
           "nullsNotDistinct": false,
-          "columns": [
-            "stock_id",
-            "collected_at"
-          ]
+          "columns": ["stock_id", "collected_at"]
         }
       },
       "policies": {},
@@ -429,12 +422,8 @@
           "name": "mid_term_indicators_stock_id_stocks_id_fk",
           "tableFrom": "mid_term_indicators",
           "tableTo": "stocks",
-          "columnsFrom": [
-            "stock_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stock_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -444,10 +433,7 @@
         "uniq_mid_term_stock_collected": {
           "name": "uniq_mid_term_stock_collected",
           "nullsNotDistinct": false,
-          "columns": [
-            "stock_id",
-            "collected_at"
-          ]
+          "columns": ["stock_id", "collected_at"]
         }
       },
       "policies": {},
@@ -559,10 +545,7 @@
         "uniq_sector_date": {
           "name": "uniq_sector_date",
           "nullsNotDistinct": false,
-          "columns": [
-            "sector_code",
-            "data_date"
-          ]
+          "columns": ["sector_code", "data_date"]
         }
       },
       "policies": {},
@@ -636,9 +619,7 @@
         "sectors_sector_code_unique": {
           "name": "sectors_sector_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "sector_code"
-          ]
+          "columns": ["sector_code"]
         }
       },
       "policies": {},
@@ -803,12 +784,8 @@
           "name": "stock_analyses_stock_id_stocks_id_fk",
           "tableFrom": "stock_analyses",
           "tableTo": "stocks",
-          "columnsFrom": [
-            "stock_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stock_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -903,12 +880,8 @@
           "name": "stock_financial_health_stock_id_stocks_id_fk",
           "tableFrom": "stock_financial_health",
           "tableTo": "stocks",
-          "columnsFrom": [
-            "stock_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["stock_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -918,9 +891,7 @@
         "stock_financial_health_stock_id_unique": {
           "name": "stock_financial_health_stock_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "stock_id"
-          ]
+          "columns": ["stock_id"]
         }
       },
       "policies": {},
@@ -1069,9 +1040,7 @@
         "stocks_ticker_code_unique": {
           "name": "stocks_ticker_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "ticker_code"
-          ]
+          "columns": ["ticker_code"]
         }
       },
       "policies": {},

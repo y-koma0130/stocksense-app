@@ -8,8 +8,8 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { DEFAULT_MODEL, openai } from "@/server/lib/openai";
 import { inngest } from "../../../inngest/client";
 import { MarketAnalysisResultSchema } from "../features/marketAnalysis/domain/values/types";
-import { buildMarketAnalysisPrompt } from "./utils/buildMarketAnalysisPrompt";
 import { saveMarketAnalysis } from "../features/marketAnalysis/infrastructure/repositories/saveMarketAnalysis";
+import { buildMarketAnalysisPrompt } from "./utils/buildMarketAnalysisPrompt";
 
 export const weeklyMarketAnalysis = inngest.createFunction(
   {
@@ -23,10 +23,7 @@ export const weeklyMarketAnalysis = inngest.createFunction(
     const prompt = buildMarketAnalysisPrompt({ periodType: "mid_term" });
 
     // Zodスキーマ → JSONスキーマ変換（OpenAIヘルパーを使用）
-    const responseFormat = zodResponseFormat(
-      MarketAnalysisResultSchema,
-      "market_analysis",
-    );
+    const responseFormat = zodResponseFormat(MarketAnalysisResultSchema, "market_analysis");
     const jsonSchema = responseFormat.json_schema.schema;
 
     // OpenAI Responses APIをバインド

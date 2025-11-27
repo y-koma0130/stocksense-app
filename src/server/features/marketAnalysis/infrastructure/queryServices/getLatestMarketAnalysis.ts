@@ -6,9 +6,9 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { marketAnalysis } from "@/db/schema";
-import { SectorInfoSchema, ThemeInfoSchema } from "../../domain/values/types";
-import type { PeriodType } from "../../domain/values/types";
 import type { MarketAnalysisDto } from "../../application/dto/marketAnalysis.dto";
+import type { PeriodType } from "../../domain/values/types";
+import { SectorInfoSchema, ThemeInfoSchema } from "../../domain/values/types";
 
 const MarketAnalysisDtoSchema = z.object({
   id: z.string(),

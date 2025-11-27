@@ -2,7 +2,7 @@
  * stockIdで個別株分析を取得
  */
 
-import { eq, and, desc } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { stockAnalyses } from "@/db/schema";
 import type { PeriodType } from "../../../marketAnalysis/domain/values/types";
@@ -12,9 +12,7 @@ type GetStockAnalysisByStockIdParams = Readonly<{
   periodType: PeriodType;
 }>;
 
-export type GetStockAnalysisByStockId = (
-  params: GetStockAnalysisByStockIdParams,
-) => Promise<{
+export type GetStockAnalysisByStockId = (params: GetStockAnalysisByStockIdParams) => Promise<{
   id: string;
   stockId: string;
   periodType: string;

@@ -4,8 +4,8 @@ import { monthlyFinancialHealthCollection } from "../../../server/jobs/monthlyFi
 import { monthlyIndicatorCollection } from "../../../server/jobs/monthlyIndicatorCollection";
 import { monthlyLineNotification } from "../../../server/jobs/monthlyLineNotification";
 import { monthlyMarketAnalysis } from "../../../server/jobs/monthlyMarketAnalysis";
-import { monthlyStockAnalysis } from "../../../server/jobs/monthlyStockAnalysis";
 import { monthlySectorAveragesUpdate } from "../../../server/jobs/monthlySectorAveragesUpdate";
+import { monthlyStockAnalysis } from "../../../server/jobs/monthlyStockAnalysis";
 import { weeklyIndicatorCollection } from "../../../server/jobs/weeklyIndicatorCollection";
 import { weeklyLineNotification } from "../../../server/jobs/weeklyLineNotification";
 import { weeklyMarketAnalysis } from "../../../server/jobs/weeklyMarketAnalysis";

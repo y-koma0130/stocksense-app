@@ -1,9 +1,9 @@
+import { getRatingColorFromKey } from "@/constants/colors";
 import type { PeriodType } from "@/constants/periodTypes";
 import {
-  VALUE_STOCK_RATING_LABELS,
   VALUE_STOCK_RATING_COLORS,
+  VALUE_STOCK_RATING_LABELS,
 } from "@/constants/valueStockRatings";
-import { getRatingColorFromKey } from "@/constants/colors";
 import type { StockAnalysisDto } from "@/server/features/stockAnalysis/application/dto/stockAnalysis.dto";
 import { css } from "../../../../styled-system/css";
 
@@ -88,8 +88,8 @@ export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSection
           <div className={subsectionStyle}>
             <h5 className={subsectionTitleStyle}>投資魅力ポイント</h5>
             <ul className={listStyle}>
-              {analysis.investmentPoints.map((point, index) => (
-                <li key={index} className={listItemStyle}>
+              {analysis.investmentPoints.map((point) => (
+                <li key={point} className={listItemStyle}>
                   <span className={bulletPositiveStyle}>✓</span>
                   <span>{point}</span>
                 </li>
@@ -103,8 +103,8 @@ export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSection
           <div className={subsectionStyle}>
             <h5 className={subsectionTitleStyle}>注意すべきリスク</h5>
             <ul className={listStyle}>
-              {analysis.risks.map((risk, index) => (
-                <li key={index} className={listItemStyle}>
+              {analysis.risks.map((risk) => (
+                <li key={risk} className={listItemStyle}>
                   <span className={bulletNegativeStyle}>⚠</span>
                   <span>{risk}</span>
                 </li>

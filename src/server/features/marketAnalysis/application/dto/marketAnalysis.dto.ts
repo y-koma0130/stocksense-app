@@ -2,7 +2,7 @@
  * マーケット分析のDTO（Data Transfer Object）
  */
 
-import type { SectorInfo, ThemeInfo, PeriodType } from "../../domain/values/types";
+import type { PeriodType, SectorInfo, ThemeInfo } from "../../domain/values/types";
 
 /**
  * マーケット分析DTO

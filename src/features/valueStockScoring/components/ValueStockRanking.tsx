@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
-import { trpc } from "../../../../trpc/client";
 import { css } from "../../../../styled-system/css";
+import { trpc } from "../../../../trpc/client";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
 import { ValueStockDrawer } from "./ValueStockDrawer";
@@ -31,7 +31,9 @@ export const ValueStockRanking = () => {
   // 解析済みstockIdのSetを作成
   const analyzedStockIds = useMemo(() => {
     if (!analysisStatuses) return new Set<string>();
-    return new Set(analysisStatuses.filter((status) => status.hasAnalysis).map((status) => status.stockId));
+    return new Set(
+      analysisStatuses.filter((status) => status.hasAnalysis).map((status) => status.stockId),
+    );
   }, [analysisStatuses]);
 
   // 収集日をフォーマット
@@ -67,7 +69,11 @@ export const ValueStockRanking = () => {
           <p className={loadingStyle}>指標データがありません</p>
         </div>
       ) : (
-        <ValueStockTable data={data} onRowClick={setSelectedStock} analyzedStockIds={analyzedStockIds} />
+        <ValueStockTable
+          data={data}
+          onRowClick={setSelectedStock}
+          analyzedStockIds={analyzedStockIds}
+        />
       )}
 
       <ValueStockDrawer

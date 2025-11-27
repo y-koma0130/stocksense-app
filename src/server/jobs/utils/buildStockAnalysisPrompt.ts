@@ -83,7 +83,8 @@ export const buildStockAnalysisPrompt = ({
     stockData.currentPrice && stockData.priceHigh && stockData.priceLow
       ? parseFloat(
           (
-            ((stockData.currentPrice - stockData.priceLow) / (stockData.priceHigh - stockData.priceLow)) *
+            ((stockData.currentPrice - stockData.priceLow) /
+              (stockData.priceHigh - stockData.priceLow)) *
             100
           ).toFixed(1),
         )
@@ -180,8 +181,6 @@ export const buildStockAnalysisPrompt = ({
 - **文字数遵守**: 各項目の文字数制限を必ず守ってください
 - **引用情報除外**: 引用マーカーを一切含めず、自然な文のみを出力してください
 `;
-
-
 
   // ユーザー入力（input）- 構造化データを含める
   const input = `# 分析対象銘柄データ

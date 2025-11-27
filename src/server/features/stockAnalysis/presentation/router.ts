@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { periodTypeSchema } from "@/constants/periodTypes";
 import { publicProcedure, router } from "../../../../../trpc/init";
-import { getStockAnalysisByStockId } from "../infrastructure/queryServices/getStockAnalysisByStockId";
 import { toStockAnalysisDto } from "../application/dto/stockAnalysis.dto";
+import { getStockAnalysisByStockId } from "../infrastructure/queryServices/getStockAnalysisByStockId";
 
 export const stockAnalysisRouter = router({
   /**

@@ -9,7 +9,7 @@ import { ValueStockDrawer } from "./ValueStockDrawer";
 import { ValueStockTable } from "./ValueStockTable";
 
 export const ValueStockRanking = () => {
-  const [periodType, setPeriodType] = useState<"mid_term" | "long_term">("long_term");
+  const [periodType, setPeriodType] = useState<"mid_term" | "long_term">("mid_term");
   const [selectedStock, setSelectedStock] = useState<ValueStockDto | null>(null);
   const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
 
@@ -53,6 +53,7 @@ export const ValueStockRanking = () => {
         stock={selectedStock}
         isOpen={selectedStock !== null}
         onClose={() => setSelectedStock(null)}
+        periodType={periodType}
       />
     </section>
   );

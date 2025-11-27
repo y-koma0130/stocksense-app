@@ -1,4 +1,5 @@
 import { Drawer } from "@/components/ui/Drawer";
+import type { PeriodType } from "@/constants/periodTypes";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
 import { css } from "../../../../styled-system/css";
@@ -7,6 +8,7 @@ type ValueStockDrawerProps = Readonly<{
   stock: ValueStockDto | null;
   isOpen: boolean;
   onClose: () => void;
+  periodType: PeriodType;
 }>;
 
 /**
@@ -45,8 +47,11 @@ const calculatePriceRangePosition = (
   return ((currentPrice - week52Low) / (week52High - week52Low)) * 100;
 };
 
-export const ValueStockDrawer = ({ stock, isOpen, onClose }: ValueStockDrawerProps) => {
+export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueStockDrawerProps) => {
   if (!stock) return null;
+
+  // 期間タイプに応じた表示ラベル
+  const periodLabel = periodType === "mid_term" ? "26週" : "52週";
 
   const pricePosition = calculatePriceRangePosition(
     stock.currentPrice,
@@ -172,10 +177,10 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose }: ValueStockDrawerPro
             )}
           </div>
 
-          {/* 52週価格位置 */}
+          {/* 価格位置 */}
           <div className={indicatorItemStyle}>
             <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>52週価格位置</span>
+              <span className={indicatorLabelStyle}>{periodLabel}価格位置</span>
               <span className={indicatorMainValueStyle}>
                 {pricePosition !== null ? `${pricePosition.toFixed(1)}%` : "-"}
               </span>

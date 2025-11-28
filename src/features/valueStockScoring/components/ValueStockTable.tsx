@@ -1,4 +1,5 @@
 import { Tooltip } from "@/components/ui/Tooltip";
+import { getScoreColor, SUCCESS_COLOR } from "@/constants/colors";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
 import { css } from "../../../../styled-system/css";
@@ -6,20 +7,14 @@ import { css } from "../../../../styled-system/css";
 type ValueStockTableProps = Readonly<{
   data: readonly ValueStockDto[];
   onRowClick: (stock: ValueStockDto) => void;
+  analyzedStockIds?: Set<string>;
 }>;
 
-/**
- * トータルスコアに応じた色を返す（0〜1のスケール）
- */
-const getTotalScoreColor = (score: number): string => {
-  if (score >= 0.8) return "#22c55e";
-  if (score >= 0.6) return "#84cc16";
-  if (score >= 0.4) return "#eab308";
-  if (score >= 0.2) return "#f97316";
-  return "#ef4444";
-};
-
-export const ValueStockTable = ({ data, onRowClick }: ValueStockTableProps) => {
+export const ValueStockTable = ({
+  data,
+  onRowClick,
+  analyzedStockIds = new Set(),
+}: ValueStockTableProps) => {
   return (
     <div className={tableContainerStyle}>
       <table className={tableStyle}>
@@ -36,11 +31,13 @@ export const ValueStockTable = ({ data, onRowClick }: ValueStockTableProps) => {
               </Tooltip>
             </th>
             <th className={thPriceStyle}>現在価格</th>
+            <th className={thAnalysisStyle}>AI解析</th>
           </tr>
         </thead>
         <tbody>
           {data.map((stock, index) => {
             const scorePercent = stock.valueScore.totalScore * 100;
+            const isAnalyzed = analyzedStockIds.has(stock.stockId);
 
             return (
               <tr
@@ -95,13 +92,13 @@ export const ValueStockTable = ({ data, onRowClick }: ValueStockTableProps) => {
                         className={scoreBarStyle}
                         style={{
                           width: `${scorePercent}%`,
-                          backgroundColor: getTotalScoreColor(stock.valueScore.totalScore),
+                          backgroundColor: getScoreColor(scorePercent),
                         }}
                       />
                     </div>
                     <span
                       className={scoreValueStyle}
-                      style={{ color: getTotalScoreColor(stock.valueScore.totalScore) }}
+                      style={{ color: getScoreColor(scorePercent) }}
                     >
                       {scorePercent.toFixed(0)}
                     </span>
@@ -109,6 +106,13 @@ export const ValueStockTable = ({ data, onRowClick }: ValueStockTableProps) => {
                 </td>
                 <td className={tdPriceStyle}>
                   {stock.currentPrice !== null ? `¥${stock.currentPrice.toLocaleString()}` : "-"}
+                </td>
+                <td className={tdAnalysisStyle}>
+                  {isAnalyzed ? (
+                    <span className={analysisCompleteBadgeStyle}>✓</span>
+                  ) : (
+                    <span className={analysisIncompleteBadgeStyle}>-</span>
+                  )}
                 </td>
               </tr>
             );
@@ -182,6 +186,12 @@ const thPriceStyle = css({
   ...thBaseStyle,
   textAlign: "right",
   width: "100px",
+});
+
+const thAnalysisStyle = css({
+  ...thBaseStyle,
+  textAlign: "center",
+  width: "80px",
 });
 
 const trStyle = css({
@@ -309,4 +319,34 @@ const externalLinkIconStyle = css({
   _groupHover: {
     opacity: 1,
   },
+});
+
+const tdAnalysisStyle = css({
+  ...tdBaseStyle,
+  textAlign: "center",
+});
+
+const analysisCompleteBadgeStyle = css({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "1.5rem",
+  height: "1.5rem",
+  backgroundColor: SUCCESS_COLOR,
+  color: "white",
+  borderRadius: "50%",
+  fontSize: "0.875rem",
+  fontWeight: "700",
+});
+
+const analysisIncompleteBadgeStyle = css({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "1.5rem",
+  height: "1.5rem",
+  backgroundColor: "surfaceHover",
+  color: "textMuted",
+  borderRadius: "50%",
+  fontSize: "0.875rem",
 });

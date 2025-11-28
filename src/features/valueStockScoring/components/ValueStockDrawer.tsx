@@ -1,8 +1,11 @@
 import { Drawer } from "@/components/ui/Drawer";
+import { getScoreColor } from "@/constants/colors";
 import type { PeriodType } from "@/constants/periodTypes";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
 import { css } from "../../../../styled-system/css";
+import { StockAnalysisSection } from "../../stockAnalysis/components/StockAnalysisSection";
+import { useStockAnalysis } from "../../stockAnalysis/hooks/useStockAnalysis";
 
 type ValueStockDrawerProps = Readonly<{
   stock: ValueStockDto | null;
@@ -10,17 +13,6 @@ type ValueStockDrawerProps = Readonly<{
   onClose: () => void;
   periodType: PeriodType;
 }>;
-
-/**
- * トータルスコアに応じた色を返す（0〜1のスケール）
- */
-const getTotalScoreColor = (score: number): string => {
-  if (score >= 0.8) return "#22c55e";
-  if (score >= 0.6) return "#84cc16";
-  if (score >= 0.4) return "#eab308";
-  if (score >= 0.2) return "#f97316";
-  return "#ef4444";
-};
 
 /**
  * 業種比率を計算
@@ -48,6 +40,12 @@ const calculatePriceRangePosition = (
 };
 
 export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueStockDrawerProps) => {
+  // 個別株分析を取得（hookはトップレベルで呼び出す必要がある）
+  const { data: analysisData, loading: analysisLoading } = useStockAnalysis({
+    stockId: stock?.stockId ?? "",
+    periodType,
+  });
+
   if (!stock) return null;
 
   // 期間タイプに応じた表示ラベル
@@ -119,18 +117,25 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
               className={totalScoreBarStyle}
               style={{
                 width: `${totalScorePercent}%`,
-                backgroundColor: getTotalScoreColor(stock.valueScore.totalScore),
+                backgroundColor: getScoreColor(totalScorePercent),
               }}
             />
           </div>
           <span
             className={totalScoreValueStyle}
-            style={{ color: getTotalScoreColor(stock.valueScore.totalScore) }}
+            style={{ color: getScoreColor(totalScorePercent) }}
           >
             {totalScorePercent.toFixed(0)}点
           </span>
         </div>
       </div>
+
+      {/* AI分析レポート */}
+      <StockAnalysisSection
+        analysis={analysisData}
+        loading={analysisLoading}
+        periodType={periodType}
+      />
 
       {/* 指標詳細 */}
       <div className={sectionStyle}>
@@ -245,7 +250,7 @@ const metaGridStyle = css({
   display: "grid",
   gridTemplateColumns: "repeat(2, 1fr)",
   gap: "0.75rem",
-  marginBottom: "1.5rem",
+  marginBottom: "1rem",
 });
 
 const metaItemStyle = css({
@@ -266,7 +271,7 @@ const metaValueStyle = css({
 });
 
 const sectionStyle = css({
-  marginBottom: "1.5rem",
+  marginBottom: "1rem",
 });
 
 const sectionTitleStyle = css({

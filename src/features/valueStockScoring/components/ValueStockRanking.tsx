@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { css } from "../../../../styled-system/css";
+import { trpc } from "../../../../trpc/client";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
 import { ValueStockDrawer } from "./ValueStockDrawer";
@@ -12,6 +13,28 @@ export const ValueStockRanking = () => {
   const [periodType, setPeriodType] = useState<"mid_term" | "long_term">("mid_term");
   const [selectedStock, setSelectedStock] = useState<ValueStockDto | null>(null);
   const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
+
+  // 表示中の銘柄IDリストを取得
+  const stockIds = useMemo(() => data.map((stock) => stock.stockId), [data]);
+
+  // 複数銘柄の解析状況を一括取得
+  const { data: analysisStatuses } = trpc.stockAnalysis.getBulkAnalysisStatus.useQuery(
+    {
+      stockIds,
+      periodType,
+    },
+    {
+      enabled: stockIds.length > 0,
+    },
+  );
+
+  // 解析済みstockIdのSetを作成
+  const analyzedStockIds = useMemo(() => {
+    if (!analysisStatuses) return new Set<string>();
+    return new Set(
+      analysisStatuses.filter((status) => status.hasAnalysis).map((status) => status.stockId),
+    );
+  }, [analysisStatuses]);
 
   // 収集日をフォーマット
   const collectedAt = data[0]?.collectedAt;
@@ -46,7 +69,11 @@ export const ValueStockRanking = () => {
           <p className={loadingStyle}>指標データがありません</p>
         </div>
       ) : (
-        <ValueStockTable data={data} onRowClick={setSelectedStock} />
+        <ValueStockTable
+          data={data}
+          onRowClick={setSelectedStock}
+          analyzedStockIds={analyzedStockIds}
+        />
       )}
 
       <ValueStockDrawer

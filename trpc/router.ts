@@ -2,6 +2,8 @@ import { getBitcoinPrice } from "@/lib/coingecko/client";
 import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahooFinance/client";
 import { feedbackRouter } from "@/server/features/feedback/presentation/router";
 import { lineNotificationRouter } from "@/server/features/lineNotification/presentation/router";
+import { marketAnalysisRouter } from "@/server/features/marketAnalysis/presentation/router";
+import { stockAnalysisRouter } from "@/server/features/stockAnalysis/presentation/router";
 import { valueStockScoringRouter } from "@/server/features/valueStockScoring/presentation/router";
 import { publicProcedure, router } from "./init";
 
@@ -94,6 +96,8 @@ export const appRouter = router({
   valueStockScoring: valueStockScoringRouter,
   lineNotification: lineNotificationRouter,
   feedback: feedbackRouter,
+  marketAnalysis: marketAnalysisRouter,
+  stockAnalysis: stockAnalysisRouter,
 });
 
 export type AppRouter = typeof appRouter;

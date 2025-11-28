@@ -3,7 +3,9 @@ import {
   decimal,
   index,
   integer,
+  jsonb,
   pgTable,
+  text,
   timestamp,
   unique,
   uuid,
@@ -11,7 +13,29 @@ import {
 } from "drizzle-orm/pg-core";
 
 /**
- * 1. 銘柄マスター
+ * 1. 業種マスター
+ * TOPIX 33業種分類
+ */
+export const sectors = pgTable(
+  "sectors",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sectorCode: varchar("sector_code", { length: 10 }).notNull().unique(), // 業種コード (e.g., "3050")
+    sectorName: varchar("sector_name", { length: 100 }).notNull(), // 業種名 (e.g., "情報・通信業")
+    displayOrder: integer("display_order"), // 表示順序
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    sectorCodeIdx: index("idx_sectors_code").on(table.sectorCode),
+  }),
+);
+
+export type Sector = typeof sectors.$inferSelect;
+export type NewSector = typeof sectors.$inferInsert;
+
+/**
+ * 2. 銘柄マスター
  * 東証全市場（最大約4,000銘柄）の基本情報
  */
 export const stocks = pgTable(
@@ -38,7 +62,7 @@ export const stocks = pgTable(
 );
 
 /**
- * 2. 業種平均PER/PBR
+ * 3. 業種平均PER/PBR
  * JPX公式Excelから月次で取得・更新
  */
 export const sectorAverages = pgTable(
@@ -63,7 +87,7 @@ export const sectorAverages = pgTable(
 );
 
 /**
- * 3. 中期指標データ（1-6ヶ月向け）
+ * 4. 中期指標データ（1-6ヶ月向け）
  * - RSI: 14週
  * - 価格レンジ: 26週（約6ヶ月）
  */
@@ -104,7 +128,7 @@ export const midTermIndicators = pgTable(
 );
 
 /**
- * 4. 長期指標データ（6ヶ月-3年向け）
+ * 5. 長期指標データ（6ヶ月-3年向け）
  * - RSI: 52週
  * - 価格レンジ: 52週（1年）
  */
@@ -145,7 +169,7 @@ export const longTermIndicators = pgTable(
 );
 
 /**
- * 4. 銘柄財務健全性データ
+ * 6. 銘柄財務健全性データ
  * 月次で更新される財務健全性指標（罠銘柄除外用）
  * 銘柄ごとに1レコード（最新のみ保持）
  */
@@ -187,7 +211,7 @@ export type StockFinancialHealth = typeof stockFinancialHealth.$inferSelect;
 export type NewStockFinancialHealth = typeof stockFinancialHealth.$inferInsert;
 
 /**
- * 5. LINE連携ユーザー
+ * 7. LINE連携ユーザー
  * LINEユーザーIDとアプリユーザーの紐付け
  */
 export const lineUsers = pgTable(
@@ -207,3 +231,92 @@ export const lineUsers = pgTable(
 
 export type LineUser = typeof lineUsers.$inferSelect;
 export type NewLineUser = typeof lineUsers.$inferInsert;
+
+/**
+ * 8. マーケット分析データ
+ * LLMによる市場環境・セクター分析結果
+ */
+export const marketAnalysis = pgTable(
+  "market_analysis",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    periodType: varchar("period_type", { length: 20 }).notNull(), // "mid_term" | "long_term"
+    analyzedAt: timestamp("analyzed_at").notNull(),
+
+    // 金利動向分析（日銀政策、米国金利影響）
+    interestRateTrend: text("interest_rate_trend"),
+
+    // 注目セクター（JSONB: {sectorCode: string, sectorName: string, reason: string}[]）
+    favorableSectors: jsonb("favorable_sectors"),
+
+    // 注意セクター（JSONB: {sectorCode: string, sectorName: string, reason: string}[]）
+    unfavorableSectors: jsonb("unfavorable_sectors"),
+
+    // 注目テーマ・事業内容（JSONB: {theme: string, description: string}[]）
+    favorableThemes: jsonb("favorable_themes"),
+
+    // 注意テーマ・事業内容（JSONB: {theme: string, description: string}[]）
+    unfavorableThemes: jsonb("unfavorable_themes"),
+
+    // 経済・マーケット総括
+    economicSummary: text("economic_summary"),
+
+    // LLM生レスポンス（デバッグ・監査用）
+    llmRawResponse: jsonb("llm_raw_response"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    periodTypeIdx: index("idx_market_analysis_period").on(table.periodType),
+    analyzedAtIdx: index("idx_market_analysis_analyzed_at").on(table.analyzedAt),
+  }),
+);
+
+export type MarketAnalysis = typeof marketAnalysis.$inferSelect;
+export type NewMarketAnalysis = typeof marketAnalysis.$inferInsert;
+
+/**
+ * 9. 個別株分析データ
+ * LLMによる個別銘柄の投資分析結果
+ */
+export const stockAnalyses = pgTable(
+  "stock_analyses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    periodType: varchar("period_type", { length: 20 }).notNull(), // "mid_term" | "long_term"
+    analyzedAt: timestamp("analyzed_at").notNull(),
+
+    // バリュー株としての評価（5段階、上位銘柄間の相対評価）
+    valueStockRating: varchar("value_stock_rating", { length: 20 }), // "excellent" | "good" | "fair" | "poor" | "very_poor"
+
+    // 総合評価コメント（100-400字）
+    summary: text("summary"),
+
+    // 投資する場合の魅力ポイント（JSONB: string[]、3-4項目、各100字以内）
+    investmentPoints: jsonb("investment_points"),
+
+    // 注意すべきリスク（JSONB: string[]、2-3項目、各100字以内）
+    risks: jsonb("risks"),
+
+    // LLM生レスポンス（デバッグ・監査用）
+    llmRawResponse: text("llm_raw_response"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    stockIdx: index("idx_stock_analyses_stock").on(table.stockId),
+    periodTypeIdx: index("idx_stock_analyses_period").on(table.periodType),
+    analyzedAtIdx: index("idx_stock_analyses_analyzed_at").on(table.analyzedAt),
+    stockPeriodIdx: index("idx_stock_analyses_stock_period").on(
+      table.stockId,
+      table.periodType,
+      table.analyzedAt,
+    ),
+  }),
+);
+
+export type StockAnalysis = typeof stockAnalyses.$inferSelect;
+export type NewStockAnalysis = typeof stockAnalyses.$inferInsert;

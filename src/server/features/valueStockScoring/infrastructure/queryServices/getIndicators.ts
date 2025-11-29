@@ -17,6 +17,11 @@ import {
 
 /**
  * 指定した期間タイプの最新の指標データを全件取得する関数の型定義
+ *
+ * TODO: 中期/長期で返却する型が異なるため、将来的に以下の分離を検討:
+ * - GetLatestMidTermIndicators: MidTermIndicatorDto[] を返す
+ * - GetLatestLongTermIndicators: LongTermIndicatorDto[] を返す
+ * - 共通の GetLatestIndicators は廃止し、呼び出し側で明示的に使い分ける
  */
 export type GetLatestIndicators = (periodType: PeriodType) => Promise<IndicatorDto[]>;
 
@@ -61,6 +66,7 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
       per: midTermIndicators.per,
       pbr: midTermIndicators.pbr,
       rsi: midTermIndicators.rsi,
+      rsiShort: midTermIndicators.rsiShort,
       priceHigh: midTermIndicators.priceHigh,
       priceLow: midTermIndicators.priceLow,
       // sector_averagesから業種平均を取得（最新データを使用）
@@ -101,6 +107,7 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
       per: row.per ? Number(row.per) : null,
       pbr: row.pbr ? Number(row.pbr) : null,
       rsi: row.rsi ? Number(row.rsi) : null,
+      rsiShort: row.rsiShort ? Number(row.rsiShort) : null,
       priceHigh: row.priceHigh ? Number(row.priceHigh) : null,
       priceLow: row.priceLow ? Number(row.priceLow) : null,
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
@@ -166,6 +173,9 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       operatingIncomeDeclineYears: stockFinancialHealth.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: stockFinancialHealth.operatingCashFlowNegativeYears,
       revenueDeclineYears: stockFinancialHealth.revenueDeclineYears,
+      // EPS成長率計算用（長期スコアリング用）
+      epsLatest: stockFinancialHealth.epsLatest,
+      eps3yAgo: stockFinancialHealth.eps3yAgo,
     })
     .from(longTermIndicators)
     .innerJoin(stocks, eq(longTermIndicators.stockId, stocks.id))
@@ -204,6 +214,8 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       operatingIncomeDeclineYears: row.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: row.operatingCashFlowNegativeYears,
       revenueDeclineYears: row.revenueDeclineYears,
+      epsLatest: row.epsLatest ? Number(row.epsLatest) : null,
+      eps3yAgo: row.eps3yAgo ? Number(row.eps3yAgo) : null,
     }),
   );
 };

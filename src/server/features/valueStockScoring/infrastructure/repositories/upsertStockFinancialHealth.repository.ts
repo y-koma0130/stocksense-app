@@ -21,6 +21,8 @@ export const upsertStockFinancialHealth: UpsertStockFinancialHealth = async (ent
       operatingIncomeDeclineYears: entity.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: entity.operatingCashFlowNegativeYears,
       revenueDeclineYears: entity.revenueDeclineYears,
+      epsLatest: entity.epsLatest?.toString() ?? null,
+      eps3yAgo: entity.eps3yAgo?.toString() ?? null,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
@@ -31,6 +33,8 @@ export const upsertStockFinancialHealth: UpsertStockFinancialHealth = async (ent
         operatingIncomeDeclineYears: entity.operatingIncomeDeclineYears,
         operatingCashFlowNegativeYears: entity.operatingCashFlowNegativeYears,
         revenueDeclineYears: entity.revenueDeclineYears,
+        epsLatest: entity.epsLatest?.toString() ?? null,
+        eps3yAgo: entity.eps3yAgo?.toString() ?? null,
         updatedAt: new Date(),
       },
     });

@@ -38,6 +38,11 @@ export type GetTopValueStocks = (
  * 3. ドメインサービスでスコア計算
  * 4. ドメインサービスでランキング
  * 5. DTOにパースして返却
+ *
+ * TODO: 中期/長期でロジックが異なるため、将来的に以下の分離を検討:
+ * - getTopMidTermValueStocks / getTopLongTermValueStocks に分離
+ * - それぞれ専用のクエリサービス・スコアリング設定を使用
+ * - 現在の "rsiShort" in indicator のランタイムチェックを型レベルで解決
  */
 export const getTopValueStocks: GetTopValueStocks = async (dependencies, params) => {
   // 1. クエリサービスから全件取得
@@ -53,9 +58,18 @@ export const getTopValueStocks: GetTopValueStocks = async (dependencies, params)
   const filteredByTrap = filteredByMarket.filter((indicator) => !isTrapStock(indicator).isTrap);
 
   // 5. スコア計算（各指標にスコアを付与）
+  // 中期の場合はrsiShortを使用、長期の場合はepsLatest/eps3yAgoを使用
   const scoredStocks = filteredByTrap.map((indicator) => ({
     ...indicator,
-    valueScore: calculateValueStockScore(indicator, config),
+    valueScore: calculateValueStockScore(
+      {
+        ...indicator,
+        rsiShort: "rsiShort" in indicator ? indicator.rsiShort : null,
+        epsLatest: "epsLatest" in indicator ? indicator.epsLatest : null,
+        eps3yAgo: "eps3yAgo" in indicator ? indicator.eps3yAgo : null,
+      },
+      config,
+    ),
   }));
 
   // 6. ランキング

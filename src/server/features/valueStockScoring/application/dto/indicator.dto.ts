@@ -4,6 +4,11 @@ import { valueStockScoreSchema } from "../../domain/entities/valueStockScore";
 
 /**
  * 共通の指標DTOベーススキーマ
+ *
+ * TODO: 中期/長期で扱う指標が異なってきたため、将来的に以下の分離を検討:
+ * - baseIndicatorDtoSchema を廃止し、中期/長期で完全に独立したスキーマを定義
+ * - MidTermIndicatorDto / LongTermIndicatorDto を別ファイルに分離
+ * - discriminated union を使わず、ユースケース層で明示的に型を分ける
  */
 const baseIndicatorDtoSchema = z.object({
   stockId: z.string(),
@@ -41,16 +46,21 @@ const baseIndicatorDtoSchema = z.object({
 
 /**
  * 中期指標DTOスキーマ
+ * rsiShort: 短期RSI（2週）- RSIモメンタム計算用
  */
 export const midTermIndicatorDtoSchema = baseIndicatorDtoSchema.extend({
   periodType: z.literal("mid_term"),
+  rsiShort: z.number().nullable(), // 短期RSI（2週）- モメンタム計算用
 });
 
 /**
  * 長期指標DTOスキーマ
+ * epsLatest, eps3yAgo: EPS成長率計算用（長期スコアリング用）
  */
 export const longTermIndicatorDtoSchema = baseIndicatorDtoSchema.extend({
   periodType: z.literal("long_term"),
+  epsLatest: z.number().nullable(), // 最新年度のEPS
+  eps3yAgo: z.number().nullable(), // 3年前のEPS
 });
 
 /**

@@ -55,8 +55,11 @@ export const weeklyIndicatorCollection = inngest.createFunction(
             // 週足データ取得（26週分 + 余裕）
             const weeklyData = await getWeeklyData(stock.tickerSymbol, 30);
 
-            // 14週RSI計算
+            // 14週RSI計算（ベース）
             const rsi = calculateRSI(weeklyData, 14);
+
+            // 2週RSI計算（短期モメンタム用）
+            const rsiShort = calculateRSI(weeklyData, 2);
 
             // 26週の高値・安値を計算
             const last26Weeks = weeklyData.slice(0, 26);
@@ -73,6 +76,7 @@ export const weeklyIndicatorCollection = inngest.createFunction(
               per: fundamentals.per,
               pbr: fundamentals.pbr,
               rsi,
+              rsiShort,
               priceHigh,
               priceLow,
               sectorCode: stock.sectorCode,

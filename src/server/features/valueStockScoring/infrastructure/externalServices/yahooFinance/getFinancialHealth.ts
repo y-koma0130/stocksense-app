@@ -17,6 +17,8 @@ type AnnualFinancialRecord = {
   totalAssets?: number;
   totalRevenue?: number;
   netIncome?: number;
+  dilutedEPS?: number; // 希薄化後EPS
+  basicEPS?: number; // 基本EPS
 };
 
 /**
@@ -150,6 +152,42 @@ const calculateRevenueDeclineYears = (records: AnnualFinancialRecord[]): number 
 };
 
 /**
+ * EPSデータ（最新と3年前）を取得
+ * @param records - 日付順（古い順）にソートされたレコード
+ * @returns { epsLatest, eps3yAgo }
+ */
+const getEpsData = (
+  records: AnnualFinancialRecord[],
+): { epsLatest: number | null; eps3yAgo: number | null } => {
+  // dilutedEPSを優先、なければbasicEPSを使用
+  const getEps = (record: AnnualFinancialRecord): number | null => {
+    if (typeof record.dilutedEPS === "number" && !Number.isNaN(record.dilutedEPS)) {
+      return record.dilutedEPS;
+    }
+    if (typeof record.basicEPS === "number" && !Number.isNaN(record.basicEPS)) {
+      return record.basicEPS;
+    }
+    return null;
+  };
+
+  // 有効なEPSを持つレコードを抽出
+  const validRecords = records.filter((r) => getEps(r) !== null);
+
+  if (validRecords.length === 0) {
+    return { epsLatest: null, eps3yAgo: null };
+  }
+
+  // 最新のEPS
+  const epsLatest = getEps(validRecords[validRecords.length - 1]);
+
+  // 3年前のEPS（3年分以上のデータがある場合）
+  // validRecordsは古い順なので、最新から3つ前のレコードを取得
+  const eps3yAgo = validRecords.length >= 4 ? getEps(validRecords[validRecords.length - 4]) : null;
+
+  return { epsLatest, eps3yAgo };
+};
+
+/**
  * Yahoo Financeから財務健全性データを取得
  * fundamentalsTimeSeriesを使用（バリデーションスキップ）
  */
@@ -178,6 +216,8 @@ export const getFinancialHealth: GetFinancialHealth = async (tickerSymbol) => {
         operatingIncomeDeclineYears: null,
         operatingCashFlowNegativeYears: null,
         revenueDeclineYears: null,
+        epsLatest: null,
+        eps3yAgo: null,
       });
     }
 
@@ -193,6 +233,7 @@ export const getFinancialHealth: GetFinancialHealth = async (tickerSymbol) => {
     const operatingIncomeDeclineYears = calculateOperatingIncomeDeclineYears(records);
     const operatingCashFlowNegativeYears = calculateOperatingCashFlowNegativeYears(records);
     const revenueDeclineYears = calculateRevenueDeclineYears(records);
+    const { epsLatest, eps3yAgo } = getEpsData(records);
 
     return financialHealthDataDtoSchema.parse({
       tickerSymbol,
@@ -201,6 +242,8 @@ export const getFinancialHealth: GetFinancialHealth = async (tickerSymbol) => {
       operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears,
       revenueDeclineYears,
+      epsLatest,
+      eps3yAgo,
     });
   } catch (error) {
     console.error(`Error fetching financial health for ${tickerSymbol}:`, error);
@@ -211,6 +254,8 @@ export const getFinancialHealth: GetFinancialHealth = async (tickerSymbol) => {
       operatingIncomeDeclineYears: null,
       operatingCashFlowNegativeYears: null,
       revenueDeclineYears: null,
+      epsLatest: null,
+      eps3yAgo: null,
     };
   }
 };

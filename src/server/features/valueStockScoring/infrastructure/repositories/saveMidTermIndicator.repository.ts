@@ -19,6 +19,7 @@ export const saveMidTermIndicator: SaveMidTermIndicator = async (indicator) => {
     per: indicator.per?.toString() ?? null,
     pbr: indicator.pbr?.toString() ?? null,
     rsi: indicator.rsi?.toString() ?? null,
+    rsiShort: indicator.rsiShort?.toString() ?? null,
     priceHigh: indicator.priceHigh?.toString() ?? null,
     priceLow: indicator.priceLow?.toString() ?? null,
     sectorCode: indicator.sectorCode,

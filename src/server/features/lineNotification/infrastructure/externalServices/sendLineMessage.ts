@@ -39,6 +39,7 @@ export const sendLineMessage: SendLineMessage = async (lineUserId, messages) => 
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`LINE API error: ${response.status} ${errorText}`);
     return { success: false, error: `LINE API error: ${response.status} ${errorText}` };
   }
 

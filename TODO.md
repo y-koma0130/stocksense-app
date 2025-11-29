@@ -97,14 +97,20 @@
   - [x] サービス画像の追加
   - [x] AI機能の説明追加
 
-### ユーザー権限・プラン基盤の整備
-- [ ] `user_plan` カラムの追加 (Free/Premium enum)
-- [ ] プラン情報を管理するテーブル設計
-- [ ] マイグレーション作成
-- [ ] ユーザープラン取得の共通関数
-- [ ] Feature Flag システムの実装
-- [ ] 使用制限チェック機能 (通知数、分析回数など)
-- [ ] プラン別機能制限の定義
+### ユーザー権限・プラン基盤の整備 ✅ 完了
+- [x] `user_subscriptions` テーブルの設計と実装
+- [x] プラン型定義 (free/standard/pro)
+- [x] DDD構造でのサブスクリプション機能実装
+  - [x] エンティティ (userSubscription)
+  - [x] クエリサービス (getUserSubscriptionByUserId)
+  - [x] リポジトリ (insertUserSubscription)
+  - [x] ユースケース (initializeUserSubscription)
+  - [x] tRPCルーター (userSubscriptionRouter)
+- [x] ログイン時のサブスクリプション自動初期化 (冪等処理)
+- [x] 認証コールバックのリファクタリング (useAuthCallbackフック)
+- [ ] Feature Flag システムの実装 (課金実装時)
+- [ ] 使用制限チェック機能 (通知数、分析回数など) (課金実装時)
+- [ ] プラン別機能制限の定義 (課金実装時)
 
 ### スコアリング・除外ロジックの改善
 - [ ] 罠株判定の強化

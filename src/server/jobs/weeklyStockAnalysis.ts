@@ -1,6 +1,6 @@
 /**
  * 週次個別株分析ジョブ
- * 毎週月曜日8:30 (JST)に実行（マーケット分析・指標取得の後）
+ * 毎週土曜日4:00 (JST)に実行（マーケット分析・指標取得の後）
  * 上位N銘柄の個別分析を実施
  */
 
@@ -22,7 +22,7 @@ export const weeklyStockAnalysis = inngest.createFunction(
     name: "Weekly Stock Analysis (Mid-Term)",
     retries: 2,
   },
-  { cron: "TZ=Asia/Tokyo 30 8 * * 1" }, // 毎週月曜日8:30 JST
+  { cron: "TZ=Asia/Tokyo 0 4 * * 6" }, // 毎週土曜日4:00 JST
   async ({ step }) => {
     // 最新のマーケット分析を取得
     const marketAnalysis = await step.run("fetch-market-analysis", async () => {

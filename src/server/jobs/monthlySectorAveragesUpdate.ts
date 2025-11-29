@@ -5,19 +5,21 @@ import { parseJPXSectorAveragesFromBuffer } from "../features/marketData/infrast
 import { saveSectorAverages } from "../features/marketData/infrastructure/repositories/saveSectorAverages.repository";
 
 /**
- * 月次業種平均データ更新ジョブ
- * 毎月1日14:00 (JST)に実行
+ * 業種平均データ更新ジョブ（手動実行）
  *
  * JPX公式サイトから業種別平均PER/PBRをダウンロード・保存
  * https://www.jpx.co.jp/markets/statistics-equities/misc/04.html
+ *
+ * 使用方法: Inngest Dashboardから手動でトリガー、
+ * または inngest.send({ name: "sector-averages/update" }) で実行
  */
 export const monthlySectorAveragesUpdate = inngest.createFunction(
   {
     id: "monthly-sector-averages-update",
-    name: "Monthly Sector Averages Update",
+    name: "Sector Averages Update (Manual)",
     retries: 3,
   },
-  { cron: "TZ=Asia/Tokyo 0 14 1 * *" }, // 毎月1日14:00 JST
+  { event: "sector-averages/update" }, // 手動イベントトリガー
   async ({ step }) => {
     // Step 1: JPX ExcelファイルをパースしてDTOを取得 + データ基準日を決定 + 集約を生成
     const aggregate = await step.run("create-sector-averages-aggregate", async () => {

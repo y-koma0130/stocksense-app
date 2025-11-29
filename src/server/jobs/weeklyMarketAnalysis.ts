@@ -1,6 +1,6 @@
 /**
  * 中期マーケット分析ジョブ
- * 毎週月曜日7:00 (JST)に実行
+ * 毎週土曜日2:00 (JST)に実行
  * LLMを使用して1-6ヶ月の投資目線でマーケット分析を実施
  */
 
@@ -17,7 +17,7 @@ export const weeklyMarketAnalysis = inngest.createFunction(
     name: "Weekly Market Analysis (Mid-Term)",
     retries: 2,
   },
-  { cron: "TZ=Asia/Tokyo 0 7 * * 1" }, // 毎週月曜日7:00 JST
+  { cron: "TZ=Asia/Tokyo 0 2 * * 6" }, // 毎週土曜日2:00 JST
   async ({ step }) => {
     // プロンプト生成
     const prompt = buildMarketAnalysisPrompt({ periodType: "mid_term" });

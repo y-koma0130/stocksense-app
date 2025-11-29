@@ -1,6 +1,6 @@
 /**
  * 長期マーケット分析ジョブ
- * 毎月第1月曜日7:00 (JST)に実行
+ * 毎月1日2:00 (JST)に実行
  * LLMを使用して6ヶ月-3年の投資目線でマーケット分析を実施
  */
 
@@ -17,7 +17,7 @@ export const monthlyMarketAnalysis = inngest.createFunction(
     name: "Monthly Market Analysis (Long-Term)",
     retries: 2,
   },
-  { cron: "TZ=Asia/Tokyo 0 7 1-7 * 1" }, // 毎月第1月曜日7:00 JST
+  { cron: "TZ=Asia/Tokyo 0 2 1 * *" }, // 毎月1日2:00 JST
   async ({ step }) => {
     // プロンプト生成
     const prompt = buildMarketAnalysisPrompt({ periodType: "long_term" });

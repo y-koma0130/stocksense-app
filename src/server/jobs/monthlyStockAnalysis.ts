@@ -1,6 +1,6 @@
 /**
  * 月次個別株分析ジョブ
- * 毎月1日8:30 (JST)に実行（マーケット分析・指標取得の後）
+ * 毎月1日4:00 (JST)に実行（マーケット分析・指標取得の後）
  * 上位N銘柄の個別分析を実施（長期目線）
  */
 
@@ -22,7 +22,7 @@ export const monthlyStockAnalysis = inngest.createFunction(
     name: "Monthly Stock Analysis (Long-Term)",
     retries: 2,
   },
-  { cron: "TZ=Asia/Tokyo 30 8 1 * *" }, // 毎月1日8:30 JST
+  { cron: "TZ=Asia/Tokyo 0 4 1 * *" }, // 毎月1日4:00 JST
   async ({ step }) => {
     // 最新のマーケット分析を取得
     const marketAnalysis = await step.run("fetch-market-analysis", async () => {

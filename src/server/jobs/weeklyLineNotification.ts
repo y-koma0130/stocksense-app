@@ -8,7 +8,7 @@ const getDashboardUrl = () => `https://${process.env.SERVICE_DOMAIN}/dashboard`;
 
 /**
  * 中期LINE通知ジョブ（旧: 週次）
- * 毎週月曜8:00 (JST)に実行
+ * 毎週月曜7:00 (JST)に実行（個別株分析の後）
  * 中期上位10銘柄をLINE通知で送信
  */
 export const weeklyLineNotification = inngest.createFunction(
@@ -17,7 +17,7 @@ export const weeklyLineNotification = inngest.createFunction(
     name: "Mid-Term LINE Notification",
     retries: 3,
   },
-  { cron: "TZ=Asia/Tokyo 0 8 * * 1" }, // 毎週月曜8:00 JST
+  { cron: "TZ=Asia/Tokyo 0 7 * * 1" }, // 毎週月曜7:00 JST（個別株分析の後）
   async ({ step }) => {
     // ステップ1: 通知対象ユーザーを取得
     const lineUsers = await step.run("fetch-line-users", async () => {

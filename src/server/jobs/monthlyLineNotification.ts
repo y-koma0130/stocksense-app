@@ -36,7 +36,7 @@ const isFirstWeekdayOfMonth = (): boolean => {
 
 /**
  * 長期LINE通知ジョブ（旧: 月次）
- * 毎月1日〜3日の8:00 (JST)に実行
+ * 毎月1日〜3日の7:00 (JST)に実行
  * 最初の平日のみ長期上位10銘柄をLINE通知で送信
  */
 export const monthlyLineNotification = inngest.createFunction(
@@ -45,7 +45,7 @@ export const monthlyLineNotification = inngest.createFunction(
     name: "Long-Term LINE Notification",
     retries: 3,
   },
-  { cron: "TZ=Asia/Tokyo 0 8 1-3 * *" }, // 毎月1日〜3日の8:00 JST
+  { cron: "TZ=Asia/Tokyo 0 7 1-3 * *" }, // 毎月1日〜3日の7:00 JST（個別株分析の後）
   async ({ step }) => {
     // ステップ1: 最初の平日かどうかを確認
     const shouldRun = await step.run("check-first-weekday", async () => {

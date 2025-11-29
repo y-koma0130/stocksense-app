@@ -18,15 +18,18 @@ import { weeklyStockAnalysis } from "../../../server/jobs/weeklyStockAnalysis";
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
-    monthlySectorAveragesUpdate, // Every 1st 14:00 JST
+    // 週次ジョブ（土曜日深夜）
     weeklyIndicatorCollection, // Every Saturday 0:00 JST
-    monthlyIndicatorCollection, // Every 1st 0:00 JST
-    monthlyFinancialHealthCollection, // Every 1st 6:00 JST
-    weeklyMarketAnalysis, // Every Monday 7:00 JST (before scoring job)
-    monthlyMarketAnalysis, // Every 1st Monday 7:00 JST (before scoring job)
-    weeklyStockAnalysis, // Every Monday 8:30 JST (after market analysis and indicator collection)
-    monthlyStockAnalysis, // Every 1st 8:30 JST (after market analysis and indicator collection)
-    weeklyLineNotification, // Every Monday 8:00 JST
-    monthlyLineNotification, // Every 1st-3rd 8:00 JST (first weekday only)
+    weeklyMarketAnalysis, // Every Saturday 2:00 JST (after indicator collection)
+    weeklyStockAnalysis, // Every Saturday 4:00 JST (after market analysis)
+    weeklyLineNotification, // Every Monday 7:00 JST (after stock analysis)
+    // 月次ジョブ（毎月1日深夜）
+    monthlyIndicatorCollection, // Every 1st 0:00 JST (with financial health)
+    monthlyFinancialHealthCollection, // Every 1st 0:00 JST (with indicator)
+    monthlyMarketAnalysis, // Every 1st 2:00 JST (after indicator collection)
+    monthlyStockAnalysis, // Every 1st 4:00 JST (after market analysis)
+    monthlyLineNotification, // Every 1st-3rd 7:00 JST (first weekday only)
+    // 手動実行ジョブ
+    monthlySectorAveragesUpdate, // Manual trigger: "sector-averages/update"
   ],
 });

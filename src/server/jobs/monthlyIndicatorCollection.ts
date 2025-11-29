@@ -17,7 +17,7 @@ export const monthlyIndicatorCollection = inngest.createFunction(
     name: "Long-Term Indicator Collection",
     retries: 3,
   },
-  { cron: "TZ=Asia/Tokyo 0 0 1 * *" }, // 毎月1日0:00 JST
+  { cron: "TZ=Asia/Tokyo 0 0 1 * *" }, // 毎月1日0:00 JST（財務健全性収集と同時実行）
   async ({ step }) => {
     // ステップ1: 上場中の銘柄を取得
     const activeStocks = await step.run("fetch-active-stocks", async () => {

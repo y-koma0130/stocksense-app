@@ -6,7 +6,7 @@ import { upsertStockFinancialHealth } from "../features/valueStockScoring/infras
 
 /**
  * 月次財務健全性データ収集ジョブ
- * 毎月1日6:00 (JST)に実行（指標収集ジョブの6時間後）
+ * 毎月1日0:00 (JST)に実行（指標収集ジョブと同時実行）
  * 全銘柄の財務健全性データを収集してDBにUPSERT
  */
 export const monthlyFinancialHealthCollection = inngest.createFunction(
@@ -15,7 +15,7 @@ export const monthlyFinancialHealthCollection = inngest.createFunction(
     name: "Monthly Financial Health Collection",
     retries: 3,
   },
-  { cron: "TZ=Asia/Tokyo 0 6 1 * *" }, // 毎月1日6:00 JST
+  { cron: "TZ=Asia/Tokyo 0 0 1 * *" }, // 毎月1日0:00 JST（指標収集と同時実行）
   async ({ step }) => {
     // ステップ1: 上場中の銘柄を取得
     const activeStocks = await step.run("fetch-active-stocks", async () => {

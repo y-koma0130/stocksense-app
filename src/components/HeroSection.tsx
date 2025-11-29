@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect } from "react";
 import {
   loadHeroDismissedFromStorage,
@@ -45,10 +46,19 @@ export const HeroSection = () => {
       >
         ✕
       </button>
-      <h1 className={titleStyle}>StockSense</h1>
+      <Image
+        src="/Logo.svg"
+        alt="StockSense"
+        width={200}
+        height={40}
+        className={logoStyle}
+        priority
+      />
       <p className={taglineStyle}>割安株を自動検出し、LINEでお届け</p>
       <p className={descriptionStyle}>
-        PER・PBR・RSIなど複数指標から割安度をスコアリング。罠銘柄を除外し、本当に狙い目の銘柄を週次で通知します。
+        PER・PBR・RSIなど複数指標から割安度をスコアリング。
+        <br />
+        罠銘柄を除外し、本当に狙い目の銘柄を週次で通知します。
       </p>
     </section>
   );
@@ -83,12 +93,10 @@ const closeButtonStyle = css({
   },
 });
 
-const titleStyle = css({
-  fontSize: "2rem",
-  fontWeight: "700",
-  color: "accent",
+const logoStyle = css({
+  display: "block",
+  marginX: "auto",
   marginBottom: "0.5rem",
-  letterSpacing: "-0.02em",
 });
 
 const taglineStyle = css({

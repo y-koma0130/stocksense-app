@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Drawer } from "@/components/ui/Drawer";
 import { css } from "../../../../styled-system/css";
+import { NotificationSettingsDrawerSkeleton } from "./NotificationSettingsDrawerSkeleton";
 
 type NotificationSettingsDrawerProps = Readonly<{
   isOpen: boolean;
@@ -26,10 +27,7 @@ export const NotificationSettingsDrawer = ({
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="LINE通知設定" width="400px">
       {isLoading ? (
-        <div className={loadingContainerStyle}>
-          <div className={spinnerStyle} />
-          <p className={loadingTextStyle}>読み込み中...</p>
-        </div>
+        <NotificationSettingsDrawerSkeleton />
       ) : (
         <>
           {/* 連携状態 */}
@@ -131,30 +129,6 @@ export const NotificationSettingsDrawer = ({
     </Drawer>
   );
 };
-
-const loadingContainerStyle = css({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "3rem 1rem",
-  gap: "1rem",
-});
-
-const spinnerStyle = css({
-  width: "40px",
-  height: "40px",
-  border: "4px solid",
-  borderColor: "surfaceHover",
-  borderTopColor: "accent",
-  borderRadius: "50%",
-  animation: "spin 0.8s linear infinite",
-});
-
-const loadingTextStyle = css({
-  fontSize: "0.875rem",
-  color: "textMuted",
-});
 
 const sectionStyle = css({
   marginBottom: "1.5rem",

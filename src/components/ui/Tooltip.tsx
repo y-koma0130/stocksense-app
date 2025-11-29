@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { css } from "../../../styled-system/css";
 
 type TooltipProps = Readonly<{
@@ -40,8 +41,13 @@ const calculateTooltipPosition = (
 export const Tooltip = ({ children, content }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [isMounted, setIsMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isVisible && triggerRef.current && tooltipRef.current) {
@@ -58,6 +64,19 @@ export const Tooltip = ({ children, content }: TooltipProps) => {
     }
   }, [isVisible]);
 
+  const tooltipElement = isVisible ? (
+    <span
+      ref={tooltipRef}
+      className={contentStyle}
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+      }}
+    >
+      {content}
+    </span>
+  ) : null;
+
   return (
     <>
       <button
@@ -66,21 +85,12 @@ export const Tooltip = ({ children, content }: TooltipProps) => {
         className={containerStyle}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
       >
         {children}
       </button>
-      {isVisible && (
-        <span
-          ref={tooltipRef}
-          className={contentStyle}
-          style={{
-            top: `${position.top}px`,
-            left: `${position.left}px`,
-          }}
-        >
-          {content}
-        </span>
-      )}
+      {isMounted && tooltipElement && createPortal(tooltipElement, document.body)}
     </>
   );
 };
@@ -114,5 +124,5 @@ const contentStyle = css({
   border: "1px solid",
   borderColor: "border",
   pointerEvents: "none",
-  zIndex: 1000,
+  zIndex: 9999,
 });

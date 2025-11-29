@@ -6,8 +6,10 @@ import { css } from "../../../../styled-system/css";
 import { trpc } from "../../../../trpc/client";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
+import { ScoringInfoBanner } from "./ScoringInfoBanner";
 import { ValueStockDrawer } from "./ValueStockDrawer";
 import { ValueStockTable } from "./ValueStockTable";
+import { ValueStockTableSkeleton } from "./ValueStockTableSkeleton";
 
 export const ValueStockRanking = () => {
   const [periodType, setPeriodType] = useState<"mid_term" | "long_term">("mid_term");
@@ -56,17 +58,17 @@ export const ValueStockRanking = () => {
         <PeriodTypeToggle periodType={periodType} onToggle={setPeriodType} />
       </div>
 
+      <ScoringInfoBanner />
+
       {loading ? (
-        <div className={messageContainerStyle}>
-          <p className={loadingStyle}>読み込み中...</p>
-        </div>
+        <ValueStockTableSkeleton rowCount={10} />
       ) : error ? (
-        <div className={messageContainerStyle}>
+        <div className={errorContainerStyle}>
           <p className={errorStyle}>データの取得に失敗しました: {error.message}</p>
         </div>
       ) : data.length === 0 ? (
-        <div className={messageContainerStyle}>
-          <p className={loadingStyle}>指標データがありません</p>
+        <div className={emptyContainerStyle}>
+          <p className={emptyStyle}>指標データがありません</p>
         </div>
       ) : (
         <ValueStockTable
@@ -111,21 +113,27 @@ const dateStyle = css({
   fontWeight: "400",
 });
 
-const messageContainerStyle = css({
+const errorContainerStyle = css({
   backgroundColor: "cardBg",
   borderRadius: "12px",
   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
 });
 
-const loadingStyle = css({
-  color: "textMuted",
+const emptyContainerStyle = css({
+  backgroundColor: "cardBg",
+  borderRadius: "12px",
+  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+});
+
+const errorStyle = css({
+  color: "error",
   fontSize: "0.875rem",
   padding: "2rem",
   textAlign: "center",
 });
 
-const errorStyle = css({
-  color: "error",
+const emptyStyle = css({
+  color: "textMuted",
   fontSize: "0.875rem",
   padding: "2rem",
   textAlign: "center",

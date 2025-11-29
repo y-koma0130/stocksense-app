@@ -5,6 +5,7 @@ import { MarketSummaryCard } from "@/components/ui/MarketSummaryCard";
 import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
 import { css } from "../../../../styled-system/css";
 import { useMarketData } from "../hooks/useMarketData";
+import { MarketSummarySkeleton } from "./MarketSummarySkeleton";
 
 const currencyOptions = [
   { value: "JPY" as const, label: "円" },
@@ -77,11 +78,9 @@ export function MarketSummary() {
       </div>
 
       {loading ? (
-        <div className={messageContainerStyle}>
-          <p className={loadingStyle}>読み込み中...</p>
-        </div>
+        <MarketSummarySkeleton />
       ) : error ? (
-        <div className={messageContainerStyle}>
+        <div className={errorContainerStyle}>
           <p className={errorStyle}>データの取得に失敗しました: {error}</p>
         </div>
       ) : (
@@ -126,17 +125,10 @@ const gridStyle = css({
   gap: "1rem",
 });
 
-const messageContainerStyle = css({
+const errorContainerStyle = css({
   backgroundColor: "cardBg",
   borderRadius: "12px",
   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
-});
-
-const loadingStyle = css({
-  color: "textMuted",
-  fontSize: "0.875rem",
-  padding: "2rem",
-  textAlign: "center",
 });
 
 const errorStyle = css({

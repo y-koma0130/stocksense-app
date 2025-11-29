@@ -56,6 +56,7 @@ const parseRow = (row: Record<string, unknown>): SectorAverageDataDto | null => 
       "(注)1.集計対象は、連結財務諸表を作成している会社は連結、作成していない会社は単体の数値。\n    2.「－」は該当数値なし、または、PER・PBRがマイナス値の場合。PER1000倍以上の場合は「＊」を表示"
     ]; // 会社数
   const avgPer = row["__EMPTY_4"]; // 単純PER
+  // biome-ignore lint/complexity/useLiteralKeys: JPX Excelの自動生成列名
   const avgPbr = row["__EMPTY_5"]; // 単純PBR
 
   // プライム市場のデータのみを対象とする

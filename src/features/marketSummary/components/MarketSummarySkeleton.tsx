@@ -19,11 +19,13 @@ const MarketSummaryCardSkeleton = () => {
 /**
  * マーケットサマリーセクション全体のスケルトン
  */
+const MARKET_SKELETON_IDS = ["nikkei", "dow", "nasdaq", "gold", "usdjpy", "btc"] as const;
+
 export const MarketSummarySkeleton = () => {
   return (
     <div className={gridStyle}>
-      {Array.from({ length: 6 }).map((_, index) => (
-        <MarketSummaryCardSkeleton key={`market-skeleton-${index}`} />
+      {MARKET_SKELETON_IDS.map((id) => (
+        <MarketSummaryCardSkeleton key={`market-skeleton-${id}`} />
       ))}
     </div>
   );

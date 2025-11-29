@@ -16,6 +16,7 @@ export const LoginCard = () => {
   const lineUserId = searchParams.get("lineUserId");
 
   const linkLineAccountMutation = trpc.lineNotification.linkLineAccount.useMutation();
+  const initializeSubscriptionMutation = trpc.userSubscription.initialize.useMutation();
 
   const {
     email,
@@ -39,14 +40,18 @@ export const LoginCard = () => {
     e.preventDefault();
     const success = await verifyOtp(email, otpCode);
     if (success) {
+      // サブスクリプションを初期化（新規ユーザーはfreeプランで登録、既存ユーザーは何もしない）
+      try {
+        await initializeSubscriptionMutation.mutateAsync();
+      } catch {
+        // 初期化失敗してもログインは継続
+      }
+
       // LINE連携がある場合は自動紐付け
       if (lineUserId) {
         try {
-          console.log("[LoginCard] Linking LINE account after OTP:", lineUserId);
           await linkLineAccountMutation.mutateAsync({ lineUserId });
-          console.log("[LoginCard] LINE account linked successfully");
-        } catch (linkError) {
-          console.error("[LoginCard] LINE連携エラー:", linkError);
+        } catch {
           // LINE連携失敗してもログインは継続
         }
       }

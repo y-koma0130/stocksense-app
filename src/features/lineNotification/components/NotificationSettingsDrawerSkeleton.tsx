@@ -10,12 +10,7 @@ export const NotificationSettingsDrawerSkeleton = () => {
       {/* 連携状態セクション */}
       <div className={sectionStyle}>
         <Skeleton width="80px" height="14px" borderRadius="4px" />
-        <Skeleton
-          width="100px"
-          height="32px"
-          borderRadius="6px"
-          style={{ marginTop: "0.75rem" }}
-        />
+        <Skeleton width="100px" height="32px" borderRadius="6px" style={{ marginTop: "0.75rem" }} />
       </div>
 
       {/* 通知設定セクション */}
@@ -25,23 +20,13 @@ export const NotificationSettingsDrawerSkeleton = () => {
           <Skeleton width="160px" height="16px" borderRadius="4px" />
           <Skeleton width="48px" height="26px" borderRadius="13px" />
         </div>
-        <Skeleton
-          width="200px"
-          height="12px"
-          borderRadius="4px"
-          style={{ marginTop: "0.5rem" }}
-        />
+        <Skeleton width="200px" height="12px" borderRadius="4px" style={{ marginTop: "0.5rem" }} />
       </div>
 
       {/* 通知対象セクション */}
       <div className={sectionStyle}>
         <Skeleton width="140px" height="14px" borderRadius="4px" />
-        <Skeleton
-          width="100%"
-          height="48px"
-          borderRadius="8px"
-          style={{ marginTop: "0.75rem" }}
-        />
+        <Skeleton width="100%" height="48px" borderRadius="8px" style={{ marginTop: "0.75rem" }} />
       </div>
     </div>
   );

@@ -44,23 +44,20 @@ export const Skeleton = ({
 /**
  * テキスト行のスケルトン
  */
-export const SkeletonText = ({
-  lines = 1,
-  className,
-}: {
-  lines?: number;
-  className?: string;
-}) => {
+export const SkeletonText = ({ lines = 1, className }: { lines?: number; className?: string }) => {
   return (
     <div className={cx(skeletonTextContainerStyle, className)}>
-      {Array.from({ length: lines }).map((_, index) => (
-        <Skeleton
-          key={`skeleton-line-${index}`}
-          variant="text"
-          width={index === lines - 1 && lines > 1 ? "70%" : "100%"}
-          height="1em"
-        />
-      ))}
+      {Array.from({ length: lines }).map((_, index) => {
+        const lineId = `skeleton-line-${lines}-${index}`;
+        return (
+          <Skeleton
+            key={lineId}
+            variant="text"
+            width={index === lines - 1 && lines > 1 ? "70%" : "100%"}
+            height="1em"
+          />
+        );
+      })}
     </div>
   );
 };

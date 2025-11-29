@@ -42,7 +42,7 @@ export const Tooltip = ({ children, content }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [isMounted, setIsMounted] = useState(false);
-  const triggerRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -79,14 +79,17 @@ export const Tooltip = ({ children, content }: TooltipProps) => {
 
   return (
     <>
-      <span
+      <button
         ref={triggerRef}
+        type="button"
         className={containerStyle}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
       >
         {children}
-      </span>
+      </button>
       {isMounted && tooltipElement && createPortal(tooltipElement, document.body)}
     </>
   );

@@ -5,10 +5,44 @@ type ValueStockTableSkeletonProps = Readonly<{
   rowCount?: number;
 }>;
 
+const SkeletonRow = () => (
+  <tr className={trStyle}>
+    <td className={tdCenterStyle}>
+      <Skeleton width="24px" height="16px" borderRadius="4px" />
+    </td>
+    <td className={tdCenterStyle}>
+      <Skeleton width="48px" height="16px" borderRadius="4px" />
+    </td>
+    <td className={tdLeftStyle}>
+      <Skeleton width="100px" height="16px" borderRadius="4px" />
+    </td>
+    <td className={tdCenterStyle}>
+      <Skeleton width="60px" height="24px" borderRadius="4px" />
+    </td>
+    <td className={tdLeftStyle}>
+      <Skeleton width="80px" height="16px" borderRadius="4px" />
+    </td>
+    <td className={tdCenterStyle}>
+      <div className={scoreContainerStyle}>
+        <Skeleton width="100%" height="8px" borderRadius="4px" />
+        <Skeleton width="28px" height="16px" borderRadius="4px" />
+      </div>
+    </td>
+    <td className={tdRightStyle}>
+      <Skeleton width="70px" height="16px" borderRadius="4px" style={{ marginLeft: "auto" }} />
+    </td>
+    <td className={tdCenterStyle}>
+      <Skeleton width="24px" height="24px" variant="circular" />
+    </td>
+  </tr>
+);
+
 /**
  * 割安株テーブルのスケルトン
  */
 export const ValueStockTableSkeleton = ({ rowCount = 10 }: ValueStockTableSkeletonProps) => {
+  const rowIds = Array.from({ length: rowCount }, (_, i) => `skeleton-row-${i + 1}`);
+
   return (
     <div className={tableContainerStyle}>
       <table className={tableStyle}>
@@ -25,36 +59,8 @@ export const ValueStockTableSkeleton = ({ rowCount = 10 }: ValueStockTableSkelet
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: rowCount }).map((_, index) => (
-            <tr key={`skeleton-row-${index}`} className={trStyle}>
-              <td className={tdCenterStyle}>
-                <Skeleton width="24px" height="16px" borderRadius="4px" />
-              </td>
-              <td className={tdCenterStyle}>
-                <Skeleton width="48px" height="16px" borderRadius="4px" />
-              </td>
-              <td className={tdLeftStyle}>
-                <Skeleton width="100px" height="16px" borderRadius="4px" />
-              </td>
-              <td className={tdCenterStyle}>
-                <Skeleton width="60px" height="24px" borderRadius="4px" />
-              </td>
-              <td className={tdLeftStyle}>
-                <Skeleton width="80px" height="16px" borderRadius="4px" />
-              </td>
-              <td className={tdCenterStyle}>
-                <div className={scoreContainerStyle}>
-                  <Skeleton width="100%" height="8px" borderRadius="4px" />
-                  <Skeleton width="28px" height="16px" borderRadius="4px" />
-                </div>
-              </td>
-              <td className={tdRightStyle}>
-                <Skeleton width="70px" height="16px" borderRadius="4px" style={{ marginLeft: "auto" }} />
-              </td>
-              <td className={tdCenterStyle}>
-                <Skeleton width="24px" height="24px" variant="circular" />
-              </td>
-            </tr>
+          {rowIds.map((rowId) => (
+            <SkeletonRow key={rowId} />
           ))}
         </tbody>
       </table>

@@ -11,11 +11,21 @@ export const ValueStockDrawerSkeleton = () => {
       <div className={metaGridStyle}>
         <div className={metaItemStyle}>
           <Skeleton width="40px" height="12px" borderRadius="4px" />
-          <Skeleton width="80px" height="16px" borderRadius="4px" style={{ marginTop: "0.25rem" }} />
+          <Skeleton
+            width="80px"
+            height="16px"
+            borderRadius="4px"
+            style={{ marginTop: "0.25rem" }}
+          />
         </div>
         <div className={metaItemStyle}>
           <Skeleton width="40px" height="12px" borderRadius="4px" />
-          <Skeleton width="100px" height="16px" borderRadius="4px" style={{ marginTop: "0.25rem" }} />
+          <Skeleton
+            width="100px"
+            height="16px"
+            borderRadius="4px"
+            style={{ marginTop: "0.25rem" }}
+          />
         </div>
       </div>
 
@@ -34,18 +44,8 @@ export const ValueStockDrawerSkeleton = () => {
           <Skeleton width="120px" height="14px" borderRadius="4px" />
           <Skeleton width="80px" height="12px" borderRadius="4px" />
         </div>
-        <Skeleton
-          width="100%"
-          height="24px"
-          borderRadius="6px"
-          style={{ marginTop: "0.5rem" }}
-        />
-        <Skeleton
-          width="100%"
-          height="80px"
-          borderRadius="8px"
-          style={{ marginTop: "0.75rem" }}
-        />
+        <Skeleton width="100%" height="24px" borderRadius="6px" style={{ marginTop: "0.5rem" }} />
+        <Skeleton width="100%" height="80px" borderRadius="8px" style={{ marginTop: "0.75rem" }} />
         <div className={twoColumnStyle}>
           <Skeleton width="100%" height="100px" borderRadius="8px" />
           <Skeleton width="100%" height="100px" borderRadius="8px" />
@@ -56,13 +56,18 @@ export const ValueStockDrawerSkeleton = () => {
       <div className={sectionStyle}>
         <Skeleton width="80px" height="14px" borderRadius="4px" />
         <div className={indicatorGridStyle}>
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={`indicator-skeleton-${index}`} className={indicatorItemStyle}>
+          {(["per", "pbr", "dividendYield", "roe"] as const).map((indicatorId) => (
+            <div key={`indicator-skeleton-${indicatorId}`} className={indicatorItemStyle}>
               <div className={indicatorHeaderStyle}>
                 <Skeleton width="60px" height="14px" borderRadius="4px" />
                 <Skeleton width="50px" height="18px" borderRadius="4px" />
               </div>
-              <Skeleton width="100px" height="12px" borderRadius="4px" style={{ marginTop: "0.25rem" }} />
+              <Skeleton
+                width="100px"
+                height="12px"
+                borderRadius="4px"
+                style={{ marginTop: "0.25rem" }}
+              />
             </div>
           ))}
         </div>
@@ -72,10 +77,15 @@ export const ValueStockDrawerSkeleton = () => {
       <div className={sectionStyle}>
         <Skeleton width="80px" height="14px" borderRadius="4px" />
         <div className={priceGridStyle}>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={`price-skeleton-${index}`} className={priceItemStyle}>
+          {(["current", "high", "low"] as const).map((priceId) => (
+            <div key={`price-skeleton-${priceId}`} className={priceItemStyle}>
               <Skeleton width="60px" height="12px" borderRadius="4px" />
-              <Skeleton width="80px" height="16px" borderRadius="4px" style={{ marginTop: "0.25rem" }} />
+              <Skeleton
+                width="80px"
+                height="16px"
+                borderRadius="4px"
+                style={{ marginTop: "0.25rem" }}
+              />
             </div>
           ))}
         </div>

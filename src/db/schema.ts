@@ -320,3 +320,30 @@ export const stockAnalyses = pgTable(
 
 export type StockAnalysis = typeof stockAnalyses.$inferSelect;
 export type NewStockAnalysis = typeof stockAnalyses.$inferInsert;
+
+/**
+ * 10. ユーザーサブスクリプション
+ * Supabase AuthユーザーのプランとStripe連携情報
+ */
+export const userSubscriptions = pgTable(
+  "user_subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().unique(), // Supabase Auth の user.id
+    plan: varchar("plan", { length: 20 }).notNull().default("free"), // "free" | "standard" | "pro"
+    planStartedAt: timestamp("plan_started_at").defaultNow().notNull(), // プラン開始日時
+    planExpiresAt: timestamp("plan_expires_at"), // 有効期限（nullなら無期限）
+    stripeCustomerId: varchar("stripe_customer_id", { length: 100 }), // Stripe Customer ID
+    stripeSubscriptionId: varchar("stripe_subscription_id", { length: 100 }), // Stripe Subscription ID
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("idx_user_subscriptions_user_id").on(table.userId),
+    planIdx: index("idx_user_subscriptions_plan").on(table.plan),
+    stripeCustomerIdx: index("idx_user_subscriptions_stripe_customer").on(table.stripeCustomerId),
+  }),
+);
+
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type NewUserSubscription = typeof userSubscriptions.$inferInsert;

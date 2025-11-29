@@ -34,9 +34,7 @@ export const ScoringInfoBanner = () => {
 
           <div className={sectionStyle}>
             <h4 className={sectionTitleStyle}>罠銘柄の除外</h4>
-            <p className={textStyle}>
-              単に割安なだけでなく、以下の銘柄は除外しています：
-            </p>
+            <p className={textStyle}>単に割安なだけでなく、以下の銘柄は除外しています：</p>
             <ul className={listStyle}>
               <li>自己資本比率が低い銘柄（財務健全性リスク）</li>
               <li>営業利益が連続減少している銘柄</li>

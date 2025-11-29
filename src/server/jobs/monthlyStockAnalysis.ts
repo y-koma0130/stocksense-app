@@ -42,6 +42,7 @@ export const monthlyStockAnalysis = inngest.createFunction(
     const results = [];
     for (const stock of topStocks) {
       // プロンプト生成（構造化データはinputに含まれる）
+      // 長期分析ではrsiShortは使用しない（null）、EPSデータを使用
       const { instructions, input } = buildStockAnalysisPrompt({
         periodType: "long_term",
         stockData: {
@@ -53,10 +54,13 @@ export const monthlyStockAnalysis = inngest.createFunction(
           per: stock.per,
           pbr: stock.pbr,
           rsi: stock.rsi,
+          rsiShort: null,
           priceHigh: stock.priceHigh,
           priceLow: stock.priceLow,
           sectorAvgPer: stock.sectorAvgPer,
           sectorAvgPbr: stock.sectorAvgPbr,
+          epsLatest: "epsLatest" in stock ? stock.epsLatest : null,
+          eps3yAgo: "eps3yAgo" in stock ? stock.eps3yAgo : null,
         },
         marketAnalysis,
       });

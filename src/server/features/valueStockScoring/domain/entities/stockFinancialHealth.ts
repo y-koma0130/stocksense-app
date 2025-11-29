@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * 銘柄財務健全性エンティティのZodスキーマ
- * 罠銘柄除外判定に使用する財務健全性指標
+ * 罠銘柄除外判定に使用する財務健全性指標 + 長期スコアリング用EPS
  */
 export const stockFinancialHealthSchema = z.object({
   stockId: z.string().uuid(),
@@ -11,6 +11,9 @@ export const stockFinancialHealthSchema = z.object({
   operatingIncomeDeclineYears: z.number().int().nullable(), // 営業利益減少連続年数
   operatingCashFlowNegativeYears: z.number().int().nullable(), // 営業CF負の連続年数
   revenueDeclineYears: z.number().int().nullable(), // 売上減少連続年数
+  // EPS成長率計算用（長期スコアリング用）
+  epsLatest: z.number().nullable(), // 最新年度のEPS
+  eps3yAgo: z.number().nullable(), // 3年前のEPS
 });
 
 /**
@@ -28,6 +31,8 @@ export type CreateStockFinancialHealthParams = {
   operatingIncomeDeclineYears: number | null;
   operatingCashFlowNegativeYears: number | null;
   revenueDeclineYears: number | null;
+  epsLatest: number | null;
+  eps3yAgo: number | null;
 };
 
 /**
@@ -44,5 +49,7 @@ export const createStockFinancialHealth = (
     operatingIncomeDeclineYears: params.operatingIncomeDeclineYears,
     operatingCashFlowNegativeYears: params.operatingCashFlowNegativeYears,
     revenueDeclineYears: params.revenueDeclineYears,
+    epsLatest: params.epsLatest,
+    eps3yAgo: params.eps3yAgo,
   });
 };

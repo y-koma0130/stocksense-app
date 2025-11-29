@@ -30,7 +30,7 @@ export const fundamentalsDataDtoSchema = z.object({
 export type FundamentalsDataDto = z.infer<typeof fundamentalsDataDtoSchema>;
 
 /**
- * 財務健全性データのDTO（罠銘柄除外用）
+ * 財務健全性データのDTO（罠銘柄除外用 + 長期スコアリング用）
  */
 export const financialHealthDataDtoSchema = z.object({
   tickerSymbol: z.string(),
@@ -39,6 +39,9 @@ export const financialHealthDataDtoSchema = z.object({
   operatingIncomeDeclineYears: z.number().nullable(), // 営業利益減少連続年数
   operatingCashFlowNegativeYears: z.number().nullable(), // 営業CF負の連続年数
   revenueDeclineYears: z.number().nullable(), // 売上減少連続年数
+  // EPS成長率計算用（長期スコアリング用）
+  epsLatest: z.number().nullable(), // 最新年度のEPS
+  eps3yAgo: z.number().nullable(), // 3年前のEPS
 });
 
 export type FinancialHealthDataDto = z.infer<typeof financialHealthDataDtoSchema>;

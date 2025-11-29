@@ -88,7 +88,8 @@ export const sectorAverages = pgTable(
 
 /**
  * 4. 中期指標データ（1-6ヶ月向け）
- * - RSI: 14週
+ * - RSI: 14週（ベース）、2週（短期）
+ * - RSIモメンタム: 2週RSI - 14週RSI
  * - 価格レンジ: 26週（約6ヶ月）
  */
 export const midTermIndicators = pgTable(
@@ -107,6 +108,9 @@ export const midTermIndicators = pgTable(
 
     // テクニカル指標（週足・14週RSI）
     rsi: decimal("rsi", { precision: 5, scale: 2 }),
+
+    // テクニカル指標（週足・2週RSI - 短期モメンタム用）
+    rsiShort: decimal("rsi_short", { precision: 5, scale: 2 }),
 
     // 価格レンジ指標（26週）
     priceHigh: decimal("price_high", { precision: 10, scale: 2 }),
@@ -186,6 +190,9 @@ export const stockFinancialHealth = pgTable(
     operatingIncomeDeclineYears: integer("operating_income_decline_years"), // 営業利益減少連続年数
     operatingCashFlowNegativeYears: integer("operating_cash_flow_negative_years"), // 営業CF負の連続年数
     revenueDeclineYears: integer("revenue_decline_years"), // 売上減少連続年数
+    // EPS成長率計算用（長期スコアリング用）
+    epsLatest: decimal("eps_latest", { precision: 10, scale: 2 }), // 最新年度のEPS
+    eps3yAgo: decimal("eps_3y_ago", { precision: 10, scale: 2 }), // 3年前のEPS
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

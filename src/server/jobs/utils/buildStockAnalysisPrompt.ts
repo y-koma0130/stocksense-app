@@ -22,10 +22,13 @@ type StockData = Readonly<{
   per: number | null;
   pbr: number | null;
   rsi: number | null;
+  rsiShort: number | null; // 短期RSI（2週）- 中期のみ
   priceHigh: number | null;
   priceLow: number | null;
   sectorAvgPer: number | null;
   sectorAvgPbr: number | null;
+  epsLatest: number | null; // 最新年度のEPS - 長期のみ
+  eps3yAgo: number | null; // 3年前のEPS - 長期のみ
 }>;
 
 type BuildStockAnalysisPromptParams = Readonly<{
@@ -50,9 +53,14 @@ type StockAnalysisContext = Readonly<{
     per: number | null;
     pbr: number | null;
     rsi: number | null;
+    rsiShort: number | null; // 短期RSI（2週）- 中期のみ
+    rsiMomentum: number | null; // RSIモメンタム（短期RSI - 長期RSI）- 中期のみ
     priceHigh: number | null;
     priceLow: number | null;
     pricePositionPercent: number | null;
+    epsLatest: number | null; // 最新年度のEPS - 長期のみ
+    eps3yAgo: number | null; // 3年前のEPS - 長期のみ
+    epsGrowthRatePercent: number | null; // 3年EPS成長率（CAGR）% - 長期のみ
   };
   sectorComparison: {
     sectorAvgPer: number | null;
@@ -101,6 +109,22 @@ export const buildStockAnalysisPrompt = ({
       ? parseFloat(((stockData.pbr / stockData.sectorAvgPbr) * 100).toFixed(1))
       : null;
 
+  // RSIモメンタム計算（中期のみ）
+  const rsiMomentum =
+    stockData.rsiShort !== null && stockData.rsi !== null
+      ? parseFloat((stockData.rsiShort - stockData.rsi).toFixed(1))
+      : null;
+
+  // EPS成長率（CAGR）計算（長期のみ）
+  // CAGR = ((最新値 / 3年前の値)^(1/3) - 1) × 100
+  const epsGrowthRatePercent =
+    stockData.epsLatest !== null &&
+    stockData.eps3yAgo !== null &&
+    stockData.eps3yAgo > 0 &&
+    stockData.epsLatest >= 0
+      ? parseFloat((((stockData.epsLatest / stockData.eps3yAgo) ** (1 / 3) - 1) * 100).toFixed(1))
+      : null;
+
   // 構造化コンテキストデータ
   const context: StockAnalysisContext = {
     period: {
@@ -118,9 +142,14 @@ export const buildStockAnalysisPrompt = ({
       per: stockData.per,
       pbr: stockData.pbr,
       rsi: stockData.rsi,
+      rsiShort: stockData.rsiShort,
+      rsiMomentum,
       priceHigh: stockData.priceHigh,
       priceLow: stockData.priceLow,
       pricePositionPercent,
+      epsLatest: stockData.epsLatest,
+      eps3yAgo: stockData.eps3yAgo,
+      epsGrowthRatePercent,
     },
     sectorComparison: {
       sectorAvgPer: stockData.sectorAvgPer,
@@ -131,10 +160,38 @@ export const buildStockAnalysisPrompt = ({
     marketEnvironment: marketAnalysis,
   };
 
+  // 中期のみRSIモメンタムの説明を追加
+  const rsiMomentumGuide =
+    periodType === "mid_term"
+      ? `
+## RSIモメンタムについて
+コンテキストデータに含まれる \`rsiMomentum\` は短期RSI（2週）と長期RSI（14週）の差分です。
+- **正の値**: 上昇モメンタム（売られすぎからの反発初動を示唆）
+- **負の値**: 下降モメンタム（まだ下落トレンド継続の可能性）
+
+バリュー株投資では「割安かつ反発の兆しがある銘柄」が理想的です。RSIモメンタムを参考に、エントリータイミングの良し悪しを評価に反映してください。
+`
+      : "";
+
+  // 長期のみEPS成長率の説明を追加
+  const epsGrowthGuide =
+    periodType === "long_term"
+      ? `
+## EPS成長率について
+コンテキストデータに含まれる \`epsGrowthRatePercent\` は3年間のEPS（1株当たり利益）の年平均成長率（CAGR）です。
+- **20%以上**: 高成長（成長株としても評価できる）
+- **10-20%**: 良好な成長（バリュー株として理想的）
+- **0-10%**: 低成長（安定収益型）
+- **負の値またはnull**: マイナス成長または計算不可（利益成長に課題）
+
+長期バリュー投資では「割安でありながら着実に利益を伸ばしている銘柄」が理想的です。EPS成長率を参考に、長期保有の妥当性を評価に反映してください。
+`
+      : "";
+
   // システム指示（instructions）
   const instructions = `あなたは日本株のバリュー投資を専門とするプロのアナリストです。
 提供されたコンテキストデータに基づき、対象銘柄を${periodDescription}の投資目線で分析してください。
-
+${rsiMomentumGuide}${epsGrowthGuide}
 **最重要**: 以下の文字数制限を必ず遵守してください。
 
 # 文字数制限（厳守）

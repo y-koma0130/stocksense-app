@@ -42,6 +42,8 @@ export const weeklyStockAnalysis = inngest.createFunction(
     const results = [];
     for (const stock of topStocks) {
       // プロンプト生成（構造化データはinputに含まれる）
+      // 中期のみなのでrsiShortは存在するが、型の都合上in演算子でチェック
+      // 中期ではEPSデータは使用しない（null）
       const { instructions, input } = buildStockAnalysisPrompt({
         periodType: "mid_term",
         stockData: {
@@ -53,10 +55,13 @@ export const weeklyStockAnalysis = inngest.createFunction(
           per: stock.per,
           pbr: stock.pbr,
           rsi: stock.rsi,
+          rsiShort: "rsiShort" in stock ? stock.rsiShort : null,
           priceHigh: stock.priceHigh,
           priceLow: stock.priceLow,
           sectorAvgPer: stock.sectorAvgPer,
           sectorAvgPbr: stock.sectorAvgPbr,
+          epsLatest: null,
+          eps3yAgo: null,
         },
         marketAnalysis,
       });

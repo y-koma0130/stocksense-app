@@ -1,0 +1,1 @@
+ALTER TABLE "mid_term_indicators" ADD COLUMN "rsi_short" numeric(5, 2);

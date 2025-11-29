@@ -2,7 +2,8 @@ import { z } from "zod";
 
 /**
  * 中期指標エンティティのZodスキーマ（1-6ヶ月向け）
- * - RSI: 14週
+ * - RSI: 14週（ベース）、2週（短期）
+ * - RSIモメンタム: スコア計算時に rsiShort - rsi で算出
  * - 価格レンジ: 26週
  */
 export const midTermIndicatorSchema = z.object({
@@ -16,6 +17,9 @@ export const midTermIndicatorSchema = z.object({
 
   // テクニカル指標（週足・14週RSI）
   rsi: z.number().nullable(),
+
+  // テクニカル指標（週足・2週RSI - 短期モメンタム用）
+  rsiShort: z.number().nullable(),
 
   // 価格レンジ指標（26週）
   priceHigh: z.number().nullable(),
@@ -40,6 +44,7 @@ export type CreateMidTermIndicatorParams = {
   per: number | null;
   pbr: number | null;
   rsi: number | null;
+  rsiShort: number | null;
   priceHigh: number | null;
   priceLow: number | null;
   sectorCode: string | null;
@@ -57,6 +62,7 @@ export const createMidTermIndicator = (params: CreateMidTermIndicatorParams): Mi
     per: params.per,
     pbr: params.pbr,
     rsi: params.rsi,
+    rsiShort: params.rsiShort,
     priceHigh: params.priceHigh,
     priceLow: params.priceLow,
     sectorCode: params.sectorCode,

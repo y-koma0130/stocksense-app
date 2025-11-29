@@ -173,10 +173,7 @@ export const buildMarketSummaryMessage = (
     .join("\n");
 
   // 経済サマリを150文字程度に要約（改行除去・トリム）
-  const summaryText = marketAnalysis.economicSummary
-    .replace(/\n/g, " ")
-    .trim()
-    .slice(0, 200);
+  const summaryText = marketAnalysis.economicSummary.replace(/\n/g, " ").trim().slice(0, 200);
 
   return `📈 【${periodLabel}】マーケット分析
 更新日: ${formatDate(marketAnalysis.analyzedAt)}
@@ -215,10 +212,7 @@ export const buildRankingMessage = (
       const ratingLabel = analysis ? getRatingLabel(analysis.valueStockRating) : "";
 
       // 基本情報行
-      const basicInfo = [
-        `${medal} ${stock.tickerCode} ${stock.name} (${score}点)`,
-        ratingLabel,
-      ]
+      const basicInfo = [`${medal} ${stock.tickerCode} ${stock.name} (${score}点)`, ratingLabel]
         .filter((s) => s !== "")
         .join(" ");
 

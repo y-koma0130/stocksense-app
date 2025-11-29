@@ -36,10 +36,7 @@ export const getStockAnalysesByStockIds: GetStockAnalysesByStockIds = async ({
     .select()
     .from(stockAnalyses)
     .where(
-      and(
-        inArray(stockAnalyses.stockId, [...stockIds]),
-        eq(stockAnalyses.periodType, periodType),
-      ),
+      and(inArray(stockAnalyses.stockId, [...stockIds]), eq(stockAnalyses.periodType, periodType)),
     )
     .orderBy(desc(stockAnalyses.analyzedAt));
 

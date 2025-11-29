@@ -6,6 +6,7 @@ import {
 } from "@/constants/valueStockRatings";
 import type { StockAnalysisDto } from "@/server/features/stockAnalysis/application/dto/stockAnalysis.dto";
 import { css } from "../../../../styled-system/css";
+import { StockAnalysisSectionSkeleton } from "./StockAnalysisSectionSkeleton";
 
 type StockAnalysisSectionProps = Readonly<{
   analysis: StockAnalysisDto | null;
@@ -27,9 +28,7 @@ export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSection
     return (
       <div className={sectionStyle}>
         <h4 className={sectionTitleStyle}>AI分析レポート</h4>
-        <div className={loadingContainerStyle}>
-          <p className={loadingTextStyle}>読み込み中...</p>
-        </div>
+        <StockAnalysisSectionSkeleton />
       </div>
     );
   }
@@ -150,18 +149,6 @@ const disclaimerStyle = css({
   padding: "0.5rem 0.75rem",
   borderRadius: "6px",
   lineHeight: "1.4",
-});
-
-const loadingContainerStyle = css({
-  backgroundColor: "surfaceHover",
-  padding: "2rem",
-  borderRadius: "8px",
-  textAlign: "center",
-});
-
-const loadingTextStyle = css({
-  fontSize: "0.875rem",
-  color: "textMuted",
 });
 
 const noDataContainerStyle = css({

@@ -1,4 +1,5 @@
 import { Drawer } from "@/components/ui/Drawer";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { getScoreColor } from "@/constants/colors";
 import type { PeriodType } from "@/constants/periodTypes";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
@@ -144,7 +145,11 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
           {/* PER */}
           <div className={indicatorItemStyle}>
             <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>PER</span>
+              <span className={indicatorLabelStyle}>
+                <Tooltip content="株価収益率。株価が1株あたり利益の何倍かを示します。一般的に15倍が基準とされますが、業種によって水準が異なります。">
+                  PER
+                </Tooltip>
+              </span>
               <span className={indicatorMainValueStyle}>
                 {stock.per !== null ? `${stock.per.toFixed(2)}倍` : "-"}
               </span>
@@ -157,7 +162,11 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
           {/* PBR */}
           <div className={indicatorItemStyle}>
             <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>PBR</span>
+              <span className={indicatorLabelStyle}>
+                <Tooltip content="株価純資産倍率。株価が1株あたり純資産の何倍かを示します。1倍未満は解散価値を下回っており、割安とされることがあります。">
+                  PBR
+                </Tooltip>
+              </span>
               <span className={indicatorMainValueStyle}>
                 {stock.pbr !== null ? `${stock.pbr.toFixed(2)}倍` : "-"}
               </span>
@@ -170,7 +179,11 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
           {/* RSI */}
           <div className={indicatorItemStyle}>
             <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>RSI</span>
+              <span className={indicatorLabelStyle}>
+                <Tooltip content="相対力指数。株価の過熱感を0〜100で示します。30以下は売られすぎ、70以上は買われすぎとされます。">
+                  RSI
+                </Tooltip>
+              </span>
               <span className={indicatorMainValueStyle}>
                 {stock.rsi !== null ? stock.rsi.toFixed(1) : "-"}
               </span>
@@ -185,7 +198,11 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
           {/* 価格位置 */}
           <div className={indicatorItemStyle}>
             <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>{periodLabel}価格位置</span>
+              <span className={indicatorLabelStyle}>
+                <Tooltip content="期間内の高値・安値に対する現在価格の位置。0%が安値、100%が高値です。低いほど安値圏にあることを示します。">
+                  {periodLabel}価格位置
+                </Tooltip>
+              </span>
               <span className={indicatorMainValueStyle}>
                 {pricePosition !== null ? `${pricePosition.toFixed(1)}%` : "-"}
               </span>

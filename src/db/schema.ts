@@ -354,3 +354,31 @@ export const userSubscriptions = pgTable(
 
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type NewUserSubscription = typeof userSubscriptions.$inferInsert;
+
+/**
+ * 11. LINE銘柄分析履歴
+ * LINEユーザーごとの分析履歴を記録（利用回数カウント・履歴参照用）
+ */
+export const lineStockAnalysisUsage = pgTable(
+  "line_stock_analysis_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    lineUserId: varchar("line_user_id", { length: 50 })
+      .notNull()
+      .references(() => lineUsers.lineUserId, { onDelete: "cascade" }),
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    tickerCode: varchar("ticker_code", { length: 10 }).notNull(), // 検索用に非正規化
+    periodType: varchar("period_type", { length: 20 }).notNull(), // mid_term or long_term
+    analyzedAt: timestamp("analyzed_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    lineUserIdIdx: index("idx_line_stock_analysis_usage_line_user").on(table.lineUserId),
+    stockIdIdx: index("idx_line_stock_analysis_usage_stock").on(table.stockId),
+    analyzedAtIdx: index("idx_line_stock_analysis_usage_analyzed_at").on(table.analyzedAt),
+  }),
+);
+
+export type LineStockAnalysisUsage = typeof lineStockAnalysisUsage.$inferSelect;
+export type NewLineStockAnalysisUsage = typeof lineStockAnalysisUsage.$inferInsert;

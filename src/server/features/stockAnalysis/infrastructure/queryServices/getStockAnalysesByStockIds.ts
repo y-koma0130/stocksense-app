@@ -2,7 +2,7 @@
  * 複数のstockIdで個別株分析を一括取得
  */
 
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { stockAnalyses } from "@/db/schema";
 import type { PeriodType } from "../../../marketAnalysis/domain/values/types";

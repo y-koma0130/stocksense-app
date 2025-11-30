@@ -27,3 +27,13 @@ export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
   standard: "スタンダード",
   pro: "プロ",
 };
+
+/**
+ * LINE銘柄分析の月間利用上限（プラン別）
+ * TODO: 要調整
+ */
+export const LINE_STOCK_ANALYSIS_LIMITS: Record<SubscriptionPlan, number> = {
+  free: 3,
+  standard: 10,
+  pro: 30,
+};

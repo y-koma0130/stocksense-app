@@ -107,9 +107,9 @@ export const buildUsageLimitReachedMessage = (params: {
   let upgradeMessage = "";
   if (plan === "free") {
     upgradeMessage =
-      "\n\nスタンダードプラン（月10回）やプロプラン（月30回）へのアップグレードもご検討ください。";
+      "\n\nスタンダードプランやプロプランへのアップグレードもご検討ください。";
   } else if (plan === "standard") {
-    upgradeMessage = "\n\nプロプラン（月30回）へのアップグレードもご検討ください。";
+    upgradeMessage = "\n\nプロプランへのアップグレードもご検討ください。";
   }
 
   return {
@@ -148,7 +148,7 @@ export const buildAnalysisStartMessage = (params: {
 
   return {
     type: "text",
-    text: `🔍 ${tickerCode} ${stockName} の${periodLabel}分析を開始します...\n\n分析完了まで30秒〜1分程度お待ちください。`,
+    text: `🔍 ${tickerCode} ${stockName} の${periodLabel}分析を開始します...\n\n分析完了まで数分掛かることがあります。`,
   };
 };
 
@@ -220,12 +220,27 @@ ${risksText}
 };
 
 /**
+ * 運営連絡先
+ */
+const SUPPORT_EMAIL = "stocksense.admin@proton.me";
+
+/**
  * 分析エラーメッセージを生成
  */
 export const buildAnalysisErrorMessage = (): LineTextMessage => {
   return {
     type: "text",
-    text: "❌ 分析中にエラーが発生しました。\n\nしばらく時間をおいて再度お試しください。",
+    text: `分析中にエラーが発生しました。\n\nしばらく時間をおいて再度お試しください。\n\n問題が解決しない場合は、以下までご連絡ください。\n${SUPPORT_EMAIL}`,
+  };
+};
+
+/**
+ * 分析タイムアウトエラーメッセージを生成
+ */
+export const buildAnalysisTimeoutMessage = (): LineTextMessage => {
+  return {
+    type: "text",
+    text: `分析がタイムアウトしました。\n\nサーバーが混雑している可能性があります。しばらく時間をおいて再度お試しください。\n\n問題が続く場合は、以下までご連絡ください。\n${SUPPORT_EMAIL}`,
   };
 };
 
@@ -250,14 +265,14 @@ const getRatingLabel = (rating: string | null): string => {
     case "excellent":
       return "⭐ 超おすすめ";
     case "good":
-      return "◎ おすすめ";
+      return "⭕ おすすめ";
     case "fair":
-      return "○ 中立";
+      return "➖ 中立";
     case "poor":
-      return "△ 注意";
+      return "🔺 注意";
     case "very_poor":
-      return "✕ 要注意";
+      return "❌ 要注意";
     default:
-      return "- 評価なし";
+      return "❓ 評価なし";
   }
 };

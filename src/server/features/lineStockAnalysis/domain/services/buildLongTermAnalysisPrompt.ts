@@ -92,8 +92,7 @@ export const buildLongTermAnalysisPrompt = ({
 
   // EPS成長率計算（ドメインサービスを利用）
   const epsGrowthRate = calculateEpsGrowthRate(stockData.epsLatest, stockData.eps3yAgo);
-  const epsGrowthRatePercent =
-    epsGrowthRate !== null ? parseFloat(epsGrowthRate.toFixed(1)) : null;
+  const epsGrowthRatePercent = epsGrowthRate !== null ? parseFloat(epsGrowthRate.toFixed(1)) : null;
 
   // 構造化コンテキストデータ
   const context: LongTermAnalysisContext = {

@@ -42,8 +42,13 @@ import { createLineUser } from "@/server/features/lineNotification/domain/entiti
 import { sendLineMessage } from "@/server/features/lineNotification/infrastructure/externalServices/sendLineMessage";
 import { getLineUserByLineUserId } from "@/server/features/lineNotification/infrastructure/queryServices/getLineUserByLineUserId";
 import { upsertLineUser } from "@/server/features/lineNotification/infrastructure/repositories/upsertLineUser.repository";
+import type { AnalyzeStockForLineResultDto } from "@/server/features/lineStockAnalysis/application/dto/analyzeStockForLineResult.dto";
 import { analyzeStockForLineUsecase } from "@/server/features/lineStockAnalysis/application/usecases/analyzeStockForLine.usecase";
 import { executeStockAnalysis } from "@/server/features/lineStockAnalysis/infrastructure/externalServices/executeStockAnalysis";
+import {
+  AnalysisTimeoutError,
+  executeStockAnalysisWithTimeout,
+} from "@/server/features/lineStockAnalysis/infrastructure/externalServices/executeStockAnalysisWithTimeout";
 import { getLongTermStockIndicatorByStockId } from "@/server/features/lineStockAnalysis/infrastructure/queryServices/getLongTermStockIndicatorByStockId";
 import { getMidTermStockIndicatorByStockId } from "@/server/features/lineStockAnalysis/infrastructure/queryServices/getMidTermStockIndicatorByStockId";
 import { getMonthlyUsageCount } from "@/server/features/lineStockAnalysis/infrastructure/queryServices/getMonthlyUsageCount";
@@ -55,6 +60,7 @@ import {
   buildAnalysisErrorMessage,
   buildAnalysisResultMessage,
   buildAnalysisStartMessage,
+  buildAnalysisTimeoutMessage,
   buildInvalidInputMessage,
   buildStockConfirmationMessage,
   buildStockNotFoundMessage,
@@ -310,19 +316,40 @@ const handlePostbackEvent = async (event: LinePostbackEvent): Promise<void> => {
       buildAnalysisStartMessage({ tickerCode, stockName: stock.name, periodType }),
     ]);
 
-    // 分析を実行（DI形式でユースケースを呼び出し）
-    const result = await analyzeStockForLineUsecase(
-      {
-        getMidTermStockIndicatorByStockId,
-        getLongTermStockIndicatorByStockId,
-        getLatestMarketAnalysis,
-        executeStockAnalysis,
-        saveStockAnalysis,
-      },
-      { stockId, tickerCode, periodType },
-    );
+    // タイムアウト付き分析実行関数を作成（10分 = 600000ms）
+    const ANALYSIS_TIMEOUT_MS = 600000;
+    const executeWithTimeout = (params: { instructions: string; input: string }) =>
+      executeStockAnalysisWithTimeout(executeStockAnalysis, params, ANALYSIS_TIMEOUT_MS);
 
-    if (!result.success) {
+    // 分析を実行（DI形式でユースケースを呼び出し）
+    let result: AnalyzeStockForLineResultDto | undefined;
+    let isTimeout = false;
+    try {
+      result = await analyzeStockForLineUsecase(
+        {
+          getMidTermStockIndicatorByStockId,
+          getLongTermStockIndicatorByStockId,
+          getLatestMarketAnalysis,
+          executeStockAnalysis: executeWithTimeout,
+          saveStockAnalysis,
+        },
+        { stockId, tickerCode, periodType },
+      );
+    } catch (error) {
+      if (error instanceof AnalysisTimeoutError) {
+        isTimeout = true;
+      }
+      console.error("[handlePostbackEvent] Analysis error:", error);
+    }
+
+    // タイムアウトの場合
+    if (isTimeout) {
+      await sendLineMessage(lineUserId, [buildAnalysisTimeoutMessage()]);
+      return;
+    }
+
+    // エラーの場合（resultがundefinedまたはsuccess=false）
+    if (!result?.success) {
       await sendLineMessage(lineUserId, [buildAnalysisErrorMessage()]);
       return;
     }

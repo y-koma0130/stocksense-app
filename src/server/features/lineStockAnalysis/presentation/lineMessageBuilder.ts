@@ -106,8 +106,7 @@ export const buildUsageLimitReachedMessage = (params: {
 
   let upgradeMessage = "";
   if (plan === "free") {
-    upgradeMessage =
-      "\n\nスタンダードプランやプロプランへのアップグレードもご検討ください。";
+    upgradeMessage = "\n\nスタンダードプランやプロプランへのアップグレードもご検討ください。";
   } else if (plan === "standard") {
     upgradeMessage = "\n\nプロプランへのアップグレードもご検討ください。";
   }

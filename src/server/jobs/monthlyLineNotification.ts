@@ -6,6 +6,8 @@
  * 2通目: 長期上位10銘柄（上位5銘柄にAI分析コメント付き）
  */
 
+import { getDate, getDay, startOfMonth } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { inngest } from "../../../inngest/client";
 import { sendLineMessage } from "../features/lineNotification/infrastructure/externalServices/sendLineMessage";
 import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
@@ -16,19 +18,19 @@ import { getLatestIndicators } from "../features/valueStockScoring/infrastructur
 import { buildMarketSummaryMessage, buildRankingMessage } from "./utils/lineMessageBuilders";
 
 const PERIOD_TYPE = "long_term" as const;
+const JST_TIMEZONE = "Asia/Tokyo";
 
 /**
- * 月の最初の平日かどうかを判定
+ * 月の最初の平日かどうかを判定（JST基準）
  * 祝日は考慮しない
  */
 const isFirstWeekdayOfMonth = (): boolean => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const today = now.getDate();
+  const nowJST = toZonedTime(new Date(), JST_TIMEZONE);
+  const today = getDate(nowJST);
 
-  const firstDay = new Date(year, month, 1);
-  const dayOfWeek = firstDay.getDay();
+  // 月の1日の曜日を取得（JSTで計算）
+  const firstDayOfMonth = startOfMonth(nowJST);
+  const dayOfWeek = getDay(firstDayOfMonth);
 
   let firstWeekday: number;
   if (dayOfWeek === 0) {

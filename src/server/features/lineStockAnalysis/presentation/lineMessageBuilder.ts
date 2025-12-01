@@ -104,17 +104,17 @@ export const buildUsageLimitReachedMessage = (params: {
   const limit = LINE_STOCK_ANALYSIS_LIMITS[plan];
   const planName = PLAN_DISPLAY_NAMES[plan];
 
-  let upgradeMessage = "";
-  if (plan === "free") {
-    upgradeMessage =
-      "\n\nスタンダードプランやプロプランへのアップグレードもご検討ください。";
-  } else if (plan === "standard") {
-    upgradeMessage = "\n\nプロプランへのアップグレードもご検討ください。";
-  }
+  // TODO: 課金機能実装後にアップグレード案内を追加
+  // let upgradeMessage = "";
+  // if (plan === "free") {
+  //   upgradeMessage = "\n\nスタンダードプランやプロプランへのアップグレードもご検討ください。";
+  // } else if (plan === "standard") {
+  //   upgradeMessage = "\n\nプロプランへのアップグレードもご検討ください。";
+  // }
 
   return {
     type: "text",
-    text: `⚠️ 今月の分析回数上限（${limit}回）に達しました。\n\n現在のプラン: ${planName}\n利用回数: ${usageCount}/${limit}回${upgradeMessage}\n\n来月1日にリセットされます。`,
+    text: `⚠️ 今月の分析回数上限（${limit}回）に達しました。\n\n現在のプラン: ${planName}\n利用回数: ${usageCount}/${limit}回\n\n来月1日にリセットされます。`,
   };
 };
 

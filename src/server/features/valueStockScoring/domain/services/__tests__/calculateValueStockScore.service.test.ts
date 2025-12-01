@@ -17,6 +17,8 @@ const createBaseIndicator = (overrides: Partial<ScoringIndicator> = {}): Scoring
   market: "プライム",
   epsLatest: null,
   eps3yAgo: null,
+  avgVolumeShort: null,
+  avgVolumeLong: null,
   ...overrides,
 });
 
@@ -61,6 +63,51 @@ describe("calculateValueStockScore", () => {
       expect(resultPositive.totalScore).toBeGreaterThan(resultNegative.totalScore);
     });
 
+    it("出来高が急増している場合、スコアが向上する", () => {
+      const indicatorWithHighVolume = createBaseIndicator({
+        avgVolumeShort: 20000, // ratio = 2.0 → 100点
+        avgVolumeLong: 10000,
+      });
+      const indicatorWithLowVolume = createBaseIndicator({
+        avgVolumeShort: 5000, // ratio = 0.5 → 0点
+        avgVolumeLong: 10000,
+      });
+
+      const resultHigh = calculateValueStockScore(indicatorWithHighVolume, MID_TERM_CONFIG);
+      const resultLow = calculateValueStockScore(indicatorWithLowVolume, MID_TERM_CONFIG);
+
+      expect(resultHigh.totalScore).toBeGreaterThan(resultLow.totalScore);
+    });
+
+    it("出来高が横ばいの場合、中間スコアになる", () => {
+      const indicatorWithStableVolume = createBaseIndicator({
+        avgVolumeShort: 10000, // ratio = 1.0 → 50点
+        avgVolumeLong: 10000,
+      });
+
+      const result = calculateValueStockScore(indicatorWithStableVolume, MID_TERM_CONFIG);
+
+      // volumeSurgeWeightが12%で50点の場合、その寄与は6%(0.06)
+      expect(result.totalScore).toBeGreaterThan(0);
+    });
+
+    it("長期設定では出来高スコアが無視される", () => {
+      const indicatorWithHighVolume = createBaseIndicator({
+        avgVolumeShort: 20000, // ratio = 2.0 → 100点
+        avgVolumeLong: 10000,
+      });
+      const indicatorWithLowVolume = createBaseIndicator({
+        avgVolumeShort: 5000, // ratio = 0.5 → 0点
+        avgVolumeLong: 10000,
+      });
+
+      const resultHigh = calculateValueStockScore(indicatorWithHighVolume, LONG_TERM_CONFIG);
+      const resultLow = calculateValueStockScore(indicatorWithLowVolume, LONG_TERM_CONFIG);
+
+      // 長期設定ではvolumeSurgeWeightがないので、出来高は影響しない
+      expect(resultHigh.totalScore).toBe(resultLow.totalScore);
+    });
+
     it("全て理想的な値の場合、高スコアになる", () => {
       const idealIndicator = createBaseIndicator({
         per: 5, // 業種平均の50%（非常に割安）
@@ -68,6 +115,8 @@ describe("calculateValueStockScore", () => {
         rsi: 25, // 売られすぎ
         rsiShort: 40, // モメンタム+15（反発初動）
         currentPrice: 1100, // 安値圏（10%位置）
+        avgVolumeShort: 20000, // ratio = 2.0 → 100点（出来高急増）
+        avgVolumeLong: 10000,
       });
 
       const result = calculateValueStockScore(idealIndicator, MID_TERM_CONFIG);
@@ -86,6 +135,8 @@ describe("calculateValueStockScore", () => {
         rsi: 75, // 買われすぎ
         rsiShort: 65, // モメンタム-10（まだ過熱）
         currentPrice: 2000, // 高値（100%位置）
+        avgVolumeShort: 5000, // ratio = 0.5 → 0点（出来高減少）
+        avgVolumeLong: 10000,
       });
 
       const result = calculateValueStockScore(poorIndicator, MID_TERM_CONFIG);
@@ -150,7 +201,8 @@ describe("calculateValueStockScore", () => {
         MID_TERM_CONFIG.pbrWeight +
         MID_TERM_CONFIG.rsiWeight +
         MID_TERM_CONFIG.priceRangeWeight +
-        (MID_TERM_CONFIG.rsiMomentumWeight ?? 0);
+        (MID_TERM_CONFIG.rsiMomentumWeight ?? 0) +
+        (MID_TERM_CONFIG.volumeSurgeWeight ?? 0);
 
       expect(totalWeight).toBe(100);
     });
@@ -218,6 +270,8 @@ describe("calculateValueStockScore", () => {
         market: null,
         epsLatest: null,
         eps3yAgo: null,
+        avgVolumeShort: null,
+        avgVolumeLong: null,
       };
 
       const result = calculateValueStockScore(nullIndicator, MID_TERM_CONFIG);

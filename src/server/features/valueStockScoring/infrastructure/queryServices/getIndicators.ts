@@ -69,6 +69,9 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsiShort: midTermIndicators.rsiShort,
       priceHigh: midTermIndicators.priceHigh,
       priceLow: midTermIndicators.priceLow,
+      // 出来高指標
+      avgVolumeShort: midTermIndicators.avgVolumeShort,
+      avgVolumeLong: midTermIndicators.avgVolumeLong,
       // sector_averagesから業種平均を取得（最新データを使用）
       sectorAvgPer: sectorAverages.avgPer,
       sectorAvgPbr: sectorAverages.avgPbr,
@@ -110,6 +113,8 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsiShort: row.rsiShort ? Number(row.rsiShort) : null,
       priceHigh: row.priceHigh ? Number(row.priceHigh) : null,
       priceLow: row.priceLow ? Number(row.priceLow) : null,
+      avgVolumeShort: row.avgVolumeShort ? Number(row.avgVolumeShort) : null,
+      avgVolumeLong: row.avgVolumeLong ? Number(row.avgVolumeLong) : null,
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
       sectorAvgPbr: row.sectorAvgPbr ? Number(row.sectorAvgPbr) : null,
       equityRatio: row.equityRatio ? Number(row.equityRatio) : null,
@@ -164,6 +169,8 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsi: longTermIndicators.rsi,
       priceHigh: longTermIndicators.priceHigh,
       priceLow: longTermIndicators.priceLow,
+      // 出来高指標（罠株除外用）
+      avgVolumeShort: longTermIndicators.avgVolumeShort,
       // sector_averagesから業種平均を取得（最新データを使用）
       sectorAvgPer: sectorAverages.avgPer,
       sectorAvgPbr: sectorAverages.avgPbr,
@@ -207,6 +214,7 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsi: row.rsi ? Number(row.rsi) : null,
       priceHigh: row.priceHigh ? Number(row.priceHigh) : null,
       priceLow: row.priceLow ? Number(row.priceLow) : null,
+      avgVolumeShort: row.avgVolumeShort ? Number(row.avgVolumeShort) : null,
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
       sectorAvgPbr: row.sectorAvgPbr ? Number(row.sectorAvgPbr) : null,
       equityRatio: row.equityRatio ? Number(row.equityRatio) : null,

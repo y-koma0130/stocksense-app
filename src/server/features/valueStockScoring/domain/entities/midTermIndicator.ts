@@ -5,6 +5,7 @@ import { z } from "zod";
  * - RSI: 14週（ベース）、2週（短期）
  * - RSIモメンタム: スコア計算時に rsiShort - rsi で算出
  * - 価格レンジ: 26週
+ * - 出来高: 短期平均、長期平均（罠株除外・スコアリング用）
  */
 export const midTermIndicatorSchema = z.object({
   stockId: z.string().uuid(),
@@ -24,6 +25,10 @@ export const midTermIndicatorSchema = z.object({
   // 価格レンジ指標（26週）
   priceHigh: z.number().nullable(),
   priceLow: z.number().nullable(),
+
+  // 出来高指標（罠株除外・スコアリング用）
+  avgVolumeShort: z.number().nullable(), // 短期平均出来高
+  avgVolumeLong: z.number().nullable(), // 長期平均出来高
 
   // 業種コード（sector_averages参照用）
   sectorCode: z.string().nullable(),
@@ -47,6 +52,8 @@ export type CreateMidTermIndicatorParams = {
   rsiShort: number | null;
   priceHigh: number | null;
   priceLow: number | null;
+  avgVolumeShort: number | null;
+  avgVolumeLong: number | null;
   sectorCode: string | null;
 };
 
@@ -65,6 +72,8 @@ export const createMidTermIndicator = (params: CreateMidTermIndicatorParams): Mi
     rsiShort: params.rsiShort,
     priceHigh: params.priceHigh,
     priceLow: params.priceLow,
+    avgVolumeShort: params.avgVolumeShort,
+    avgVolumeLong: params.avgVolumeLong,
     sectorCode: params.sectorCode,
   });
 };

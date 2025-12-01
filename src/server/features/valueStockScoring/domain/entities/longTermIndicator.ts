@@ -21,6 +21,9 @@ export const longTermIndicatorSchema = z.object({
   priceHigh: z.number().nullable(),
   priceLow: z.number().nullable(),
 
+  // 出来高指標（罠株除外用）
+  avgVolumeShort: z.number().nullable(), // 短期平均出来高
+
   // 業種コード（sector_averages参照用）
   sectorCode: z.string().nullable(),
 });
@@ -42,6 +45,7 @@ export type CreateLongTermIndicatorParams = {
   rsi: number | null;
   priceHigh: number | null;
   priceLow: number | null;
+  avgVolumeShort: number | null;
   sectorCode: string | null;
 };
 
@@ -61,6 +65,7 @@ export const createLongTermIndicator = (
     rsi: params.rsi,
     priceHigh: params.priceHigh,
     priceLow: params.priceLow,
+    avgVolumeShort: params.avgVolumeShort,
     sectorCode: params.sectorCode,
   });
 };

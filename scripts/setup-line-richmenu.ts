@@ -163,17 +163,14 @@ const uploadRichMenuImage = async (richMenuId: string, imagePath: string): Promi
   const ext = path.extname(imagePath).toLowerCase();
   const contentType = ext === ".png" ? "image/png" : "image/jpeg";
 
-  const response = await fetch(
-    `https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": contentType,
-        Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-      },
-      body: imageBuffer,
+  const response = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
+    method: "POST",
+    headers: {
+      "Content-Type": contentType,
+      Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
     },
-  );
+    body: imageBuffer,
+  });
 
   if (!response.ok) {
     const error = await response.text();
@@ -185,15 +182,12 @@ const uploadRichMenuImage = async (richMenuId: string, imagePath: string): Promi
  * リッチメニューをデフォルトに設定
  */
 const setDefaultRichMenu = async (richMenuId: string): Promise<void> => {
-  const response = await fetch(
-    `https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-      },
+  const response = await fetch(`https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
     },
-  );
+  });
 
   if (!response.ok) {
     const error = await response.text();

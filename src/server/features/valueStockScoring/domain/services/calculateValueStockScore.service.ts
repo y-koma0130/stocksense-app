@@ -9,6 +9,7 @@ import { calculatePriceRangeScore } from "./calculatePriceRangeScore.service";
 import { calculateRSIMomentumScore } from "./calculateRSIMomentumScore.service";
 import { calculateRSIScore } from "./calculateRSIScore.service";
 import { calculateSectorScore } from "./calculateSectorScore.service";
+import { calculateVolumeSurgeScore } from "./calculateVolumeSurgeScore.service";
 
 /**
  * スコア計算に必要な指標データの型
@@ -33,6 +34,8 @@ export type ScoringIndicator = Readonly<{
   market: string | null;
   epsLatest: number | null; // 最新年度のEPS（長期のみ、中期はnull）
   eps3yAgo: number | null; // 3年前のEPS（長期のみ、中期はnull）
+  avgVolumeShort: number | null; // 短期平均出来高（中期のみ、長期はnull）
+  avgVolumeLong: number | null; // 長期平均出来高（中期のみ、長期はnull）
 }>;
 
 /**
@@ -81,6 +84,12 @@ export const calculateValueStockScore: CalculateValueStockScore = (indicator, co
       ? calculateRSIMomentumScore(indicator.rsiShort, indicator.rsi)
       : 0;
 
+  // 出来高急増スコア（中期のみ、volumeSurgeWeightがある場合のみ計算）
+  const volumeSurgeScore =
+    config.volumeSurgeWeight !== undefined
+      ? calculateVolumeSurgeScore(indicator.avgVolumeShort, indicator.avgVolumeLong)
+      : 0;
+
   // EPS成長率スコア（長期のみ、epsGrowthWeightがある場合のみ計算）
   const epsGrowthScore =
     config.epsGrowthWeight !== undefined
@@ -91,6 +100,7 @@ export const calculateValueStockScore: CalculateValueStockScore = (indicator, co
 
   // 設定された重み付けでトータルスコア算出（重み合計は100%）
   const rsiMomentumWeight = config.rsiMomentumWeight ?? 0;
+  const volumeSurgeWeight = config.volumeSurgeWeight ?? 0;
   const epsGrowthWeight = config.epsGrowthWeight ?? 0;
   const totalScoreValue =
     (perScore * (config.perWeight / 100) +
@@ -98,6 +108,7 @@ export const calculateValueStockScore: CalculateValueStockScore = (indicator, co
       rsiScore * (config.rsiWeight / 100) +
       priceRangeScore * (config.priceRangeWeight / 100) +
       rsiMomentumScore * (rsiMomentumWeight / 100) +
+      volumeSurgeScore * (volumeSurgeWeight / 100) +
       epsGrowthScore * (epsGrowthWeight / 100)) /
     100;
 

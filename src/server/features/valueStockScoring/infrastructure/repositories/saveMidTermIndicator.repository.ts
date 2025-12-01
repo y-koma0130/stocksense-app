@@ -22,6 +22,8 @@ export const saveMidTermIndicator: SaveMidTermIndicator = async (indicator) => {
     rsiShort: indicator.rsiShort?.toString() ?? null,
     priceHigh: indicator.priceHigh?.toString() ?? null,
     priceLow: indicator.priceLow?.toString() ?? null,
+    avgVolumeShort: indicator.avgVolumeShort?.toString() ?? null,
+    avgVolumeLong: indicator.avgVolumeLong?.toString() ?? null,
     sectorCode: indicator.sectorCode,
   });
 };

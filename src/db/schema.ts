@@ -116,6 +116,10 @@ export const midTermIndicators = pgTable(
     priceHigh: decimal("price_high", { precision: 10, scale: 2 }),
     priceLow: decimal("price_low", { precision: 10, scale: 2 }),
 
+    // 出来高指標（罠株除外・スコアリング用）
+    avgVolumeShort: decimal("avg_volume_short", { precision: 15, scale: 0 }), // 短期平均出来高
+    avgVolumeLong: decimal("avg_volume_long", { precision: 15, scale: 0 }), // 長期平均出来高
+
     // 業種コード（sector_averages参照用）
     sectorCode: varchar("sector_code", { length: 10 }),
 
@@ -156,6 +160,9 @@ export const longTermIndicators = pgTable(
     // 価格レンジ指標（52週）
     priceHigh: decimal("price_high", { precision: 10, scale: 2 }),
     priceLow: decimal("price_low", { precision: 10, scale: 2 }),
+
+    // 出来高指標（罠株除外用）
+    avgVolumeShort: decimal("avg_volume_short", { precision: 15, scale: 0 }), // 短期平均出来高
 
     // 業種コード（sector_averages参照用）
     sectorCode: varchar("sector_code", { length: 10 }),

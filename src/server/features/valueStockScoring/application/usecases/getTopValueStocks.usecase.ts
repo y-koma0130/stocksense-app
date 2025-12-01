@@ -58,7 +58,8 @@ export const getTopValueStocks: GetTopValueStocks = async (dependencies, params)
   const filteredByTrap = filteredByMarket.filter((indicator) => !isTrapStock(indicator).isTrap);
 
   // 5. スコア計算（各指標にスコアを付与）
-  // 中期の場合はrsiShortを使用、長期の場合はepsLatest/eps3yAgoを使用
+  // 中期の場合はrsiShort, avgVolumeShort, avgVolumeLongを使用
+  // 長期の場合はepsLatest/eps3yAgoを使用
   const scoredStocks = filteredByTrap.map((indicator) => ({
     ...indicator,
     valueScore: calculateValueStockScore(
@@ -67,6 +68,8 @@ export const getTopValueStocks: GetTopValueStocks = async (dependencies, params)
         rsiShort: "rsiShort" in indicator ? indicator.rsiShort : null,
         epsLatest: "epsLatest" in indicator ? indicator.epsLatest : null,
         eps3yAgo: "eps3yAgo" in indicator ? indicator.eps3yAgo : null,
+        avgVolumeShort: "avgVolumeShort" in indicator ? indicator.avgVolumeShort : null,
+        avgVolumeLong: "avgVolumeLong" in indicator ? indicator.avgVolumeLong : null,
       },
       config,
     ),

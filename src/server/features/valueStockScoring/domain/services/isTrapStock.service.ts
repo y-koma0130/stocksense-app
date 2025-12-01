@@ -1,4 +1,5 @@
 import type { IndicatorDto } from "../../application/dto/indicator.dto";
+import { VOLUME_TRAP_THRESHOLDS } from "../values/volumeConfig";
 
 /**
  * 市場タイプ
@@ -16,6 +17,7 @@ const TRAP_STOCK_THRESHOLDS = {
     operatingIncomeDeclineYearsMax: 3, // 営業利益減少の連続年数上限
     operatingCashFlowNegativeYearsMax: 2, // 営業CF負の連続年数上限
     revenueDeclineYearsMax: null, // 売上減少は見ない
+    avgVolumeShortMin: VOLUME_TRAP_THRESHOLDS.PRIME,
   },
   /** スタンダード市場（中堅企業） */
   スタンダード: {
@@ -24,6 +26,7 @@ const TRAP_STOCK_THRESHOLDS = {
     operatingIncomeDeclineYearsMax: 2,
     operatingCashFlowNegativeYearsMax: 2,
     revenueDeclineYearsMax: null,
+    avgVolumeShortMin: VOLUME_TRAP_THRESHOLDS.STANDARD,
   },
   /** グロース市場（成長企業・赤字可） */
   グロース: {
@@ -32,6 +35,7 @@ const TRAP_STOCK_THRESHOLDS = {
     operatingIncomeDeclineYearsMax: null, // 営業利益は見ない（赤字可）
     operatingCashFlowNegativeYearsMax: 3, // 緩め
     revenueDeclineYearsMax: 3, // 成長企業なのに縮小は除外
+    avgVolumeShortMin: VOLUME_TRAP_THRESHOLDS.GROWTH,
   },
   /** その他市場 */
   other: {
@@ -40,6 +44,7 @@ const TRAP_STOCK_THRESHOLDS = {
     operatingIncomeDeclineYearsMax: 3,
     operatingCashFlowNegativeYearsMax: 2,
     revenueDeclineYearsMax: null,
+    avgVolumeShortMin: VOLUME_TRAP_THRESHOLDS.OTHER,
   },
 } as const;
 
@@ -127,6 +132,15 @@ export const isTrapStock = (indicator: IndicatorDto): TrapStockCheckResult => {
     indicator.revenueDeclineYears >= thresholds.revenueDeclineYearsMax
   ) {
     reasons.push(`売上が${indicator.revenueDeclineYears}年連続で減少`);
+  }
+
+  // 6. 出来高チェック（中期・長期共通）
+  if ("avgVolumeShort" in indicator && indicator.avgVolumeShort !== null) {
+    if (indicator.avgVolumeShort <= thresholds.avgVolumeShortMin) {
+      reasons.push(
+        `短期平均出来高が${thresholds.avgVolumeShortMin.toLocaleString()}株以下 (${indicator.avgVolumeShort.toLocaleString()}株)`,
+      );
+    }
   }
 
   return {

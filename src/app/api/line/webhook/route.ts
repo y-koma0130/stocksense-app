@@ -68,7 +68,14 @@ import {
   buildUsageLimitReachedMessage,
 } from "@/server/features/lineStockAnalysis/presentation/lineMessageBuilder";
 import { getLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
+import { getStockAnalysesByStockIds } from "@/server/features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getUserSubscriptionByUserId } from "@/server/features/userSubscription/infrastructure/queryServices/getUserSubscriptionByUserId";
+import { getTopValueStocks } from "@/server/features/valueStockScoring/application/usecases/getTopValueStocks.usecase";
+import { getLatestIndicators } from "@/server/features/valueStockScoring/infrastructure/queryServices/getIndicators";
+import {
+  buildMarketSummaryMessage,
+  buildRankingMessage,
+} from "@/server/jobs/utils/lineMessageBuilders";
 
 /**
  * LINE Webhookイベントの型定義
@@ -262,17 +269,202 @@ const handleMessageEvent = async (event: LineMessageEvent): Promise<void> => {
 };
 
 /**
- * Postbackイベントを処理（分析実行またはキャンセル）
+ * 銘柄分析の使い方ガイドメッセージを生成
+ */
+const buildAnalysisGuideMessage = (): { type: "text"; text: string } => {
+  return {
+    type: "text",
+    text: `🔍 銘柄分析の使い方
+
+4桁の銘柄コードを送信してください。
+
+【例】
+・7203（トヨタ自動車）
+・6758（ソニーグループ）
+・9984（ソフトバンクグループ）
+
+銘柄コードを送信すると、AIが割安度を分析してレポートをお届けします。
+
+※銘柄コードは証券会社のサイトやYahoo!ファイナンスで確認できます。`,
+  };
+};
+
+/**
+ * ダッシュボードURLメッセージを生成
+ */
+const buildDashboardMessage = (lineUserId: string): { type: "text"; text: string } => {
+  const serviceDomain = process.env.SERVICE_DOMAIN;
+  const baseUrl = serviceDomain ? `https://${serviceDomain}` : "http://localhost:3000";
+  const authUrl = `${baseUrl}/login?lineUserId=${lineUserId}`;
+
+  return {
+    type: "text",
+    text: `🌐 ダッシュボード
+
+以下のリンクからStockSenseにアクセスできます。
+
+${authUrl}
+
+ウェブ版では、より詳細なランキングや分析結果を確認できます。`,
+  };
+};
+
+/**
+ * レポート選択メッセージを生成（Quick Reply付き）
+ */
+const buildReportSelectMessage = (): {
+  type: "text";
+  text: string;
+  quickReply: {
+    items: Array<{
+      type: "action";
+      action: { type: "postback"; label: string; data: string };
+    }>;
+  };
+} => {
+  return {
+    type: "text",
+    text: `📊 レポートを再送
+
+どちらのレポートを受け取りますか？
+
+・中期レポート: 週次で更新される中期投資向けランキング
+・長期レポート: 月次で更新される長期投資向けランキング`,
+    quickReply: {
+      items: [
+        {
+          type: "action",
+          action: {
+            type: "postback",
+            label: "📈 中期レポート",
+            data: "action=weekly_report",
+          },
+        },
+        {
+          type: "action",
+          action: {
+            type: "postback",
+            label: "📊 長期レポート",
+            data: "action=monthly_report",
+          },
+        },
+      ],
+    },
+  };
+};
+
+/**
+ * 週次レポート（中期）を送信
+ */
+const sendWeeklyReport = async (lineUserId: string): Promise<void> => {
+  // マーケット分析を取得
+  const marketAnalysis = await getLatestMarketAnalysis({ periodType: "mid_term" });
+
+  // 上位10銘柄を取得
+  const topStocks = await getTopValueStocks(
+    { getLatestIndicators },
+    { periodType: "mid_term", limit: 10 },
+  );
+
+  // 上位5銘柄のAI分析を取得
+  const top5StockIds = topStocks.slice(0, 5).map((s) => s.stockId);
+  const analysisMap = await getStockAnalysesByStockIds({
+    stockIds: top5StockIds,
+    periodType: "mid_term",
+  });
+
+  // メッセージを組み立て
+  const messages: Array<{ type: "text"; text: string }> = [];
+
+  if (marketAnalysis) {
+    const marketMessage = buildMarketSummaryMessage(marketAnalysis, "mid_term");
+    messages.push({ type: "text", text: marketMessage });
+  }
+
+  const rankingMessage = buildRankingMessage(topStocks, "mid_term", analysisMap);
+  messages.push({ type: "text", text: rankingMessage });
+
+  await sendLineMessage(lineUserId, messages);
+};
+
+/**
+ * 月次レポート（長期）を送信
+ */
+const sendMonthlyReport = async (lineUserId: string): Promise<void> => {
+  // マーケット分析を取得
+  const marketAnalysis = await getLatestMarketAnalysis({ periodType: "long_term" });
+
+  // 上位10銘柄を取得
+  const topStocks = await getTopValueStocks(
+    { getLatestIndicators },
+    { periodType: "long_term", limit: 10 },
+  );
+
+  // 上位5銘柄のAI分析を取得
+  const top5StockIds = topStocks.slice(0, 5).map((s) => s.stockId);
+  const analysisMap = await getStockAnalysesByStockIds({
+    stockIds: top5StockIds,
+    periodType: "long_term",
+  });
+
+  // メッセージを組み立て
+  const messages: Array<{ type: "text"; text: string }> = [];
+
+  if (marketAnalysis) {
+    const marketMessage = buildMarketSummaryMessage(marketAnalysis, "long_term");
+    messages.push({ type: "text", text: marketMessage });
+  }
+
+  const rankingMessage = buildRankingMessage(topStocks, "long_term", analysisMap);
+  messages.push({ type: "text", text: rankingMessage });
+
+  await sendLineMessage(lineUserId, messages);
+};
+
+/**
+ * Postbackイベントを処理（分析実行、キャンセル、リッチメニューアクション）
  */
 const handlePostbackEvent = async (event: LinePostbackEvent): Promise<void> => {
   const lineUserId = event.source.userId;
   const postbackData = parsePostbackData(event.postback.data);
 
+  // リッチメニュー: 銘柄分析の使い方
+  if (postbackData.action === "guide") {
+    await sendLineMessage(lineUserId, [buildAnalysisGuideMessage()]);
+    return;
+  }
+
+  // リッチメニュー: レポート選択（Quick Reply表示）
+  if (postbackData.action === "report_select") {
+    await sendLineMessage(lineUserId, [buildReportSelectMessage()]);
+    return;
+  }
+
+  // レポート再送: 中期（週次）
+  if (postbackData.action === "weekly_report") {
+    await sendWeeklyReport(lineUserId);
+    return;
+  }
+
+  // レポート再送: 長期（月次）
+  if (postbackData.action === "monthly_report") {
+    await sendMonthlyReport(lineUserId);
+    return;
+  }
+
+  // リッチメニュー: ダッシュボード
+  if (postbackData.action === "dashboard") {
+    await sendLineMessage(lineUserId, [buildDashboardMessage(lineUserId)]);
+    return;
+  }
+
+  // 銘柄分析: キャンセル
   if (postbackData.action === "cancel") {
     await sendLineMessage(lineUserId, [buildAnalysisCancelledMessage()]);
     return;
   }
 
+  // 銘柄分析: 実行
   if (postbackData.action === "analyze") {
     const stockId = postbackData.stockId;
     const tickerCode = postbackData.tickerCode;

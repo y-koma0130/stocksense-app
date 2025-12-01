@@ -5,18 +5,20 @@
  * 画像ファイルを指定してリッチメニューを作成し、デフォルトメニューとして設定します。
  *
  * 使い方:
- * 1. リッチメニュー画像を用意（2500x1686px または 2500x843px）
+ * 1. リッチメニュー画像を用意（1200x405px）
  * 2. pnpm tsx scripts/setup-line-richmenu.ts --image ./path/to/image.png
  *
- * リッチメニュー構成:
- * ┌─────────────────────────────────────┐
- * │         🔍 銘柄分析                 │  ← action=guide
- * │   銘柄コードを送信してください      │
- * │         （例：7203）                │
- * ├───────────┬───────────┬─────────────┤
- * │  📊 今週  │  📈 今月  │  🌐 ログイン │ ← action=weekly_report, monthly_report, login
- * │  レポート │  レポート │             │
- * └───────────┴───────────┴─────────────┘
+ * リッチメニュー構成（3ボタン横並び）:
+ * ┌───────────────┬───────────────┬───────────────┐
+ * │  🔍 AIで      │  📊 レポート  │  🌐 ダッシュ  │
+ * │  銘柄分析     │  を再送       │    ボード     │
+ * └───────────────┴───────────────┴───────────────┘
+ *      400px          400px           400px
+ *
+ * アクション:
+ * - 左: action=guide（銘柄分析の使い方ガイド）
+ * - 中: action=report_select（中期/長期レポート選択）
+ * - 右: action=dashboard（ダッシュボードURL）
  */
 
 import * as dotenv from "dotenv";
@@ -341,10 +343,9 @@ LINE リッチメニュー セットアップスクリプト
 リッチメニューID: ${richMenuId}
 
 各ボタンのpostbackアクション:
-  - 銘柄分析: action=guide
-  - 今週のレポート: action=weekly_report
-  - 今月のレポート: action=monthly_report
-  - ログイン: action=login
+  - AIで銘柄分析: action=guide
+  - レポートを再送: action=report_select
+  - ダッシュボード: action=dashboard
 `);
 };
 

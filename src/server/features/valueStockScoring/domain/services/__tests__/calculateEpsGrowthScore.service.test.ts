@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  calculateEpsGrowthRate,
-  calculateEpsGrowthScore,
-} from "../calculateEpsGrowthScore.service";
+import { calculateEpsGrowthRate } from "../calculateEpsGrowthRate.service";
+import { calculateEpsGrowthScore } from "../calculateEpsGrowthScore.service";
 
 describe("calculateEpsGrowthRate", () => {
   describe("正常なCAGR計算", () => {

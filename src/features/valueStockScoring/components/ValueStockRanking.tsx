@@ -7,6 +7,8 @@ import { trpc } from "../../../../trpc/client";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
 import { ScoringInfoBanner } from "./ScoringInfoBanner";
+import { ValueStockCardList } from "./ValueStockCardList";
+import { ValueStockCardListSkeleton } from "./ValueStockCardListSkeleton";
 import { ValueStockDrawer } from "./ValueStockDrawer";
 import { ValueStockTable } from "./ValueStockTable";
 import { ValueStockTableSkeleton } from "./ValueStockTableSkeleton";
@@ -61,7 +63,16 @@ export const ValueStockRanking = () => {
       <ScoringInfoBanner />
 
       {loading ? (
-        <ValueStockTableSkeleton rowCount={10} />
+        <>
+          {/* PC: テーブルスケルトン */}
+          <div className={desktopOnlyStyle}>
+            <ValueStockTableSkeleton rowCount={10} />
+          </div>
+          {/* モバイル: カードスケルトン */}
+          <div className={mobileOnlyStyle}>
+            <ValueStockCardListSkeleton cardCount={10} />
+          </div>
+        </>
       ) : error ? (
         <div className={errorContainerStyle}>
           <p className={errorStyle}>データの取得に失敗しました: {error.message}</p>
@@ -71,11 +82,24 @@ export const ValueStockRanking = () => {
           <p className={emptyStyle}>指標データがありません</p>
         </div>
       ) : (
-        <ValueStockTable
-          data={data}
-          onRowClick={setSelectedStock}
-          analyzedStockIds={analyzedStockIds}
-        />
+        <>
+          {/* PC: テーブル表示 */}
+          <div className={desktopOnlyStyle}>
+            <ValueStockTable
+              data={data}
+              onRowClick={setSelectedStock}
+              analyzedStockIds={analyzedStockIds}
+            />
+          </div>
+          {/* モバイル: カード表示 */}
+          <div className={mobileOnlyStyle}>
+            <ValueStockCardList
+              data={data}
+              onCardClick={setSelectedStock}
+              analyzedStockIds={analyzedStockIds}
+            />
+          </div>
+        </>
       )}
 
       <ValueStockDrawer
@@ -137,4 +161,19 @@ const emptyStyle = css({
   fontSize: "0.875rem",
   padding: "2rem",
   textAlign: "center",
+});
+
+// レスポンシブ切り替え用スタイル（md = 768px）
+const desktopOnlyStyle = css({
+  display: "none",
+  md: {
+    display: "block",
+  },
+});
+
+const mobileOnlyStyle = css({
+  display: "block",
+  md: {
+    display: "none",
+  },
 });

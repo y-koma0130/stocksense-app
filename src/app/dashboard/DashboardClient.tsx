@@ -59,8 +59,11 @@ const pageWrapperStyle = css({
 
 const containerStyle = css({
   flex: 1,
-  padding: "1rem",
+  padding: "0.5rem",
   backgroundColor: "background",
+  md: {
+    padding: "1rem",
+  },
 });
 
 const spacerStyle = css({

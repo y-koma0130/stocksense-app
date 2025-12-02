@@ -10,7 +10,7 @@ import { inngest } from "../../../inngest/client";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
 import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
-import { getTopValueStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
+import { getTopMidTermStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
 import { buildStockAnalysisPrompt } from "./utils/buildStockAnalysisPrompt";
 
 // 分析対象銘柄数（固定）
@@ -31,7 +31,7 @@ export const weeklyStockAnalysis = inngest.createFunction(
 
     // 上位N銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
-      return await getTopValueStocks({ periodType: "mid_term", limit: ANALYSIS_COUNT });
+      return await getTopMidTermStocks({ limit: ANALYSIS_COUNT });
     });
 
     if (topStocks.length === 0) {
@@ -42,7 +42,6 @@ export const weeklyStockAnalysis = inngest.createFunction(
     const results = [];
     for (const stock of topStocks) {
       // プロンプト生成（構造化データはinputに含まれる）
-      // 中期のみなのでrsiShortは存在するが、型の都合上in演算子でチェック
       // 中期ではEPSデータは使用しない（null）
       const { instructions, input } = buildStockAnalysisPrompt({
         periodType: "mid_term",
@@ -55,7 +54,7 @@ export const weeklyStockAnalysis = inngest.createFunction(
           per: stock.per,
           pbr: stock.pbr,
           rsi: stock.rsi,
-          rsiShort: "rsiShort" in stock ? stock.rsiShort : null,
+          rsiShort: stock.rsiShort,
           priceHigh: stock.priceHigh,
           priceLow: stock.priceLow,
           sectorAvgPer: stock.sectorAvgPer,

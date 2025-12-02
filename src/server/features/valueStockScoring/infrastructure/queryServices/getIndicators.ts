@@ -1,6 +1,4 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { PeriodType } from "@/constants/periodTypes";
-import { PERIOD_TYPES } from "@/constants/periodTypes";
 import { db } from "@/db";
 import {
   longTermIndicators,
@@ -10,25 +8,26 @@ import {
   stocks,
 } from "@/db/schema";
 import {
-  type IndicatorDto,
+  type LongTermIndicatorDto,
   longTermIndicatorDtoSchema,
+  type MidTermIndicatorDto,
   midTermIndicatorDtoSchema,
 } from "../../application/dto/indicator.dto";
 
 /**
- * 指定した期間タイプの最新の指標データを全件取得する関数の型定義
- *
- * TODO: 中期/長期で返却する型が異なるため、将来的に以下の分離を検討:
- * - GetLatestMidTermIndicators: MidTermIndicatorDto[] を返す
- * - GetLatestLongTermIndicators: LongTermIndicatorDto[] を返す
- * - 共通の GetLatestIndicators は廃止し、呼び出し側で明示的に使い分ける
+ * 中期指標の最新データを取得する関数の型定義
  */
-export type GetLatestIndicators = (periodType: PeriodType) => Promise<IndicatorDto[]>;
+export type GetLatestMidTermIndicators = () => Promise<MidTermIndicatorDto[]>;
+
+/**
+ * 長期指標の最新データを取得する関数の型定義
+ */
+export type GetLatestLongTermIndicators = () => Promise<LongTermIndicatorDto[]>;
 
 /**
  * 中期指標の最新データを取得
  */
-const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
+export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () => {
   // 最新のcollectedAt日付を取得
   const latestDateResult = await db
     .select({ collectedAt: midTermIndicators.collectedAt })
@@ -129,7 +128,7 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
 /**
  * 長期指標の最新データを取得
  */
-const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
+export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async () => {
   // 最新のcollectedAt日付を取得
   const latestDateResult = await db
     .select({ collectedAt: longTermIndicators.collectedAt })
@@ -226,15 +225,4 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       eps3yAgo: row.eps3yAgo ? Number(row.eps3yAgo) : null,
     }),
   );
-};
-
-/**
- * 指定した期間タイプの最新の指標データを全件取得する
- */
-export const getLatestIndicators: GetLatestIndicators = async (periodType) => {
-  if (periodType === PERIOD_TYPES.MID_TERM) {
-    return getLatestMidTermIndicators();
-  } else {
-    return getLatestLongTermIndicators();
-  }
 };

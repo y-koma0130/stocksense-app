@@ -70,8 +70,12 @@ import {
 import { getLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { getStockAnalysesByStockIds } from "@/server/features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getUserSubscriptionByUserId } from "@/server/features/userSubscription/infrastructure/queryServices/getUserSubscriptionByUserId";
-import { getTopValueStocks } from "@/server/features/valueStockScoring/application/usecases/getTopValueStocks.usecase";
-import { getLatestIndicators } from "@/server/features/valueStockScoring/infrastructure/queryServices/getIndicators";
+import { getTopLongTermValueStocks } from "@/server/features/valueStockScoring/application/usecases/getTopLongTermValueStocks.usecase";
+import { getTopMidTermValueStocks } from "@/server/features/valueStockScoring/application/usecases/getTopMidTermValueStocks.usecase";
+import {
+  getLatestLongTermIndicators,
+  getLatestMidTermIndicators,
+} from "@/server/features/valueStockScoring/infrastructure/queryServices/getIndicators";
 import {
   buildMarketSummaryMessage,
   buildRankingMessage,
@@ -361,10 +365,7 @@ const sendWeeklyReport = async (lineUserId: string): Promise<void> => {
   const marketAnalysis = await getLatestMarketAnalysis({ periodType: "mid_term" });
 
   // 上位10銘柄を取得
-  const topStocks = await getTopValueStocks(
-    { getLatestIndicators },
-    { periodType: "mid_term", limit: 10 },
-  );
+  const topStocks = await getTopMidTermValueStocks({ getLatestMidTermIndicators }, { limit: 10 });
 
   // 上位5銘柄のAI分析を取得
   const top5StockIds = topStocks.slice(0, 5).map((s) => s.stockId);
@@ -395,10 +396,7 @@ const sendMonthlyReport = async (lineUserId: string): Promise<void> => {
   const marketAnalysis = await getLatestMarketAnalysis({ periodType: "long_term" });
 
   // 上位10銘柄を取得
-  const topStocks = await getTopValueStocks(
-    { getLatestIndicators },
-    { periodType: "long_term", limit: 10 },
-  );
+  const topStocks = await getTopLongTermValueStocks({ getLatestLongTermIndicators }, { limit: 10 });
 
   // 上位5銘柄のAI分析を取得
   const top5StockIds = topStocks.slice(0, 5).map((s) => s.stockId);

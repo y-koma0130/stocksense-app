@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import XLSX from "xlsx";
 import { type ParsedStockDataDto, parsedStockDataDtoSchema } from "../../application/dto/jpx.dto";
 
 /**
@@ -18,6 +18,16 @@ const normalizeMarket = (market: string): string => {
 };
 
 /**
+ * 17業種コードを正規化（"-"はnullに変換）
+ */
+const normalizeLargeSector = (value: unknown): string | null => {
+  if (!value || value === "-") {
+    return null;
+  }
+  return String(value);
+};
+
+/**
  * 行データをパース
  */
 const parseRow = (row: Record<string, unknown>): ParsedStockDataDto | null => {
@@ -26,6 +36,8 @@ const parseRow = (row: Record<string, unknown>): ParsedStockDataDto | null => {
   const market = row["市場・商品区分"];
   const sector33Code = row["33業種コード"];
   const sector33Name = row["33業種区分"];
+  const sector17Code = row["17業種コード"];
+  const sector17Name = row["17業種区分"];
 
   // 必須データチェック
   if (!tickerCode || !companyName) {
@@ -49,6 +61,8 @@ const parseRow = (row: Record<string, unknown>): ParsedStockDataDto | null => {
     name: String(companyName),
     sectorCode: String(sector33Code),
     sectorName: String(sector33Name),
+    largeSectorCode: normalizeLargeSector(sector17Code),
+    largeSectorName: normalizeLargeSector(sector17Name),
     market: normalizeMarket(String(market)),
   });
 };

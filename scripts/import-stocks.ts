@@ -11,7 +11,7 @@
  * pnpm tsx scripts/import-stocks.ts ./data/data_j.xls
  */
 
-import { and, eq, isNull, notInArray } from "drizzle-orm";
+import { and, isNull, notInArray, sql } from "drizzle-orm";
 import { db } from "../src/db";
 import { stocks } from "../src/db/schema";
 import type { ParsedStockDataDto } from "../src/server/features/valueStockScoring/application/dto/jpx.dto";
@@ -19,107 +19,78 @@ import { parseJPXStockList } from "../src/server/features/valueStockScoring/infr
 
 type ImportResult = {
   total: number;
-  created: number;
-  updated: number;
-  skipped: number;
+  upserted: number;
   errors: string[];
 };
 
+const BATCH_SIZE = 500;
+
+/**
+ * 銘柄データをupsert（バッチ処理）
+ */
 const importStocksData = async (stocksData: ParsedStockDataDto[]): Promise<ImportResult> => {
   const result: ImportResult = {
     total: stocksData.length,
-    created: 0,
-    updated: 0,
-    skipped: 0,
+    upserted: 0,
     errors: [],
   };
 
-  console.log("  既存銘柄を確認中...");
+  console.log(`  ${stocksData.length}件を${BATCH_SIZE}件ずつupsert中...`);
 
-  // 全ticker_codeを一度に取得（deletedAtがNULLの上場中銘柄のみ）
-  const existingStocks = await db
-    .select({ tickerCode: stocks.tickerCode })
-    .from(stocks)
-    .where(isNull(stocks.deletedAt));
+  // バッチに分割して処理
+  for (let i = 0; i < stocksData.length; i += BATCH_SIZE) {
+    const batch = stocksData.slice(i, i + BATCH_SIZE);
 
-  const existingTickerCodesSet = new Set(existingStocks.map((s) => s.tickerCode));
-
-  // 新規と更新に分類
-  const toCreate: ParsedStockDataDto[] = [];
-  const toUpdate: ParsedStockDataDto[] = [];
-
-  for (const stockData of stocksData) {
-    if (existingTickerCodesSet.has(stockData.tickerCode)) {
-      toUpdate.push(stockData);
-    } else {
-      toCreate.push(stockData);
-    }
-  }
-
-  console.log(`  新規: ${toCreate.length}件、更新: ${toUpdate.length}件`);
-
-  // 新規銘柄を一括挿入
-  if (toCreate.length > 0) {
-    console.log("  新規銘柄を一括挿入中...");
     try {
-      await db.insert(stocks).values(
-        toCreate.map((s) => ({
-          tickerCode: s.tickerCode,
-          tickerSymbol: s.tickerSymbol,
-          name: s.name,
-          sectorCode: s.sectorCode,
-          sectorName: s.sectorName,
-          market: s.market,
-        })),
+      await db
+        .insert(stocks)
+        .values(
+          batch.map((s) => ({
+            tickerCode: s.tickerCode,
+            tickerSymbol: s.tickerSymbol,
+            name: s.name,
+            sectorCode: s.sectorCode,
+            sectorName: s.sectorName,
+            largeSectorCode: s.largeSectorCode,
+            largeSectorName: s.largeSectorName,
+            market: s.market,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: stocks.tickerCode,
+          set: {
+            tickerSymbol: sql`excluded.ticker_symbol`,
+            name: sql`excluded.name`,
+            sectorCode: sql`excluded.sector_code`,
+            sectorName: sql`excluded.sector_name`,
+            largeSectorCode: sql`excluded.large_sector_code`,
+            largeSectorName: sql`excluded.large_sector_name`,
+            market: sql`excluded.market`,
+            deletedAt: sql`NULL`, // 再上場対応
+            updatedAt: sql`NOW()`,
+          },
+        });
+
+      result.upserted += batch.length;
+
+      // 進捗表示
+      const progress = Math.min(i + BATCH_SIZE, stocksData.length);
+      console.log(
+        `    進捗: ${progress}/${stocksData.length}件 (${Math.round((progress / stocksData.length) * 100)}%)`,
       );
-      result.created = toCreate.length;
     } catch (error) {
       result.errors.push(
-        `一括挿入エラー: ${error instanceof Error ? error.message : String(error)}`,
+        `バッチ ${i}-${i + batch.length} エラー: ${error instanceof Error ? error.message : String(error)}`,
       );
-    }
-  }
-
-  // 既存銘柄を1件ずつ更新（Drizzleは一括UPDATEが難しいため）
-  if (toUpdate.length > 0) {
-    console.log("  既存銘柄を更新中...");
-    let processed = 0;
-
-    for (const stockData of toUpdate) {
-      try {
-        await db
-          .update(stocks)
-          .set({
-            tickerSymbol: stockData.tickerSymbol,
-            name: stockData.name,
-            sectorCode: stockData.sectorCode,
-            sectorName: stockData.sectorName,
-            market: stockData.market,
-            deletedAt: null, // 再上場対応
-            updatedAt: new Date(),
-          })
-          .where(eq(stocks.tickerCode, stockData.tickerCode));
-
-        result.updated++;
-        processed++;
-
-        // 100件ごとに進捗表示
-        if (processed % 100 === 0) {
-          console.log(
-            `    進捗: ${processed}/${toUpdate.length}件 (${Math.round((processed / toUpdate.length) * 100)}%)`,
-          );
-        }
-      } catch (error) {
-        result.errors.push(
-          `${stockData.tickerCode}: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
     }
   }
 
   return result;
 };
 
+/**
+ * 上場廃止銘柄をマーク
+ */
 const markDelistedStocksData = async (currentTickerCodes: string[]): Promise<number> => {
   if (currentTickerCodes.length === 0) {
     return 0;
@@ -166,14 +137,28 @@ async function main() {
     }
     console.log();
 
+    // 17業種の集計
+    const largeSectorCounts = stocksData.reduce(
+      (acc, stock) => {
+        const key = stock.largeSectorName ?? "不明";
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    console.log("17業種別の内訳:");
+    for (const [sector, count] of Object.entries(largeSectorCounts).sort((a, b) => b[1] - a[1])) {
+      console.log(`  ${sector}: ${count}件`);
+    }
+    console.log();
+
     console.log("💾 データベースにインポート中...");
     const result = await importStocksData(stocksData);
 
     console.log("\n✅ インポート完了");
     console.log(`  合計: ${result.total}件`);
-    console.log(`  新規作成: ${result.created}件`);
-    console.log(`  更新: ${result.updated}件`);
-    console.log(`  スキップ: ${result.skipped}件`);
+    console.log(`  Upsert: ${result.upserted}件`);
 
     if (result.errors.length > 0) {
       console.log(`\n⚠️  エラー: ${result.errors.length}件`);

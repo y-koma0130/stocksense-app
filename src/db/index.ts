@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle } from "drizzle-orm/postgres-js";
-import type postgres from "postgres";
+import postgres from "postgres";
 
 config({ path: ".env.local" });
 
@@ -11,7 +11,7 @@ let dbInstance: PostgresJsDatabase<Record<string, never>> | null = null;
  * データベース接続を取得する
  * ビルド時にエラーを防ぐため、遅延初期化を採用
  */
-function getDb(): PostgresJsDatabase<Record<string, never>> {
+const getDb = (): PostgresJsDatabase<Record<string, never>> => {
   if (dbInstance) {
     return dbInstance;
   }
@@ -26,16 +26,14 @@ function getDb(): PostgresJsDatabase<Record<string, never>> {
   const isLocal = databaseUrl.includes("127.0.0.1") || databaseUrl.includes("localhost");
 
   // Supabaseの接続プールでは prepare: false が必要
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const postgresModule = require("postgres") as typeof postgres;
-  const client = postgresModule(databaseUrl, {
+  const client = postgres(databaseUrl, {
     prepare: false,
     ssl: isLocal ? false : "require",
   });
 
   dbInstance = drizzle(client);
   return dbInstance;
-}
+};
 
 export const db = new Proxy({} as PostgresJsDatabase<Record<string, never>>, {
   get(_, prop) {

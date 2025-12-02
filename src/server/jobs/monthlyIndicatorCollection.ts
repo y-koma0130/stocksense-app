@@ -1,7 +1,9 @@
 import { inngest } from "../../../inngest/client";
 import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks";
 import { createLongTermIndicator } from "../features/valueStockScoring/domain/entities/longTermIndicator";
+import { calculateAvgDailyVolume } from "../features/valueStockScoring/domain/services/calculateAvgDailyVolume.service";
 import { calculateRSI } from "../features/valueStockScoring/domain/services/calculateRSI";
+import { VOLUME_PERIOD } from "../features/valueStockScoring/domain/values/volumeConfig";
 import { getFundamentals } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getFundamentals";
 import { getWeeklyData } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getWeeklyData";
 import { saveLongTermIndicator } from "../features/valueStockScoring/infrastructure/repositories/saveLongTermIndicator.repository";
@@ -65,6 +67,9 @@ export const monthlyIndicatorCollection = inngest.createFunction(
             const priceLow =
               last52Weeks.length > 0 ? Math.min(...last52Weeks.map((d) => d.low)) : null;
 
+            // 出来高計算（短期のみ、罠株除外用）
+            const avgVolumeShort = calculateAvgDailyVolume(weeklyData, VOLUME_PERIOD.SHORT);
+
             // エンティティ生成
             const indicator = createLongTermIndicator({
               stockId: stock.id,
@@ -75,6 +80,7 @@ export const monthlyIndicatorCollection = inngest.createFunction(
               rsi,
               priceHigh,
               priceLow,
+              avgVolumeShort,
               sectorCode: stock.sectorCode,
             });
 

@@ -3,21 +3,32 @@
  * ジョブから直接呼び出せるシンプルな関数
  */
 
-import type { PeriodType } from "@/constants/periodTypes";
-import type { ValueStockDto } from "../../application/dto/valueStock.dto";
-import { getTopValueStocks as getTopValueStocksUsecase } from "../../application/usecases/getTopValueStocks.usecase";
-import { getLatestIndicators } from "./getIndicators";
+import type {
+  LongTermValueStockDto,
+  MidTermValueStockDto,
+} from "../../application/dto/valueStock.dto";
+import { getTopLongTermValueStocks } from "../../application/usecases/getTopLongTermValueStocks.usecase";
+import { getTopMidTermValueStocks } from "../../application/usecases/getTopMidTermValueStocks.usecase";
+import { getLatestLongTermIndicators, getLatestMidTermIndicators } from "./getIndicators";
 
 type GetTopValueStocksParams = Readonly<{
-  periodType: PeriodType;
   limit: number;
 }>;
 
 /**
- * 上位割安株を取得
+ * 中期上位割安株を取得
  */
-export const getTopValueStocks = async (
+export const getTopMidTermStocks = async (
   params: GetTopValueStocksParams,
-): Promise<ValueStockDto[]> => {
-  return await getTopValueStocksUsecase({ getLatestIndicators }, params);
+): Promise<MidTermValueStockDto[]> => {
+  return await getTopMidTermValueStocks({ getLatestMidTermIndicators }, params);
+};
+
+/**
+ * 長期上位割安株を取得
+ */
+export const getTopLongTermStocks = async (
+  params: GetTopValueStocksParams,
+): Promise<LongTermValueStockDto[]> => {
+  return await getTopLongTermValueStocks({ getLatestLongTermIndicators }, params);
 };

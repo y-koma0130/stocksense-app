@@ -13,8 +13,8 @@ import { sendLineMessage } from "../features/lineNotification/infrastructure/ext
 import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { getStockAnalysesByStockIds } from "../features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
-import { getTopValueStocks } from "../features/valueStockScoring/application/usecases/getTopValueStocks.usecase";
-import { getLatestIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
+import { getTopLongTermValueStocks } from "../features/valueStockScoring/application/usecases/getTopLongTermValueStocks.usecase";
+import { getLatestLongTermIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
 import { buildMarketSummaryMessage, buildRankingMessage } from "./utils/lineMessageBuilders";
 
 const PERIOD_TYPE = "long_term" as const;
@@ -82,10 +82,7 @@ export const monthlyLineNotification = inngest.createFunction(
 
     // ステップ4: 上位10銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
-      return await getTopValueStocks(
-        { getLatestIndicators },
-        { periodType: PERIOD_TYPE, limit: 10 },
-      );
+      return await getTopLongTermValueStocks({ getLatestLongTermIndicators }, { limit: 10 });
     });
 
     // ステップ5: 上位5銘柄のAI分析を取得

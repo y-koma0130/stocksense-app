@@ -21,6 +21,7 @@ export const saveLongTermIndicator: SaveLongTermIndicator = async (indicator) =>
     rsi: indicator.rsi?.toString() ?? null,
     priceHigh: indicator.priceHigh?.toString() ?? null,
     priceLow: indicator.priceLow?.toString() ?? null,
+    avgVolumeShort: indicator.avgVolumeShort?.toString() ?? null,
     sectorCode: indicator.sectorCode,
   });
 };

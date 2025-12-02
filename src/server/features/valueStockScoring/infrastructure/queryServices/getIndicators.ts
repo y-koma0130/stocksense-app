@@ -1,6 +1,4 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { PeriodType } from "@/constants/periodTypes";
-import { PERIOD_TYPES } from "@/constants/periodTypes";
 import { db } from "@/db";
 import {
   longTermIndicators,
@@ -10,25 +8,26 @@ import {
   stocks,
 } from "@/db/schema";
 import {
-  type IndicatorDto,
+  type LongTermIndicatorDto,
   longTermIndicatorDtoSchema,
+  type MidTermIndicatorDto,
   midTermIndicatorDtoSchema,
 } from "../../application/dto/indicator.dto";
 
 /**
- * 指定した期間タイプの最新の指標データを全件取得する関数の型定義
- *
- * TODO: 中期/長期で返却する型が異なるため、将来的に以下の分離を検討:
- * - GetLatestMidTermIndicators: MidTermIndicatorDto[] を返す
- * - GetLatestLongTermIndicators: LongTermIndicatorDto[] を返す
- * - 共通の GetLatestIndicators は廃止し、呼び出し側で明示的に使い分ける
+ * 中期指標の最新データを取得する関数の型定義
  */
-export type GetLatestIndicators = (periodType: PeriodType) => Promise<IndicatorDto[]>;
+export type GetLatestMidTermIndicators = () => Promise<MidTermIndicatorDto[]>;
+
+/**
+ * 長期指標の最新データを取得する関数の型定義
+ */
+export type GetLatestLongTermIndicators = () => Promise<LongTermIndicatorDto[]>;
 
 /**
  * 中期指標の最新データを取得
  */
-const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
+export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () => {
   // 最新のcollectedAt日付を取得
   const latestDateResult = await db
     .select({ collectedAt: midTermIndicators.collectedAt })
@@ -69,6 +68,9 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsiShort: midTermIndicators.rsiShort,
       priceHigh: midTermIndicators.priceHigh,
       priceLow: midTermIndicators.priceLow,
+      // 出来高指標
+      avgVolumeShort: midTermIndicators.avgVolumeShort,
+      avgVolumeLong: midTermIndicators.avgVolumeLong,
       // sector_averagesから業種平均を取得（最新データを使用）
       sectorAvgPer: sectorAverages.avgPer,
       sectorAvgPbr: sectorAverages.avgPbr,
@@ -110,6 +112,8 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsiShort: row.rsiShort ? Number(row.rsiShort) : null,
       priceHigh: row.priceHigh ? Number(row.priceHigh) : null,
       priceLow: row.priceLow ? Number(row.priceLow) : null,
+      avgVolumeShort: row.avgVolumeShort ? Number(row.avgVolumeShort) : null,
+      avgVolumeLong: row.avgVolumeLong ? Number(row.avgVolumeLong) : null,
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
       sectorAvgPbr: row.sectorAvgPbr ? Number(row.sectorAvgPbr) : null,
       equityRatio: row.equityRatio ? Number(row.equityRatio) : null,
@@ -124,7 +128,7 @@ const getLatestMidTermIndicators = async (): Promise<IndicatorDto[]> => {
 /**
  * 長期指標の最新データを取得
  */
-const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
+export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async () => {
   // 最新のcollectedAt日付を取得
   const latestDateResult = await db
     .select({ collectedAt: longTermIndicators.collectedAt })
@@ -164,6 +168,8 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsi: longTermIndicators.rsi,
       priceHigh: longTermIndicators.priceHigh,
       priceLow: longTermIndicators.priceLow,
+      // 出来高指標（罠株除外用）
+      avgVolumeShort: longTermIndicators.avgVolumeShort,
       // sector_averagesから業種平均を取得（最新データを使用）
       sectorAvgPer: sectorAverages.avgPer,
       sectorAvgPbr: sectorAverages.avgPbr,
@@ -207,6 +213,7 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       rsi: row.rsi ? Number(row.rsi) : null,
       priceHigh: row.priceHigh ? Number(row.priceHigh) : null,
       priceLow: row.priceLow ? Number(row.priceLow) : null,
+      avgVolumeShort: row.avgVolumeShort ? Number(row.avgVolumeShort) : null,
       sectorAvgPer: row.sectorAvgPer ? Number(row.sectorAvgPer) : null,
       sectorAvgPbr: row.sectorAvgPbr ? Number(row.sectorAvgPbr) : null,
       equityRatio: row.equityRatio ? Number(row.equityRatio) : null,
@@ -218,15 +225,4 @@ const getLatestLongTermIndicators = async (): Promise<IndicatorDto[]> => {
       eps3yAgo: row.eps3yAgo ? Number(row.eps3yAgo) : null,
     }),
   );
-};
-
-/**
- * 指定した期間タイプの最新の指標データを全件取得する
- */
-export const getLatestIndicators: GetLatestIndicators = async (periodType) => {
-  if (periodType === PERIOD_TYPES.MID_TERM) {
-    return getLatestMidTermIndicators();
-  } else {
-    return getLatestLongTermIndicators();
-  }
 };

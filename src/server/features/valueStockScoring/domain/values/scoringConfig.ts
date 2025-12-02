@@ -51,6 +51,7 @@ export const scoringConfigSchema = z.object({
   rsiWeight: z.number().min(0).max(100),
   priceRangeWeight: z.number().min(0).max(100),
   rsiMomentumWeight: z.number().min(0).max(100).optional(), // 中期のみ使用
+  volumeSurgeWeight: z.number().min(0).max(100).optional(), // 中期のみ使用（出来高急増）
   epsGrowthWeight: z.number().min(0).max(100).optional(), // 長期のみ使用
 
   // 各指標の閾値
@@ -73,15 +74,16 @@ export type ScoringConfig = z.infer<typeof scoringConfigSchema>;
 /**
  * 中期（週次）スコアリングの設定
  * 重み合計: 100%
- * PER: 26%, PBR: 20%, RSI静的: 18%, 価格レンジ: 14%, RSIモメンタム: 22%
+ * PER: 24%, PBR: 18%, RSI静的: 16%, 価格レンジ: 12%, RSIモメンタム: 18%, 出来高急増: 12%
  */
 export const MID_TERM_CONFIG: ScoringConfig = {
   // 重み配分（合計100%）
-  perWeight: 26, // 26%
-  pbrWeight: 20, // 20%
-  rsiWeight: 18, // 18%（静的RSI）
-  priceRangeWeight: 14, // 14%
-  rsiMomentumWeight: 22, // 22%（RSIモメンタム - 反発初動検出）
+  perWeight: 24, // 24%
+  pbrWeight: 18, // 18%
+  rsiWeight: 16, // 16%（静的RSI）
+  priceRangeWeight: 12, // 12%
+  rsiMomentumWeight: 18, // 18%（RSIモメンタム - 反発初動検出）
+  volumeSurgeWeight: 12, // 12%（出来高急増 - 注目度上昇検出）
 
   // PER閾値（業種平均比のパーセント値）
   perThresholds: {

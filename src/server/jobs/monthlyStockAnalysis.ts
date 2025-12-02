@@ -10,7 +10,7 @@ import { inngest } from "../../../inngest/client";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
 import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
-import { getTopValueStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
+import { getTopLongTermStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
 import { buildStockAnalysisPrompt } from "./utils/buildStockAnalysisPrompt";
 
 // 分析対象銘柄数（固定）
@@ -31,7 +31,7 @@ export const monthlyStockAnalysis = inngest.createFunction(
 
     // 上位N銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
-      return await getTopValueStocks({ periodType: "long_term", limit: ANALYSIS_COUNT });
+      return await getTopLongTermStocks({ limit: ANALYSIS_COUNT });
     });
 
     if (topStocks.length === 0) {
@@ -59,8 +59,8 @@ export const monthlyStockAnalysis = inngest.createFunction(
           priceLow: stock.priceLow,
           sectorAvgPer: stock.sectorAvgPer,
           sectorAvgPbr: stock.sectorAvgPbr,
-          epsLatest: "epsLatest" in stock ? stock.epsLatest : null,
-          eps3yAgo: "eps3yAgo" in stock ? stock.eps3yAgo : null,
+          epsLatest: stock.epsLatest,
+          eps3yAgo: stock.eps3yAgo,
         },
         marketAnalysis,
       });

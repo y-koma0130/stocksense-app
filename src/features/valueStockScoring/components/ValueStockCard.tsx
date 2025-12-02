@@ -100,7 +100,7 @@ const cardStyle = css({
   textAlign: "left",
   backgroundColor: "cardBg",
   borderRadius: "8px",
-  padding: "1rem",
+  padding: "0.625rem",
   border: "1px solid {colors.border}",
   cursor: "pointer",
   transition: "all 0.2s",

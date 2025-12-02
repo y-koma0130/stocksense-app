@@ -1,13 +1,17 @@
 import { z } from "zod";
-import { periodTypeSchema } from "@/constants/periodTypes";
+import { PERIOD_TYPES, periodTypeSchema } from "@/constants/periodTypes";
 import { publicProcedure, router } from "../../../../../trpc/init";
-import { getTopValueStocks } from "../application/usecases/getTopValueStocks.usecase";
-import { getLatestIndicators } from "../infrastructure/queryServices/getIndicators";
+import { getTopLongTermValueStocks } from "../application/usecases/getTopLongTermValueStocks.usecase";
+import { getTopMidTermValueStocks } from "../application/usecases/getTopMidTermValueStocks.usecase";
+import {
+  getLatestLongTermIndicators,
+  getLatestMidTermIndicators,
+} from "../infrastructure/queryServices/getIndicators";
 
 export const valueStockScoringRouter = router({
   /**
    * 上位割安株を取得
-   * ドメインサービスでスコア計算し、スコア順にソートして返却
+   * periodTypeに応じて中期/長期のユースケースを呼び分ける
    */
   getTopValueStocks: publicProcedure
     .input(
@@ -17,10 +21,16 @@ export const valueStockScoringRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const stocks = await getTopValueStocks(
-        { getLatestIndicators },
-        { periodType: input.periodType, limit: input.limit },
-      );
-      return stocks;
+      if (input.periodType === PERIOD_TYPES.MID_TERM) {
+        return await getTopMidTermValueStocks(
+          { getLatestMidTermIndicators },
+          { limit: input.limit },
+        );
+      } else {
+        return await getTopLongTermValueStocks(
+          { getLatestLongTermIndicators },
+          { limit: input.limit },
+        );
+      }
     }),
 });

@@ -81,6 +81,8 @@ export const monthlyMarketAnalysis = inngest.createFunction(
       periodType: "long_term",
       favorableMacroTags: result.favorableMacroTags,
       favorableThemeTags: result.favorableThemeTags,
+      unfavorableMacroTags: result.unfavorableMacroTags,
+      unfavorableThemeTags: result.unfavorableThemeTags,
     };
   },
 );

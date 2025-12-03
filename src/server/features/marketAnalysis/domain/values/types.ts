@@ -84,6 +84,12 @@ export const LongTermMarketAnalysisResultSchema = BaseMarketAnalysisSchema.exten
 
   // 有望テーマタグ（5-8件）
   favorableThemeTags: z.array(ThemeTagIdSchema).min(5).max(8),
+
+  // 不利マクロタグ（2-4件）
+  unfavorableMacroTags: z.array(MacroTagIdSchema).min(2).max(4),
+
+  // 不利テーマタグ（3-5件）
+  unfavorableThemeTags: z.array(ThemeTagIdSchema).min(3).max(5),
 });
 export type LongTermMarketAnalysisResult = z.infer<typeof LongTermMarketAnalysisResultSchema>;
 
@@ -97,5 +103,11 @@ export const MarketAnalysisResultSchema = BaseMarketAnalysisSchema.extend({
 
   // 有望テーマタグ（長期分析のみ、5-8件）
   favorableThemeTags: z.array(ThemeTagIdSchema).min(5).max(8).optional(),
+
+  // 不利マクロタグ（長期分析のみ、2-4件）
+  unfavorableMacroTags: z.array(MacroTagIdSchema).min(2).max(4).optional(),
+
+  // 不利テーマタグ（長期分析のみ、3-5件）
+  unfavorableThemeTags: z.array(ThemeTagIdSchema).min(3).max(5).optional(),
 });
 export type MarketAnalysisResult = z.infer<typeof MarketAnalysisResultSchema>;

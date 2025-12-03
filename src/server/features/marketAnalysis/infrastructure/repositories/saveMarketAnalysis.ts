@@ -27,6 +27,8 @@ export const saveMarketAnalysis: SaveMarketAnalysis = async ({ result, rawRespon
     unfavorableThemes: result.unfavorableThemes,
     favorableMacroTags: result.favorableMacroTags ?? null,
     favorableThemeTags: result.favorableThemeTags ?? null,
+    unfavorableMacroTags: result.unfavorableMacroTags ?? null,
+    unfavorableThemeTags: result.unfavorableThemeTags ?? null,
     economicSummary: result.economicSummary,
     llmRawResponse: rawResponse,
   });

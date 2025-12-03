@@ -7,7 +7,7 @@
  */
 
 import { getDate, getDay, startOfMonth } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { nowJST } from "@/lib/datetime/jst";
 import { inngest } from "../../../inngest/client";
 import { sendLineMessage } from "../features/lineNotification/infrastructure/externalServices/sendLineMessage";
 import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
@@ -18,18 +18,17 @@ import { getLatestLongTermIndicators } from "../features/valueStockScoring/infra
 import { buildMarketSummaryMessage, buildRankingMessage } from "./utils/lineMessageBuilders";
 
 const PERIOD_TYPE = "long_term" as const;
-const JST_TIMEZONE = "Asia/Tokyo";
 
 /**
  * 月の最初の平日かどうかを判定（JST基準）
  * 祝日は考慮しない
  */
 const isFirstWeekdayOfMonth = (): boolean => {
-  const nowJST = toZonedTime(new Date(), JST_TIMEZONE);
-  const today = getDate(nowJST);
+  const currentJST = nowJST();
+  const today = getDate(currentJST);
 
   // 月の1日の曜日を取得（JSTで計算）
-  const firstDayOfMonth = startOfMonth(nowJST);
+  const firstDayOfMonth = startOfMonth(currentJST);
   const dayOfWeek = getDay(firstDayOfMonth);
 
   let firstWeekday: number;

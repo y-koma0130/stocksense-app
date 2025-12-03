@@ -4,6 +4,7 @@
 
 import { db } from "@/db";
 import { stockAnalyses } from "@/db/schema";
+import { nowJST } from "@/lib/datetime/jst";
 import type { PeriodType } from "../../../marketAnalysis/domain/values/types";
 import type { StockAnalysisResult } from "../../domain/values/types";
 
@@ -25,7 +26,7 @@ export const saveStockAnalysis: SaveStockAnalysis = async ({
   await db.insert(stockAnalyses).values({
     stockId,
     periodType,
-    analyzedAt: new Date(),
+    analyzedAt: nowJST(),
     valueStockRating: result.valueStockRating,
     summary: result.summary,
     investmentPoints: result.investmentPoints,

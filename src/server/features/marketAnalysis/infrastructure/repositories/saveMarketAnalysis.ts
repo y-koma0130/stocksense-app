@@ -4,6 +4,7 @@
 
 import { db } from "@/db";
 import { marketAnalysis } from "@/db/schema";
+import { nowJST } from "@/lib/datetime/jst";
 import type { MarketAnalysisResult } from "../../domain/values/types";
 
 type SaveMarketAnalysisParams = Readonly<{
@@ -19,7 +20,7 @@ export type SaveMarketAnalysis = (params: SaveMarketAnalysisParams) => Promise<v
 export const saveMarketAnalysis: SaveMarketAnalysis = async ({ result, rawResponse }) => {
   await db.insert(marketAnalysis).values({
     periodType: result.periodType,
-    analyzedAt: new Date(),
+    analyzedAt: nowJST(),
     interestRateTrend: result.interestRateTrend,
     favorableSectors: result.favorableSectors,
     unfavorableSectors: result.unfavorableSectors,

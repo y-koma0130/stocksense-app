@@ -5,6 +5,7 @@
 import { z } from "zod";
 import type { PeriodType } from "@/constants/periodTypes";
 import { VALUE_STOCK_RATINGS } from "@/constants/valueStockRatings";
+import { nowJST } from "@/lib/datetime/jst";
 
 /**
  * バリュー株評価スキーマ
@@ -59,7 +60,7 @@ export const createStockAnalysisEntity = (
   return stockAnalysisEntitySchema.parse({
     stockId: params.stockId,
     periodType: params.periodType,
-    analyzedAt: new Date(),
+    analyzedAt: nowJST(),
     valueStockRating: params.valueStockRating,
     summary: params.summary,
     investmentPoints: params.investmentPoints,

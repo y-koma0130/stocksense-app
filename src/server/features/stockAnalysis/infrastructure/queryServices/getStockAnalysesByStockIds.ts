@@ -30,8 +30,7 @@ export const getStockAnalysesByStockIds: GetStockAnalysesByStockIds = async ({
     return new Map();
   }
 
-  // 各stockIdの最新レコードを取得するサブクエリ
-  // window関数でstockId毎に最新のanalyzedAtを持つレコードを取得
+  // 各stockIdの最新レコードを取得
   const results = await db
     .select()
     .from(stockAnalyses)

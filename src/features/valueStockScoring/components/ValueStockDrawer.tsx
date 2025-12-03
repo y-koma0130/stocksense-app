@@ -1,12 +1,16 @@
 import { Drawer } from "@/components/ui/Drawer";
-import { Tooltip } from "@/components/ui/Tooltip";
-import { getScoreColor } from "@/constants/colors";
 import type { PeriodType } from "@/constants/periodTypes";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { getYahooFinanceUrl } from "@/utils/yahooFinanceUrl";
 import { css } from "../../../../styled-system/css";
 import { StockAnalysisSection } from "../../stockAnalysis/components/StockAnalysisSection";
 import { useStockAnalysis } from "../../stockAnalysis/hooks/useStockAnalysis";
+import { IndicatorSection } from "./drawer/IndicatorSection";
+import { PriceInfoSection } from "./drawer/PriceInfoSection";
+import { SectorAverageSection } from "./drawer/SectorAverageSection";
+import { StockMetaInfo } from "./drawer/StockMetaInfo";
+import { StockTagBadges } from "./drawer/StockTagBadges";
+import { TotalScoreBar } from "./drawer/TotalScoreBar";
 
 type ValueStockDrawerProps = Readonly<{
   stock: ValueStockDto | null;
@@ -15,33 +19,7 @@ type ValueStockDrawerProps = Readonly<{
   periodType: PeriodType;
 }>;
 
-/**
- * 業種比率を計算
- */
-const calculateSectorRatio = (value: number | null, sectorAvg: number | null): number | null => {
-  if (value === null || sectorAvg === null || sectorAvg === 0) {
-    return null;
-  }
-  return (value / sectorAvg) * 100;
-};
-
-/**
- * 価格レンジ位置を計算（0〜100%）
- */
-const calculatePriceRangePosition = (
-  currentPrice: number | null,
-  week52High: number | null,
-  week52Low: number | null,
-): number | null => {
-  if (currentPrice === null || week52High === null || week52Low === null) {
-    return null;
-  }
-  if (week52High === week52Low) return null;
-  return ((currentPrice - week52Low) / (week52High - week52Low)) * 100;
-};
-
 export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueStockDrawerProps) => {
-  // 個別株分析を取得（hookはトップレベルで呼び出す必要がある）
   const { data: analysisData, loading: analysisLoading } = useStockAnalysis({
     stockId: stock?.stockId ?? "",
     periodType,
@@ -49,30 +27,20 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
 
   if (!stock) return null;
 
-  // 期間タイプに応じた表示ラベル
   const periodLabel = periodType === "mid_term" ? "26週" : "52週";
 
-  const pricePosition = calculatePriceRangePosition(
-    stock.currentPrice,
-    stock.priceHigh,
-    stock.priceLow,
-  );
-  const perRatio = calculateSectorRatio(stock.per, stock.sectorAvgPer);
-  const pbrRatio = calculateSectorRatio(stock.pbr, stock.sectorAvgPbr);
-  const totalScorePercent = stock.valueScore.totalScore * 100;
-
   const drawerTitle = (
-    <span className={drawerTitleContainerStyle}>
+    <span className={titleContainerStyle}>
       {stock.tickerCode}｜
       <a
         href={getYahooFinanceUrl(stock.tickerCode)}
         target="_blank"
         rel="noopener noreferrer"
-        className={drawerStockLinkStyle}
+        className={stockLinkStyle}
       >
         {stock.name}
         <svg
-          className={drawerExternalLinkIconStyle}
+          className={externalLinkIconStyle}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -93,310 +61,46 @@ export const ValueStockDrawer = ({ stock, isOpen, onClose, periodType }: ValueSt
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} width="40%" title={drawerTitle}>
-      {/* 市場・業種情報 */}
-      <div className={metaGridStyle}>
-        {stock.market && (
-          <div className={metaItemStyle}>
-            <span className={metaLabelStyle}>市場</span>
-            <span className={metaValueStyle}>{stock.market}</span>
-          </div>
-        )}
-        {stock.sectorName && (
-          <div className={metaItemStyle}>
-            <span className={metaLabelStyle}>業種</span>
-            <span className={metaValueStyle}>{stock.sectorName}</span>
-          </div>
-        )}
-      </div>
+      <StockMetaInfo market={stock.market} sectorName={stock.sectorName} />
 
-      {/* 総合スコア */}
-      <div className={sectionStyle}>
-        <h4 className={sectionTitleStyle}>総合スコア</h4>
-        <div className={totalScoreContainerStyle}>
-          <div className={totalScoreBarBgStyle}>
-            <div
-              className={totalScoreBarStyle}
-              style={{
-                width: `${totalScorePercent}%`,
-                backgroundColor: getScoreColor(totalScorePercent),
-              }}
-            />
-          </div>
-          <span
-            className={totalScoreValueStyle}
-            style={{ color: getScoreColor(totalScorePercent) }}
-          >
-            {totalScorePercent.toFixed(0)}点
-          </span>
-        </div>
-      </div>
+      <StockTagBadges macroTagIds={stock.macroTagIds} themeTagIds={stock.themeTagIds} />
 
-      {/* AI分析レポート */}
+      <TotalScoreBar score={stock.valueScore.totalScore} />
+
       <StockAnalysisSection
         analysis={analysisData}
         loading={analysisLoading}
         periodType={periodType}
       />
 
-      {/* 指標詳細 */}
-      <div className={sectionStyle}>
-        <h4 className={sectionTitleStyle}>指標詳細</h4>
-        <div className={indicatorGridStyle}>
-          {/* PER */}
-          <div className={indicatorItemStyle}>
-            <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>
-                <Tooltip content="株価収益率。株価が1株あたり利益の何倍かを示します。一般的に15倍が基準とされますが、業種によって水準が異なります。">
-                  PER
-                </Tooltip>
-              </span>
-              <span className={indicatorMainValueStyle}>
-                {stock.per !== null ? `${stock.per.toFixed(2)}倍` : "-"}
-              </span>
-            </div>
-            {perRatio !== null && (
-              <div className={indicatorSubStyle}>業種平均の{perRatio.toFixed(0)}%</div>
-            )}
-          </div>
+      <IndicatorSection
+        per={stock.per}
+        pbr={stock.pbr}
+        rsi={stock.rsi}
+        sectorAvgPer={stock.sectorAvgPer}
+        sectorAvgPbr={stock.sectorAvgPbr}
+        periodLabel={periodLabel}
+      />
 
-          {/* PBR */}
-          <div className={indicatorItemStyle}>
-            <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>
-                <Tooltip content="株価純資産倍率。株価が1株あたり純資産の何倍かを示します。1倍未満は解散価値を下回っており、割安とされることがあります。">
-                  PBR
-                </Tooltip>
-              </span>
-              <span className={indicatorMainValueStyle}>
-                {stock.pbr !== null ? `${stock.pbr.toFixed(2)}倍` : "-"}
-              </span>
-            </div>
-            {pbrRatio !== null && (
-              <div className={indicatorSubStyle}>業種平均の{pbrRatio.toFixed(0)}%</div>
-            )}
-          </div>
+      <PriceInfoSection
+        currentPrice={stock.currentPrice}
+        priceHigh={stock.priceHigh}
+        priceLow={stock.priceLow}
+        periodLabel={periodLabel}
+      />
 
-          {/* RSI */}
-          <div className={indicatorItemStyle}>
-            <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>
-                <Tooltip content="相対力指数。株価の過熱感を0〜100で示します。30以下は売られすぎ、70以上は買われすぎとされます。">
-                  RSI
-                </Tooltip>
-              </span>
-              <span className={indicatorMainValueStyle}>
-                {stock.rsi !== null ? stock.rsi.toFixed(1) : "-"}
-              </span>
-            </div>
-            {stock.rsi !== null && (
-              <div className={indicatorSubStyle}>
-                {stock.rsi <= 30 ? "売られすぎ" : stock.rsi >= 70 ? "買われすぎ" : "中立"}
-              </div>
-            )}
-          </div>
-
-          {/* 価格位置 */}
-          <div className={indicatorItemStyle}>
-            <div className={indicatorHeaderStyle}>
-              <span className={indicatorLabelStyle}>
-                <Tooltip content="期間内の高値・安値に対する現在価格の位置。0%が安値、100%が高値です。低いほど安値圏にあることを示します。">
-                  {periodLabel}価格位置
-                </Tooltip>
-              </span>
-              <span className={indicatorMainValueStyle}>
-                {pricePosition !== null ? `${pricePosition.toFixed(1)}%` : "-"}
-              </span>
-            </div>
-            {pricePosition !== null && (
-              <div className={indicatorSubStyle}>
-                {pricePosition <= 25 ? "安値圏" : pricePosition >= 75 ? "高値圏" : "中間"}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 価格情報 */}
-      <div className={sectionStyle}>
-        <h4 className={sectionTitleStyle}>価格情報</h4>
-        <div className={priceGridStyle}>
-          <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>現在値</span>
-            <span className={priceValueStyle}>
-              {stock.currentPrice !== null ? `¥${stock.currentPrice.toLocaleString()}` : "-"}
-            </span>
-          </div>
-          <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>期間高値</span>
-            <span className={priceValueStyle}>
-              {stock.priceHigh !== null ? `¥${stock.priceHigh.toLocaleString()}` : "-"}
-            </span>
-          </div>
-          <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>期間安値</span>
-            <span className={priceValueStyle}>
-              {stock.priceLow !== null ? `¥${stock.priceLow.toLocaleString()}` : "-"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 業種平均参考値 */}
-      <div className={sectionStyle}>
-        <h4 className={sectionTitleStyle}>業種平均（参考）</h4>
-        <div className={priceGridStyle}>
-          <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>PER平均</span>
-            <span className={priceValueStyle}>
-              {stock.sectorAvgPer !== null ? stock.sectorAvgPer.toFixed(2) : "-"}
-            </span>
-          </div>
-          <div className={priceItemStyle}>
-            <span className={priceLabelStyle}>PBR平均</span>
-            <span className={priceValueStyle}>
-              {stock.sectorAvgPbr !== null ? stock.sectorAvgPbr.toFixed(2) : "-"}
-            </span>
-          </div>
-        </div>
-      </div>
+      <SectorAverageSection sectorAvgPer={stock.sectorAvgPer} sectorAvgPbr={stock.sectorAvgPbr} />
     </Drawer>
   );
 };
 
-const metaGridStyle = css({
-  display: "grid",
-  gridTemplateColumns: "repeat(2, 1fr)",
-  gap: "0.75rem",
-  marginBottom: "1rem",
-});
-
-const metaItemStyle = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.25rem",
-});
-
-const metaLabelStyle = css({
-  fontSize: "0.75rem",
-  color: "textMuted",
-});
-
-const metaValueStyle = css({
-  fontSize: "0.875rem",
-  fontWeight: "500",
-  color: "text",
-});
-
-const sectionStyle = css({
-  marginBottom: "1rem",
-});
-
-const sectionTitleStyle = css({
-  fontSize: "0.875rem",
-  fontWeight: "600",
-  color: "textMuted",
-  marginBottom: "0.75rem",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-});
-
-const totalScoreContainerStyle = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "1rem",
-});
-
-const totalScoreBarBgStyle = css({
-  flex: 1,
-  height: "12px",
-  backgroundColor: "surfaceHover",
-  borderRadius: "6px",
-  overflow: "hidden",
-});
-
-const totalScoreBarStyle = css({
-  height: "100%",
-  borderRadius: "6px",
-  transition: "width 0.3s ease",
-});
-
-const totalScoreValueStyle = css({
-  fontSize: "1.25rem",
-  fontWeight: "700",
-  minWidth: "60px",
-  textAlign: "right",
-});
-
-const indicatorGridStyle = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "1rem",
-});
-
-const indicatorItemStyle = css({
-  backgroundColor: "surfaceHover",
-  padding: "0.75rem 1rem",
-  borderRadius: "8px",
-});
-
-const indicatorHeaderStyle = css({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "0.25rem",
-});
-
-const indicatorLabelStyle = css({
-  fontSize: "0.875rem",
-  fontWeight: "500",
-  color: "textMuted",
-});
-
-const indicatorMainValueStyle = css({
-  fontSize: "1.125rem",
-  fontWeight: "700",
-  color: "text",
-});
-
-const indicatorSubStyle = css({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginTop: "0.25rem",
-  fontSize: "0.75rem",
-  color: "textMuted",
-});
-
-const priceGridStyle = css({
-  display: "grid",
-  gridTemplateColumns: "repeat(2, 1fr)",
-  gap: "0.75rem",
-});
-
-const priceItemStyle = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.25rem",
-});
-
-const priceLabelStyle = css({
-  fontSize: "0.75rem",
-  color: "textMuted",
-});
-
-const priceValueStyle = css({
-  fontSize: "0.95rem",
-  fontWeight: "600",
-  color: "text",
-});
-
-const drawerTitleContainerStyle = css({
+const titleContainerStyle = css({
   display: "inline-flex",
   alignItems: "center",
   gap: "0.25rem",
 });
 
-const drawerStockLinkStyle = css({
+const stockLinkStyle = css({
   display: "inline-flex",
   alignItems: "center",
   gap: "0.25rem",
@@ -409,7 +113,7 @@ const drawerStockLinkStyle = css({
   },
 });
 
-const drawerExternalLinkIconStyle = css({
+const externalLinkIconStyle = css({
   width: "1rem",
   height: "1rem",
   opacity: 0.6,

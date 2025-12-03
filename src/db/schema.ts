@@ -45,8 +45,10 @@ export const stocks = pgTable(
     tickerCode: varchar("ticker_code", { length: 10 }).notNull().unique(), // 7203
     tickerSymbol: varchar("ticker_symbol", { length: 20 }).notNull(), // 7203.T
     name: varchar("name", { length: 200 }).notNull(), // トヨタ自動車
-    sectorCode: varchar("sector_code", { length: 10 }), // 業種コード
-    sectorName: varchar("sector_name", { length: 100 }), // 輸送用機器
+    sectorCode: varchar("sector_code", { length: 10 }), // 33業種コード
+    sectorName: varchar("sector_name", { length: 100 }), // 33業種名（輸送用機器）
+    largeSectorCode: varchar("large_sector_code", { length: 10 }), // 17業種コード
+    largeSectorName: varchar("large_sector_name", { length: 100 }), // 17業種名（自動車・輸送機）
     market: varchar("market", { length: 50 }), // プライム, スタンダード, グロース
     listingDate: date("listing_date"), // 上場日
     deletedAt: timestamp("deleted_at"), // 廃止日（NULLなら上場中）
@@ -55,6 +57,7 @@ export const stocks = pgTable(
   },
   (table) => ({
     sectorIdx: index("idx_stocks_sector").on(table.sectorCode),
+    largeSectorIdx: index("idx_stocks_large_sector").on(table.largeSectorCode),
     marketIdx: index("idx_stocks_market").on(table.market),
     tickerSymbolIdx: index("idx_stocks_ticker_symbol").on(table.tickerSymbol),
     deletedIdx: index("idx_stocks_deleted").on(table.deletedAt),
@@ -389,3 +392,53 @@ export const lineStockAnalysisUsage = pgTable(
 
 export type LineStockAnalysisUsage = typeof lineStockAnalysisUsage.$inferSelect;
 export type NewLineStockAnalysisUsage = typeof lineStockAnalysisUsage.$inferInsert;
+
+/**
+ * 12. 銘柄×マクロタグ（多対多）
+ * マクロタグマスターはコードで管理（macroTags.ts）
+ * LLM分類結果を保存
+ */
+export const stockMacroTags = pgTable(
+  "stock_macro_tags",
+  {
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    macroTagId: varchar("macro_tag_id", { length: 50 }).notNull(), // マスターデータのID
+    confidence: decimal("confidence", { precision: 3, scale: 2 }), // LLM確信度 (0.00-1.00)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    pk: unique("pk_stock_macro_tags").on(table.stockId, table.macroTagId),
+    stockIdx: index("idx_stock_macro_tags_stock").on(table.stockId),
+    macroTagIdx: index("idx_stock_macro_tags_tag").on(table.macroTagId),
+  }),
+);
+
+export type StockMacroTag = typeof stockMacroTags.$inferSelect;
+export type NewStockMacroTag = typeof stockMacroTags.$inferInsert;
+
+/**
+ * 13. 銘柄×テーマタグ（多対多）
+ * テーマタグマスターはコードで管理（themeTags.ts）
+ * LLM分類結果を保存
+ */
+export const stockThemeTags = pgTable(
+  "stock_theme_tags",
+  {
+    stockId: uuid("stock_id")
+      .notNull()
+      .references(() => stocks.id, { onDelete: "cascade" }),
+    themeTagId: varchar("theme_tag_id", { length: 50 }).notNull(), // マスターデータのID
+    confidence: decimal("confidence", { precision: 3, scale: 2 }), // LLM確信度 (0.00-1.00)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    pk: unique("pk_stock_theme_tags").on(table.stockId, table.themeTagId),
+    stockIdx: index("idx_stock_theme_tags_stock").on(table.stockId),
+    themeTagIdx: index("idx_stock_theme_tags_tag").on(table.themeTagId),
+  }),
+);
+
+export type StockThemeTag = typeof stockThemeTags.$inferSelect;
+export type NewStockThemeTag = typeof stockThemeTags.$inferInsert;

@@ -9,6 +9,8 @@ export const parsedStockDataDtoSchema = z.object({
   name: z.string(),
   sectorCode: z.string(),
   sectorName: z.string(),
+  largeSectorCode: z.string().nullable(),
+  largeSectorName: z.string().nullable(),
   market: z.string(),
 });
 

@@ -5,10 +5,7 @@ type SectorAverageSectionProps = Readonly<{
   sectorAvgPbr: number | null;
 }>;
 
-export const SectorAverageSection = ({
-  sectorAvgPer,
-  sectorAvgPbr,
-}: SectorAverageSectionProps) => {
+export const SectorAverageSection = ({ sectorAvgPer, sectorAvgPbr }: SectorAverageSectionProps) => {
   return (
     <div className={sectionStyle}>
       <h4 className={sectionTitleStyle}>業種平均（参考）</h4>

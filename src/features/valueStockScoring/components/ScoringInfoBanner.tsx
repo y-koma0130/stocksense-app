@@ -29,6 +29,7 @@ export const ScoringInfoBanner = () => {
             <p className={textStyle}>
               PER・PBR・RSI・価格位置などの指標から総合スコアを算出しています。
               各指標を業種平均と比較し、割安度を0〜100点で評価します。
+              中期・長期それぞれに適した独自の指標（RSIモメンタム、EPS成長率など）も活用しています。
             </p>
           </div>
 

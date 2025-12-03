@@ -54,9 +54,7 @@ export const IndicatorSection = ({
             </span>
             <span className={mainValueStyle}>{per !== null ? `${per.toFixed(2)}倍` : "-"}</span>
           </div>
-          {perRatio !== null && (
-            <div className={subStyle}>業種平均の{perRatio.toFixed(0)}%</div>
-          )}
+          {perRatio !== null && <div className={subStyle}>業種平均の{perRatio.toFixed(0)}%</div>}
         </div>
 
         {/* PBR */}
@@ -69,9 +67,7 @@ export const IndicatorSection = ({
             </span>
             <span className={mainValueStyle}>{pbr !== null ? `${pbr.toFixed(2)}倍` : "-"}</span>
           </div>
-          {pbrRatio !== null && (
-            <div className={subStyle}>業種平均の{pbrRatio.toFixed(0)}%</div>
-          )}
+          {pbrRatio !== null && <div className={subStyle}>業種平均の{pbrRatio.toFixed(0)}%</div>}
         </div>
 
         {/* RSI */}

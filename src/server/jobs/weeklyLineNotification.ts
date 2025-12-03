@@ -40,7 +40,10 @@ export const weeklyLineNotification = inngest.createFunction(
 
     // ステップ3: 上位10銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
-      return await getTopMidTermValueStocks({ getLatestMidTermIndicators }, { limit: 10 });
+      return await getTopMidTermValueStocks(
+        { getLatestMidTermIndicators, getLatestMarketAnalysis },
+        { limit: 10 },
+      );
     });
 
     // ステップ4: 上位5銘柄のAI分析を取得

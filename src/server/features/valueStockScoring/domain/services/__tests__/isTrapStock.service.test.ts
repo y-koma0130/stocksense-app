@@ -34,6 +34,10 @@ const createMidTermIndicator = (
   operatingIncomeDeclineYears: 0,
   operatingCashFlowNegativeYears: 0,
   revenueDeclineYears: 0,
+  epsLatest: 100,
+  eps3yAgo: 80,
+  macroTagIds: [],
+  themeTagIds: [],
   ...overrides,
 });
 
@@ -66,6 +70,8 @@ const createLongTermIndicator = (
   revenueDeclineYears: 0,
   epsLatest: 100,
   eps3yAgo: 80,
+  macroTagIds: [],
+  themeTagIds: [],
   ...overrides,
 });
 

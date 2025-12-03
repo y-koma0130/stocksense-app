@@ -26,6 +26,8 @@ const MarketAnalysisDtoSchema: z.ZodType<MarketAnalysisDto> = z.object({
   unfavorableThemes: z.array(ThemeInfoSchema),
   favorableMacroTags: z.array(MacroTagIdSchema).nullable(),
   favorableThemeTags: z.array(ThemeTagIdSchema).nullable(),
+  unfavorableMacroTags: z.array(MacroTagIdSchema).nullable(),
+  unfavorableThemeTags: z.array(ThemeTagIdSchema).nullable(),
   economicSummary: z.string(),
 });
 
@@ -62,6 +64,8 @@ export const getLatestMarketAnalysis: GetLatestMarketAnalysis = async ({ periodT
     unfavorableThemes: entity.unfavorableThemes,
     favorableMacroTags: entity.favorableMacroTags,
     favorableThemeTags: entity.favorableThemeTags,
+    unfavorableMacroTags: entity.unfavorableMacroTags,
+    unfavorableThemeTags: entity.unfavorableThemeTags,
     economicSummary: entity.economicSummary,
   });
 

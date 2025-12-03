@@ -82,7 +82,10 @@ export const monthlyLineNotification = inngest.createFunction(
 
     // ステップ4: 上位10銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
-      return await getTopLongTermValueStocks({ getLatestLongTermIndicators }, { limit: 10 });
+      return await getTopLongTermValueStocks(
+        { getLatestLongTermIndicators, getLatestMarketAnalysis },
+        { limit: 10 },
+      );
     });
 
     // ステップ5: 上位5銘柄のAI分析を取得

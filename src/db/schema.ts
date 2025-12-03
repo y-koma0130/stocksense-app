@@ -275,11 +275,17 @@ export const marketAnalysis = pgTable(
     // 注意テーマ・事業内容（JSONB: {theme: string, description: string}[]）
     unfavorableThemes: jsonb("unfavorable_themes"),
 
-    // 有望マクロタグ（長期分析のみ: MacroTagId[]）
+    // 有望マクロタグ（MacroTagId[]）
     favorableMacroTags: jsonb("favorable_macro_tags"),
 
-    // 有望テーマタグ（長期分析のみ: ThemeTagId[]）
+    // 有望テーマタグ（ThemeTagId[]）
     favorableThemeTags: jsonb("favorable_theme_tags"),
+
+    // 不利マクロタグ（MacroTagId[]）
+    unfavorableMacroTags: jsonb("unfavorable_macro_tags"),
+
+    // 不利テーマタグ（ThemeTagId[]）
+    unfavorableThemeTags: jsonb("unfavorable_theme_tags"),
 
     // 経済・マーケット総括
     economicSummary: text("economic_summary"),

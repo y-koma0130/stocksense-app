@@ -365,7 +365,10 @@ const sendWeeklyReport = async (lineUserId: string): Promise<void> => {
   const marketAnalysis = await getLatestMarketAnalysis({ periodType: "mid_term" });
 
   // 上位10銘柄を取得
-  const topStocks = await getTopMidTermValueStocks({ getLatestMidTermIndicators }, { limit: 10 });
+  const topStocks = await getTopMidTermValueStocks(
+    { getLatestMidTermIndicators, getLatestMarketAnalysis },
+    { limit: 10 },
+  );
 
   // 上位5銘柄のAI分析を取得
   const top5StockIds = topStocks.slice(0, 5).map((s) => s.stockId);
@@ -396,7 +399,10 @@ const sendMonthlyReport = async (lineUserId: string): Promise<void> => {
   const marketAnalysis = await getLatestMarketAnalysis({ periodType: "long_term" });
 
   // 上位10銘柄を取得
-  const topStocks = await getTopLongTermValueStocks({ getLatestLongTermIndicators }, { limit: 10 });
+  const topStocks = await getTopLongTermValueStocks(
+    { getLatestLongTermIndicators, getLatestMarketAnalysis },
+    { limit: 10 },
+  );
 
   // 上位5銘柄のAI分析を取得
   const top5StockIds = topStocks.slice(0, 5).map((s) => s.stockId);

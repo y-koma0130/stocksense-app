@@ -20,5 +20,7 @@ export type MarketAnalysisDto = Readonly<{
   unfavorableThemes: ThemeInfo[];
   favorableMacroTags: MacroTagId[] | null;
   favorableThemeTags: ThemeTagId[] | null;
+  unfavorableMacroTags: MacroTagId[] | null;
+  unfavorableThemeTags: ThemeTagId[] | null;
   economicSummary: string;
 }>;

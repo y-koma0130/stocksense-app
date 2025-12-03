@@ -127,6 +127,13 @@
       "when": 1764762915582,
       "tag": "0017_groovy_fallen_one",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1764768699831,
+      "tag": "0018_foamy_captain_america",
+      "breakpoints": true
     }
   ]
 }

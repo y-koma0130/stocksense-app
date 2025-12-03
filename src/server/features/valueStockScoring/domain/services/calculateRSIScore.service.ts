@@ -1,20 +1,25 @@
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { ScoringConfig } from "../values/scoringConfig";
+import type { RsiThresholds } from "../values/scoringConfig";
 
 /**
  * RSIスコア計算関数の型定義
  */
-export type CalculateRSIScore = (rsi: number | null, config: ScoringConfig) => IndicatorScore;
+export type CalculateRSIScore = (rsi: number | null, thresholds: RsiThresholds) => IndicatorScore;
 
 /**
  * RSIスコアを計算（線形スケール 0-100）
- * RSI値そのもので評価（市場別補正なし）
+ *
+ * 閾値:
+ * - RSI ≤ 30: 100点（売られすぎ）
+ * - RSI ≤ 50: 100→50点（線形補間）
+ * - RSI ≤ 70: 50→0点（線形補間）
+ * - RSI > 70: 0点（買われすぎ）
  */
-export const calculateRSIScore: CalculateRSIScore = (rsi, config) => {
+export const calculateRSIScore: CalculateRSIScore = (rsi, thresholds) => {
   if (rsi === null) return 0;
 
-  const { oversold, neutral } = config.rsiThresholds;
+  const { oversold, neutral } = thresholds;
 
   let score: number;
 

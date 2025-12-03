@@ -1,3 +1,4 @@
+import type { GetLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { calculateLongTermValueStockScore } from "../../domain/services/calculateLongTermValueStockScore.service";
 import { filterProMarket } from "../../domain/services/filterProMarket.service";
 import { isTrapStock } from "../../domain/services/isTrapStock.service";
@@ -10,6 +11,7 @@ import { type LongTermValueStockDto, longTermValueStockDtoSchema } from "../dto/
  */
 type Dependencies = Readonly<{
   getLatestLongTermIndicators: GetLatestLongTermIndicators;
+  getLatestMarketAnalysis: GetLatestMarketAnalysis;
 }>;
 
 /**
@@ -32,11 +34,12 @@ export type GetTopLongTermValueStocks = (
  *
  * 処理フロー:
  * 1. クエリサービスから長期指標データを取得
- * 2. PROマーケット銘柄を除外
- * 3. 罠銘柄を除外
- * 4. 長期スコアを計算
- * 5. スコア順にランキング
- * 6. DTOにパースして返却
+ * 2. マーケット分析データを取得（有望タグ情報）
+ * 3. PROマーケット銘柄を除外
+ * 4. 罠銘柄を除外
+ * 5. 長期スコアを計算（市場別重み配分、全市場でタグスコア・EPS成長率・ROE使用）
+ * 6. スコア順にランキング
+ * 7. DTOにパースして返却
  */
 export const getTopLongTermValueStocks: GetTopLongTermValueStocks = async (
   dependencies,
@@ -45,21 +48,36 @@ export const getTopLongTermValueStocks: GetTopLongTermValueStocks = async (
   // 1. クエリサービスから長期指標データを取得
   const indicators = await dependencies.getLatestLongTermIndicators();
 
-  // 2. PROマーケット除外
+  // 2. マーケット分析データを取得（有利/不利タグ情報）
+  const marketAnalysis = await dependencies.getLatestMarketAnalysis({ periodType: "long_term" });
+  const favorableMacroTagIds = marketAnalysis?.favorableMacroTags ?? [];
+  const favorableThemeTagIds = marketAnalysis?.favorableThemeTags ?? [];
+  const unfavorableMacroTagIds = marketAnalysis?.unfavorableMacroTags ?? [];
+  const unfavorableThemeTagIds = marketAnalysis?.unfavorableThemeTags ?? [];
+
+  // 3. PROマーケット除外
   const filteredByMarket = filterProMarket(indicators);
 
-  // 3. 罠銘柄除外
+  // 4. 罠銘柄除外
   const filteredByTrap = filteredByMarket.filter((indicator) => !isTrapStock(indicator).isTrap);
 
-  // 4. 長期スコア計算
+  // 5. 長期スコア計算
   const scoredStocks = filteredByTrap.map((indicator) => ({
     ...indicator,
-    valueScore: calculateLongTermValueStockScore(indicator),
+    valueScore: calculateLongTermValueStockScore({
+      indicator,
+      stockMacroTagIds: indicator.macroTagIds,
+      stockThemeTagIds: indicator.themeTagIds,
+      favorableMacroTagIds,
+      favorableThemeTagIds,
+      unfavorableMacroTagIds,
+      unfavorableThemeTagIds,
+    }),
   }));
 
-  // 5. ランキング
+  // 6. ランキング
   const rankedStocks = rankByScore(scoredStocks, params.limit);
 
-  // 6. DTOとしてバリデーション
+  // 7. DTOとしてバリデーション
   return rankedStocks.map((stock) => longTermValueStockDtoSchema.parse(stock));
 };

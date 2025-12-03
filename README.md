@@ -1,125 +1,39 @@
 # StockSense
 
-**StockSense（ストックセンス）** は、AIが中期〜長期視点で投資対象の「今買っておくといい銘柄」を提示する投資支援プラットフォームです。
+AI-powered investment analysis platform that helps individual investors discover undervalued Japanese stocks through automated scoring and market analysis.
+
+## Overview
+
+StockSense provides mid-to-long-term investment signals for Japanese stocks by analyzing fundamental data (PER, PBR, dividend yield), technical indicators, and market conditions. The platform automatically scores stocks and notifies users via LINE when attractive buying opportunities arise.
+
+### Key Features
+
+- **Automated Stock Scoring**: Weekly/monthly analysis of 3,900+ Japanese stocks
+- **Value Stock Detection**: Identifies undervalued stocks using fundamental analysis
+- **Stock Tagging**: AI-powered classification by macro sensitivity and business themes
+- **LINE Notifications**: Alerts for high-potential investment opportunities
+- **Market Dashboard**: Visual presentation of scored stocks with AI-generated insights
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16, React 19 |
+| Language | TypeScript |
+| Database | PostgreSQL (Supabase) |
+| ORM | Drizzle ORM |
+| API | tRPC |
+| State Management | Jotai, TanStack Query |
+| Styling | Panda CSS |
+| Job Scheduler | Inngest |
+| Data Sources | Yahoo Finance API |
+| AI | OpenAI GPT-4o-mini |
+| Testing | Vitest |
+| Linting | Biome |
 
 ---
 
-## 🎯 提供価値（Core Value）
-
-- 数ヶ月〜数年単位で「今買っておくと良い投資対象」をAIが自動提示
-- 日々チャートを見ていない個人投資家向け
-- シグナル（買い／中立／高値圏）＋AIコメント＋目安売却価格を提示
-
----
-
-## 💹 対象カテゴリー（初期MVP）
-
-| カテゴリ | 対象例 |
-|-----------|---------|
-| 国内株（高配当） | JT, 三菱HCキャピタル, 日本特殊陶業 |
-| 国内株（先端技術） | ソシオネクスト, SCREEN, TDK |
-| 国内株（市場別） | 東証プライム、グロース、スタンダード |
-| 米国インデックス投信 | eMAXIS Slim S&P500, NASDAQ100, オルカン |
-| 金（Gold） | GOLD ETF, 田中貴金属価格 |
-| 暗号資産 | BTC, ETH, XRP, SOL |
-
----
-
-## ⚙️ コアロジック（AI判断の基盤）
-
-### 中期（数ヶ月）
-- RSI（週足）
-- 移動平均乖離率（13/26週）
-- 出来高トレンド
-- 最近のニュースセンチメント
-
-### 長期（半年〜数年）
-- PER/PBR（割安度）
-- 配当利回り
-- 業績推移（売上・営業益）
-- 為替・金利環境
-
-### 共通要素
-- 市場全体のボラティリティ
-- 主要指数との相関（TOPIX, S&P500など）
-
----
-
-## 🔮 AIスコア算出(仮)
-
-1. RSI: 売られすぎ（30未満）→ +20pt
-2. PER/PBR: 割安→ +20pt
-3. 出来高上昇＋乖離率改善→ +20pt
-4. 配当利回り高→ +20pt
-5. ニュースセンチメントがポジティブ→ +20pt
-
-→ 合計100点満点の「Buy Potential Score」を算出
-
-### AIコメント生成
-- スコア＋WebSearchニュース＋過去半年の値動きで要約
-- 例：「RSIが過去半年で最も低く、業績も安定。長期保有での反発余地あり。」
-
-### 売却目安価格（任意）
-- 過去高値／平均PERを参考に推定
-- 「目安売却：〜円〜円（+20〜30%）」
-
----
-
-## 📊 ダッシュボード設計
-
-| 表示モード | 内容 |
-|-------------|------|
-| 中期モード | RSI週足、乖離率、出来高トレンド、AIスコア |
-| 長期モード | PER、配当、業績推移、長期AIスコア |
-
-- 中期／長期はタブ切替式
-- 銘柄カードに「AIスコア」「目安コメント」「売却目安」を表示
-
----
-
-## 🔔 通知設定
-
-- カテゴリ別通知（国内高配当、先端技術、ETF、金、暗号通貨）
-- 時間軸別設定（中期／長期のON/OFF）
-- 通知タイミング：即時／日次／週次
-- 通知手段：LINE Notify（初期）
-- 通知例：「【中期買い時】ソシオネクストがRSI28で反発傾向」
-
----
-
-## 🗄️ データ項目
-
-| カテゴリ | 指標 |
-|-----------|------|
-| 株式 | 価格、RSI週足、PER、PBR、配当利回り、業績成長率 |
-| ETF/投信 | 価格、RSI週足、トレンド方向、直近パフォーマンス |
-| 金・仮想通貨 | 価格、RSI週足、ボラティリティ、移動平均乖離 |
-| 共通 | スコア、AIコメント、推定売却レンジ、更新日 |
-
----
-
-## 🧱 データ更新の流れ
-
-1. 毎週市場データを取得（週足換算）
-2. RSI・PER・配当などを更新
-3. AIスコア再計算
-4. スコア変化が閾値を超えたものを通知対象に
-5. LINE経由で通知送信
-
----
-
-## 💡 今後の拡張（ロードマップ）
-
-| フェーズ | 内容 |
-|-----------|------|
-| v1.0 | AIスコア＋LINE通知（国内株＋ETF＋金＋暗号通貨） |
-| v1.1 | 売却目安レンジと中期／長期切替表示 |
-| v1.2 | 週次マーケット要約（AI自動生成）をダッシュボードに掲載 |
-| v2.0 | ユーザー間ウォッチリスト共有・人気スコア表示 |
-
----
-
-## 🚀 セットアップ
+## セットアップ
 
 ### 前提条件
 
@@ -140,6 +54,9 @@ DATABASE_URL=your-database-url
 # Inngest
 INNGEST_SIGNING_KEY=your-signing-key
 INNGEST_EVENT_KEY=your-event-key
+
+# OpenAI
+OPENAI_API_KEY=your-openai-api-key
 ```
 
 ### インストール
@@ -148,13 +65,66 @@ INNGEST_EVENT_KEY=your-event-key
 pnpm install
 ```
 
-### データベース設定
+---
+
+## 開発
+
+### 開発サーバー起動
 
 ```bash
-# スキーマを適用
+# Next.js開発サーバー
+pnpm dev
+
+# Inngest開発サーバー（別ターミナル）
+pnpm inngest
+```
+
+### コード品質
+
+```bash
+# Lintチェック
+pnpm lint
+
+# Lint修正
+pnpm lint:fix
+
+# フォーマット
+pnpm format
+
+# 型チェック
+pnpm tsc --noEmit
+```
+
+### テスト
+
+```bash
+# テスト実行
+pnpm test
+
+# UIモードでテスト
+pnpm test:ui
+
+# カバレッジ付きテスト
+pnpm test:coverage
+```
+
+---
+
+## データベース
+
+### マイグレーション
+
+```bash
+# スキーマファイル生成
+pnpm db:generate
+
+# マイグレーション実行
+pnpm db:migrate
+
+# スキーマを直接プッシュ（開発用）
 pnpm db:push
 
-# Drizzle Studioでデータベースを確認
+# Drizzle Studio起動
 pnpm db:studio
 ```
 
@@ -171,39 +141,42 @@ pnpm db:studio
 pnpm import:stocks ./data/data_j.xls
 ```
 
-### 開発サーバー起動
+---
+
+## スクリプト
+
+### 銘柄タグ分類
+
+LLMを使用して銘柄にマクロタグ・テーマタグを付与します。
 
 ```bash
-# Next.js開発サーバー
-pnpm dev
+# dry-runモード（DBに保存しない）
+pnpm tsx scripts/classify-stock-tags.ts --dry-run --limit 10
 
-# Inngest開発サーバー（別ターミナル）
-pnpm inngest
+# 全件実行
+pnpm tsx scripts/classify-stock-tags.ts
 ```
 
 ---
 
-## 📝 使い方
+## デプロイ
 
-### スコアリングジョブ
-
-- **週次スコアリング**: 毎週土曜日 0:00 (JST) に自動実行
-- **月次スコアリング**: 毎月1日 0:00 (JST) に自動実行
-
-スコア0.6以上の銘柄が自動的にデータベースに保存されます。
-
-### データベース操作
+### Vercel
 
 ```bash
-# スキーマの生成
-pnpm db:generate
-
-# マイグレーション実行
-pnpm db:migrate
-
-# スキーマを直接プッシュ
-pnpm db:push
-
-# Drizzle Studio起動
-pnpm db:studio
+# 本番ビルド
+pnpm vercel-build
 ```
+
+環境変数をVercelのダッシュボードで設定してください。
+
+---
+
+## ジョブスケジュール
+
+| ジョブ | スケジュール | 説明 |
+|--------|--------------|------|
+| 週次スコアリング | 毎週土曜日 0:00 (JST) | 短中期向けスコア計算 |
+| 月次スコアリング | 毎月1日 0:00 (JST) | 中長期向けスコア計算 |
+
+スコア0.6以上の銘柄が自動的にデータベースに保存されます。

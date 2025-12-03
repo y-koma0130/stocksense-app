@@ -7,9 +7,9 @@
 import { zodResponseFormat } from "openai/helpers/zod";
 import { DEFAULT_MODEL, openai } from "@/server/lib/openai";
 import { inngest } from "../../../inngest/client";
-import { MarketAnalysisResultSchema } from "../features/marketAnalysis/domain/values/types";
+import { MidTermMarketAnalysisResultSchema } from "../features/marketAnalysis/domain/values/types";
 import { saveMarketAnalysis } from "../features/marketAnalysis/infrastructure/repositories/saveMarketAnalysis";
-import { buildMarketAnalysisPrompt } from "./utils/buildMarketAnalysisPrompt";
+import { buildMidTermMarketAnalysisPrompt } from "./utils/buildMidTermMarketAnalysisPrompt";
 
 export const weeklyMarketAnalysis = inngest.createFunction(
   {
@@ -19,11 +19,11 @@ export const weeklyMarketAnalysis = inngest.createFunction(
   },
   { cron: "TZ=Asia/Tokyo 0 2 * * 6" }, // 毎週土曜日2:00 JST
   async ({ step }) => {
-    // プロンプト生成
-    const prompt = buildMarketAnalysisPrompt({ periodType: "mid_term" });
+    // 中期分析用プロンプト生成
+    const { context, instruction } = buildMidTermMarketAnalysisPrompt();
 
-    // Zodスキーマ → JSONスキーマ変換（OpenAIヘルパーを使用）
-    const responseFormat = zodResponseFormat(MarketAnalysisResultSchema, "market_analysis");
+    // Zodスキーマ → JSONスキーマ変換（中期分析用スキーマを使用）
+    const responseFormat = zodResponseFormat(MidTermMarketAnalysisResultSchema, "market_analysis");
     const jsonSchema = responseFormat.json_schema.schema;
 
     // OpenAI Responses APIをバインド
@@ -33,7 +33,10 @@ export const weeklyMarketAnalysis = inngest.createFunction(
       model: DEFAULT_MODEL,
       instructions:
         "あなたは日本株のバリュー投資を専門とするプロのアナリストです。最新のマーケット情報をウェブ検索して、指定された構造で正確に分析結果を出力してください。",
-      input: prompt,
+      input: [
+        { role: "developer" as const, content: context },
+        { role: "user" as const, content: instruction },
+      ],
       text: {
         format: {
           type: "json_schema" as const,
@@ -63,9 +66,9 @@ export const weeklyMarketAnalysis = inngest.createFunction(
       .replace(/\bcite\b/gi, "")
       .trim();
 
-    // JSONをパースしてバリデーション
+    // JSONをパースしてバリデーション（中期分析用スキーマで検証）
     const parsed = JSON.parse(cleanedResponse);
-    const result = MarketAnalysisResultSchema.parse(parsed);
+    const result = MidTermMarketAnalysisResultSchema.parse(parsed);
 
     // データベースに保存
     await step.run("save-analysis-result", async () => {

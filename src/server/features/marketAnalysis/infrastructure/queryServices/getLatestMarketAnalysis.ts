@@ -8,9 +8,14 @@ import { db } from "@/db";
 import { marketAnalysis } from "@/db/schema";
 import type { MarketAnalysisDto } from "../../application/dto/marketAnalysis.dto";
 import type { PeriodType } from "../../domain/values/types";
-import { SectorInfoSchema, ThemeInfoSchema } from "../../domain/values/types";
+import {
+  MacroTagIdSchema,
+  SectorInfoSchema,
+  ThemeInfoSchema,
+  ThemeTagIdSchema,
+} from "../../domain/values/types";
 
-const MarketAnalysisDtoSchema = z.object({
+const MarketAnalysisDtoSchema: z.ZodType<MarketAnalysisDto> = z.object({
   id: z.string(),
   periodType: z.enum(["mid_term", "long_term"]),
   analyzedAt: z.date(),
@@ -19,6 +24,8 @@ const MarketAnalysisDtoSchema = z.object({
   unfavorableSectors: z.array(SectorInfoSchema),
   favorableThemes: z.array(ThemeInfoSchema),
   unfavorableThemes: z.array(ThemeInfoSchema),
+  favorableMacroTags: z.array(MacroTagIdSchema).nullable(),
+  favorableThemeTags: z.array(ThemeTagIdSchema).nullable(),
   economicSummary: z.string(),
 });
 
@@ -53,6 +60,8 @@ export const getLatestMarketAnalysis: GetLatestMarketAnalysis = async ({ periodT
     unfavorableSectors: entity.unfavorableSectors,
     favorableThemes: entity.favorableThemes,
     unfavorableThemes: entity.unfavorableThemes,
+    favorableMacroTags: entity.favorableMacroTags,
+    favorableThemeTags: entity.favorableThemeTags,
     economicSummary: entity.economicSummary,
   });
 

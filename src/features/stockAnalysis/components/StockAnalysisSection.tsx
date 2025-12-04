@@ -10,7 +10,7 @@ import { css } from "../../../../styled-system/css";
 import { StockAnalysisSectionSkeleton } from "./StockAnalysisSectionSkeleton";
 
 /** サマリーの折りたたみ表示の閾値（文字数） */
-const SUMMARY_TRUNCATE_LENGTH = 400;
+const SUMMARY_TRUNCATE_LENGTH = 300;
 
 type StockAnalysisSectionProps = Readonly<{
   analysis: StockAnalysisDto | null;

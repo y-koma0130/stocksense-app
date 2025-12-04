@@ -6,7 +6,8 @@ type TotalScoreBarProps = Readonly<{
 }>;
 
 export const TotalScoreBar = ({ score }: TotalScoreBarProps) => {
-  const scorePercent = score * 100;
+  const scorePercent = Math.round(score * 100);
+  const scoreColor = getScoreColor(scorePercent);
 
   return (
     <div className={sectionStyle}>
@@ -17,11 +18,11 @@ export const TotalScoreBar = ({ score }: TotalScoreBarProps) => {
             className={barStyle}
             style={{
               width: `${scorePercent}%`,
-              backgroundColor: getScoreColor(scorePercent),
+              backgroundColor: scoreColor,
             }}
           />
         </div>
-        <span className={valueStyle} style={{ color: getScoreColor(scorePercent) }}>
+        <span className={valueStyle} style={{ color: scoreColor }}>
           {scorePercent.toFixed(0)}点
         </span>
       </div>

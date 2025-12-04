@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PERIOD_TYPES, periodTypeSchema } from "@/constants/periodTypes";
+import { getLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { publicProcedure, router } from "../../../../../trpc/init";
 import { getTopLongTermValueStocks } from "../application/usecases/getTopLongTermValueStocks.usecase";
 import { getTopMidTermValueStocks } from "../application/usecases/getTopMidTermValueStocks.usecase";
@@ -23,12 +24,12 @@ export const valueStockScoringRouter = router({
     .query(async ({ input }) => {
       if (input.periodType === PERIOD_TYPES.MID_TERM) {
         return await getTopMidTermValueStocks(
-          { getLatestMidTermIndicators },
+          { getLatestMidTermIndicators, getLatestMarketAnalysis },
           { limit: input.limit },
         );
       } else {
         return await getTopLongTermValueStocks(
-          { getLatestLongTermIndicators },
+          { getLatestLongTermIndicators, getLatestMarketAnalysis },
           { limit: input.limit },
         );
       }

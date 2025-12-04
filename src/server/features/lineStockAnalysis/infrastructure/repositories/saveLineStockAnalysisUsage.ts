@@ -5,6 +5,7 @@
 import type { PeriodType } from "@/constants/periodTypes";
 import { db } from "@/db";
 import { lineStockAnalysisUsage } from "@/db/schema";
+import { nowJST } from "@/lib/datetime/jst";
 
 /**
  * LINE銘柄分析履歴を保存する関数の型定義
@@ -30,6 +31,6 @@ export const saveLineStockAnalysisUsage: SaveLineStockAnalysisUsage = async ({
     stockId,
     tickerCode,
     periodType,
-    analyzedAt: new Date(),
+    analyzedAt: nowJST(),
   });
 };

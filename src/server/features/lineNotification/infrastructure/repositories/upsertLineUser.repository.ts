@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { lineUsers } from "@/db/schema";
+import { nowJST } from "@/lib/datetime/jst";
 import type { LineUserEntity } from "../../domain/entities/lineUser";
 
 /**
@@ -15,7 +16,7 @@ export const upsertLineUser: UpsertLineUser = async (entity) => {
       userId: entity.userId,
       displayName: entity.displayName,
       notificationEnabled: entity.notificationEnabled ? 1 : 0,
-      updatedAt: new Date(),
+      updatedAt: nowJST(),
     })
     .onConflictDoUpdate({
       target: lineUsers.lineUserId,
@@ -23,7 +24,7 @@ export const upsertLineUser: UpsertLineUser = async (entity) => {
         userId: entity.userId,
         displayName: entity.displayName,
         notificationEnabled: entity.notificationEnabled ? 1 : 0,
-        updatedAt: new Date(),
+        updatedAt: nowJST(),
       },
     });
 };

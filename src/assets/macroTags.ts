@@ -3,13 +3,7 @@
  * 銘柄のマクロ経済感応度タグ（金利敏感、輸出、内需など）
  */
 
-export type MacroTag = {
-  id: string;
-  name: string;
-  description: string;
-};
-
-export const MACRO_TAGS: MacroTag[] = [
+export const MACRO_TAGS = [
   // ===== 金利関連 =====
   {
     id: "interest_sensitive",
@@ -88,7 +82,17 @@ export const MACRO_TAGS: MacroTag[] = [
     name: "地政学リスク",
     description: "国際情勢の影響を直接受けやすい企業。",
   },
-];
+] as const;
+
+/**
+ * マクロタグの型
+ */
+export type MacroTag = (typeof MACRO_TAGS)[number];
+
+/**
+ * マクロタグIDの型
+ */
+export type MacroTagId = MacroTag["id"];
 
 /**
  * マクロタグIDからタグを取得
@@ -98,11 +102,20 @@ export const getMacroTagById = (id: string): MacroTag | undefined => {
 };
 
 /**
- * マクロタグIDの型
+ * 全マクロタグIDの配列（z.enumに渡すためのタプル型）
  */
-export type MacroTagId = (typeof MACRO_TAGS)[number]["id"];
-
-/**
- * 全マクロタグIDの配列
- */
-export const MACRO_TAG_IDS = MACRO_TAGS.map((tag) => tag.id) as MacroTagId[];
+export const MACRO_TAG_IDS: readonly [MacroTagId, ...MacroTagId[]] = [
+  "interest_sensitive",
+  "interest_cost_risk",
+  "economic_sensitive",
+  "defensive",
+  "export_benefit",
+  "import_cost_risk",
+  "inflation_benefit",
+  "inflation_risk",
+  "policy_support",
+  "regulation_risk",
+  "commodity_risk",
+  "commodity_benefit",
+  "geopolitical_risk",
+];

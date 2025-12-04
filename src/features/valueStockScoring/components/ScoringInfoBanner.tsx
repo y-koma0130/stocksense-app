@@ -29,6 +29,7 @@ export const ScoringInfoBanner = () => {
             <p className={textStyle}>
               PER・PBR・RSI・価格位置などの指標から総合スコアを算出しています。
               各指標を業種平均と比較し、割安度を0〜100点で評価します。
+              中期・長期それぞれに適した独自の指標（RSIモメンタム、EPS成長率など）も活用しています。
             </p>
           </div>
 
@@ -36,9 +37,9 @@ export const ScoringInfoBanner = () => {
             <h4 className={sectionTitleStyle}>罠銘柄の除外</h4>
             <p className={textStyle}>単に割安なだけでなく、以下の銘柄は除外しています：</p>
             <ul className={listStyle}>
-              <li>自己資本比率が低い銘柄（財務健全性リスク）</li>
-              <li>営業利益が連続減少している銘柄</li>
-              <li>営業キャッシュフローが連続でマイナスの銘柄</li>
+              <li>財務健全性が低い銘柄（自己資本比率）</li>
+              <li>業績が継続悪化している銘柄（営業利益減少・営業CF赤字）</li>
+              <li>流動性が低い銘柄（取引ボリューム不足）</li>
             </ul>
           </div>
 

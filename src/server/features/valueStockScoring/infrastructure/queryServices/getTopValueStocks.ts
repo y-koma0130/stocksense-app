@@ -3,6 +3,7 @@
  * ジョブから直接呼び出せるシンプルな関数
  */
 
+import { getLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import type {
   LongTermValueStockDto,
   MidTermValueStockDto,
@@ -21,7 +22,10 @@ type GetTopValueStocksParams = Readonly<{
 export const getTopMidTermStocks = async (
   params: GetTopValueStocksParams,
 ): Promise<MidTermValueStockDto[]> => {
-  return await getTopMidTermValueStocks({ getLatestMidTermIndicators }, params);
+  return await getTopMidTermValueStocks(
+    { getLatestMidTermIndicators, getLatestMarketAnalysis },
+    params,
+  );
 };
 
 /**
@@ -30,5 +34,8 @@ export const getTopMidTermStocks = async (
 export const getTopLongTermStocks = async (
   params: GetTopValueStocksParams,
 ): Promise<LongTermValueStockDto[]> => {
-  return await getTopLongTermValueStocks({ getLatestLongTermIndicators }, params);
+  return await getTopLongTermValueStocks(
+    { getLatestLongTermIndicators, getLatestMarketAnalysis },
+    params,
+  );
 };

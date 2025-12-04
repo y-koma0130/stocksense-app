@@ -36,7 +36,7 @@ export const ValueStockTable = ({
         </thead>
         <tbody>
           {data.map((stock, index) => {
-            const scorePercent = stock.valueScore.totalScore * 100;
+            const scorePercent = Math.round(stock.valueScore.totalScore * 100);
             const isAnalyzed = analyzedStockIds.has(stock.stockId);
 
             return (

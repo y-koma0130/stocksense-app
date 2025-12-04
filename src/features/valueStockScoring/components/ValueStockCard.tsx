@@ -15,7 +15,7 @@ type ValueStockCardProps = Readonly<{
 }>;
 
 export const ValueStockCard = ({ stock, rank, onClick, isAnalyzed }: ValueStockCardProps) => {
-  const scorePercent = stock.valueScore.totalScore * 100;
+  const scorePercent = Math.round(stock.valueScore.totalScore * 100);
 
   return (
     <button

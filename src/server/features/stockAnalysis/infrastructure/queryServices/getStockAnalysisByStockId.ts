@@ -23,6 +23,9 @@ export type GetStockAnalysisByStockId = (params: GetStockAnalysisByStockIdParams
   risks: unknown;
 } | null>;
 
+/**
+ * 指定stockIdの最新分析を取得
+ */
 export const getStockAnalysisByStockId: GetStockAnalysisByStockId = async ({
   stockId,
   periodType,

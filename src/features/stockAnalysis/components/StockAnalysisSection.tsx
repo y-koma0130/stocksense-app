@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { getRatingColorFromKey } from "@/constants/colors";
 import type { PeriodType } from "@/constants/periodTypes";
 import {
@@ -7,6 +8,9 @@ import {
 import type { StockAnalysisDto } from "@/server/features/stockAnalysis/application/dto/stockAnalysis.dto";
 import { css } from "../../../../styled-system/css";
 import { StockAnalysisSectionSkeleton } from "./StockAnalysisSectionSkeleton";
+
+/** サマリーの折りたたみ表示の閾値（文字数） */
+const SUMMARY_TRUNCATE_LENGTH = 400;
 
 type StockAnalysisSectionProps = Readonly<{
   analysis: StockAnalysisDto | null;
@@ -24,6 +28,8 @@ const getRatingColor = (rating: string | null): string => {
 };
 
 export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSectionProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (loading) {
     return (
       <div className={sectionStyle}>
@@ -77,7 +83,31 @@ export const StockAnalysisSection = ({ analysis, loading }: StockAnalysisSection
         </div>
 
         {/* 総合評価 */}
-        {analysis.summary && <p className={summaryTextStyle}>{analysis.summary}</p>}
+        {analysis.summary && (
+          <div>
+            <p className={summaryTextStyle}>
+              {analysis.summary.length > SUMMARY_TRUNCATE_LENGTH && !isExpanded
+                ? `${analysis.summary.slice(0, SUMMARY_TRUNCATE_LENGTH)}...`
+                : analysis.summary}
+            </p>
+            {analysis.summary.length > SUMMARY_TRUNCATE_LENGTH && (
+              // biome-ignore lint/a11y/useSemanticElements: 親要素にbuttonを含むコンテキストで使用される可能性があるためspanを使用
+              <span
+                role="button"
+                tabIndex={0}
+                className={expandButtonStyle}
+                onClick={() => setIsExpanded(!isExpanded)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setIsExpanded(!isExpanded);
+                  }
+                }}
+              >
+                {isExpanded ? "閉じる" : "もっと読む"}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 投資魅力とリスクを並べて表示 */}
@@ -195,6 +225,20 @@ const summaryTextStyle = css({
   fontSize: "0.875rem",
   lineHeight: "1.6",
   color: "text",
+});
+
+const expandButtonStyle = css({
+  display: "inline-block",
+  fontSize: "0.8125rem",
+  color: "primary",
+  backgroundColor: "transparent",
+  cursor: "pointer",
+  padding: "0.25rem 0",
+  marginTop: "0.5rem",
+  fontWeight: "500",
+  _hover: {
+    textDecoration: "underline",
+  },
 });
 
 const twoColumnContainerStyle = css({

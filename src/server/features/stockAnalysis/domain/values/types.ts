@@ -25,8 +25,9 @@ export const StockAnalysisResultSchema = z.object({
   // バリュー株としての評価（5段階）
   valueStockRating: ValueStockRatingSchema,
 
-  // 総合評価コメント（最大300字厳守）- 割安度の根拠と投資判断の視点
-  summary: z.string().min(50).max(300),
+  // 総合評価コメント（最大800字）- 割安度の根拠と投資判断の視点
+  // プロンプトでは300-400字を指示するが、途中で切れるリスクを避けるため余裕を持たせる
+  summary: z.string().min(50).max(800),
 
   // 投資する場合の魅力ポイント（3-4項目、各80字以内厳守）
   investmentPoints: z.array(z.string().max(80)).min(3).max(4),

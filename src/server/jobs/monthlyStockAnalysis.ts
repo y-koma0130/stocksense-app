@@ -11,7 +11,7 @@ import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructu
 import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
 import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
 import { getTopLongTermStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
-import { buildStockAnalysisPrompt } from "./utils/buildStockAnalysisPrompt";
+import { buildLongTermStockAnalysisPrompt } from "./utils/buildLongTermStockAnalysisPrompt";
 
 // 分析対象銘柄数（固定）
 const ANALYSIS_COUNT = 5;
@@ -42,9 +42,7 @@ export const monthlyStockAnalysis = inngest.createFunction(
     const results = [];
     for (const stock of topStocks) {
       // プロンプト生成（構造化データはinputに含まれる）
-      // 長期分析ではrsiShortは使用しない（null）、EPSデータを使用
-      const { instructions, input } = buildStockAnalysisPrompt({
-        periodType: "long_term",
+      const { instructions, input } = buildLongTermStockAnalysisPrompt({
         stockData: {
           tickerCode: stock.tickerCode,
           name: stock.name,
@@ -54,7 +52,6 @@ export const monthlyStockAnalysis = inngest.createFunction(
           per: stock.per,
           pbr: stock.pbr,
           rsi: stock.rsi,
-          rsiShort: null,
           priceHigh: stock.priceHigh,
           priceLow: stock.priceLow,
           sectorAvgPer: stock.sectorAvgPer,

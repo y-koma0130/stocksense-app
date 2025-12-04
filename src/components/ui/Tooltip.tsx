@@ -49,7 +49,7 @@ export const Tooltip = ({
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [isMounted, setIsMounted] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -86,9 +86,11 @@ export const Tooltip = ({
 
   return (
     <>
-      <button
+      {/* biome-ignore lint/a11y/useSemanticElements: childrenにButtonを含む可能性があるためspanを使用 */}
+      <span
         ref={triggerRef}
-        type="button"
+        role="button"
+        tabIndex={0}
         className={showUnderline ? containerWithUnderlineStyle : containerStyle}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
@@ -96,7 +98,7 @@ export const Tooltip = ({
         onBlur={() => setIsVisible(false)}
       >
         {children}
-      </button>
+      </span>
       {isMounted && tooltipElement && createPortal(tooltipElement, document.body)}
     </>
   );

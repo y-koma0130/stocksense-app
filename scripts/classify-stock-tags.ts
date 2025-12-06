@@ -13,10 +13,10 @@ import { eq, isNull } from "drizzle-orm";
 import OpenAI from "openai";
 import YahooFinance from "yahoo-finance2";
 import { z } from "zod";
+import { MACRO_TAGS } from "../src/assets/macroTags";
+import { THEME_TAGS } from "../src/assets/themeTags";
 import { db } from "../src/db";
 import { stockMacroTags, stocks, stockThemeTags } from "../src/db/schema";
-import { MACRO_TAGS } from "../src/server/features/stockTagging/domain/values/macroTags";
-import { THEME_TAGS } from "../src/server/features/stockTagging/domain/values/themeTags";
 
 const yahooFinance = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 

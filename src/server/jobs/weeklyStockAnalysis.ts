@@ -11,7 +11,7 @@ import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructu
 import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
 import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
 import { getTopMidTermStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
-import { buildStockAnalysisPrompt } from "./utils/buildStockAnalysisPrompt";
+import { buildMidTermStockAnalysisPrompt } from "./utils/buildMidTermStockAnalysisPrompt";
 
 // 分析対象銘柄数（固定）
 const ANALYSIS_COUNT = 5;
@@ -42,9 +42,7 @@ export const weeklyStockAnalysis = inngest.createFunction(
     const results = [];
     for (const stock of topStocks) {
       // プロンプト生成（構造化データはinputに含まれる）
-      // 中期ではEPSデータは使用しない（null）
-      const { instructions, input } = buildStockAnalysisPrompt({
-        periodType: "mid_term",
+      const { instructions, input } = buildMidTermStockAnalysisPrompt({
         stockData: {
           tickerCode: stock.tickerCode,
           name: stock.name,
@@ -59,8 +57,6 @@ export const weeklyStockAnalysis = inngest.createFunction(
           priceLow: stock.priceLow,
           sectorAvgPer: stock.sectorAvgPer,
           sectorAvgPbr: stock.sectorAvgPbr,
-          epsLatest: null,
-          eps3yAgo: null,
         },
         marketAnalysis,
       });

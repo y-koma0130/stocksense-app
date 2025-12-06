@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { stockFinancialHealth } from "@/db/schema";
+import { nowJST } from "@/lib/datetime/jst";
 import type { StockFinancialHealth } from "../../domain/entities/stockFinancialHealth";
 
 /**
@@ -23,7 +24,7 @@ export const upsertStockFinancialHealth: UpsertStockFinancialHealth = async (ent
       revenueDeclineYears: entity.revenueDeclineYears,
       epsLatest: entity.epsLatest?.toString() ?? null,
       eps3yAgo: entity.eps3yAgo?.toString() ?? null,
-      updatedAt: new Date(),
+      updatedAt: nowJST(),
     })
     .onConflictDoUpdate({
       target: stockFinancialHealth.stockId,
@@ -35,7 +36,7 @@ export const upsertStockFinancialHealth: UpsertStockFinancialHealth = async (ent
         revenueDeclineYears: entity.revenueDeclineYears,
         epsLatest: entity.epsLatest?.toString() ?? null,
         eps3yAgo: entity.eps3yAgo?.toString() ?? null,
-        updatedAt: new Date(),
+        updatedAt: nowJST(),
       },
     });
 };

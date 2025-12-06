@@ -1,11 +1,13 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
   longTermIndicators,
   midTermIndicators,
   sectorAverages,
   stockFinancialHealth,
+  stockMacroTags,
   stocks,
+  stockThemeTags,
 } from "@/db/schema";
 import {
   type LongTermIndicatorDto,
@@ -23,6 +25,61 @@ export type GetLatestMidTermIndicators = () => Promise<MidTermIndicatorDto[]>;
  * 長期指標の最新データを取得する関数の型定義
  */
 export type GetLatestLongTermIndicators = () => Promise<LongTermIndicatorDto[]>;
+
+/**
+ * 銘柄IDからタグデータを取得
+ */
+const getStockTagsByStockIds = async (
+  stockIds: string[],
+): Promise<Map<string, { macroTagIds: string[]; themeTagIds: string[] }>> => {
+  if (stockIds.length === 0) {
+    return new Map();
+  }
+
+  // マクロタグとテーマタグを並列で取得
+  const [macroTags, themeTags] = await Promise.all([
+    db
+      .select({
+        stockId: stockMacroTags.stockId,
+        macroTagId: stockMacroTags.macroTagId,
+      })
+      .from(stockMacroTags)
+      .where(inArray(stockMacroTags.stockId, stockIds)),
+    db
+      .select({
+        stockId: stockThemeTags.stockId,
+        themeTagId: stockThemeTags.themeTagId,
+      })
+      .from(stockThemeTags)
+      .where(inArray(stockThemeTags.stockId, stockIds)),
+  ]);
+
+  // stockId -> タグIDの配列にマップ
+  const tagMap = new Map<string, { macroTagIds: string[]; themeTagIds: string[] }>();
+
+  // 初期化
+  for (const stockId of stockIds) {
+    tagMap.set(stockId, { macroTagIds: [], themeTagIds: [] });
+  }
+
+  // マクロタグをマップに追加
+  for (const tag of macroTags) {
+    const entry = tagMap.get(tag.stockId);
+    if (entry) {
+      entry.macroTagIds.push(tag.macroTagId);
+    }
+  }
+
+  // テーマタグをマップに追加
+  for (const tag of themeTags) {
+    const entry = tagMap.get(tag.stockId);
+    if (entry) {
+      entry.themeTagIds.push(tag.themeTagId);
+    }
+  }
+
+  return tagMap;
+};
 
 /**
  * 中期指標の最新データを取得
@@ -80,6 +137,9 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () =
       operatingIncomeDeclineYears: stockFinancialHealth.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: stockFinancialHealth.operatingCashFlowNegativeYears,
       revenueDeclineYears: stockFinancialHealth.revenueDeclineYears,
+      // EPS成長率計算用（グロース市場のみ使用）
+      epsLatest: stockFinancialHealth.epsLatest,
+      eps3yAgo: stockFinancialHealth.eps3yAgo,
     })
     .from(midTermIndicators)
     .innerJoin(stocks, eq(midTermIndicators.stockId, stocks.id))
@@ -93,9 +153,14 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () =
     .leftJoin(stockFinancialHealth, eq(midTermIndicators.stockId, stockFinancialHealth.stockId))
     .where(eq(midTermIndicators.collectedAt, latestDate));
 
+  // タグデータを取得
+  const stockIds = results.map((row) => row.stockId);
+  const tagMap = await getStockTagsByStockIds(stockIds);
+
   // DTOに変換
-  return results.map((row) =>
-    midTermIndicatorDtoSchema.parse({
+  return results.map((row) => {
+    const tags = tagMap.get(row.stockId) ?? { macroTagIds: [], themeTagIds: [] };
+    return midTermIndicatorDtoSchema.parse({
       stockId: row.stockId,
       tickerCode: row.tickerCode,
       tickerSymbol: row.tickerSymbol,
@@ -121,8 +186,12 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () =
       operatingIncomeDeclineYears: row.operatingIncomeDeclineYears,
       operatingCashFlowNegativeYears: row.operatingCashFlowNegativeYears,
       revenueDeclineYears: row.revenueDeclineYears,
-    }),
-  );
+      epsLatest: row.epsLatest ? Number(row.epsLatest) : null,
+      eps3yAgo: row.eps3yAgo ? Number(row.eps3yAgo) : null,
+      macroTagIds: tags.macroTagIds,
+      themeTagIds: tags.themeTagIds,
+    });
+  });
 };
 
 /**
@@ -195,9 +264,14 @@ export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async ()
     .leftJoin(stockFinancialHealth, eq(longTermIndicators.stockId, stockFinancialHealth.stockId))
     .where(eq(longTermIndicators.collectedAt, latestDate));
 
+  // タグデータを取得
+  const stockIds = results.map((row) => row.stockId);
+  const tagMap = await getStockTagsByStockIds(stockIds);
+
   // DTOに変換
-  return results.map((row) =>
-    longTermIndicatorDtoSchema.parse({
+  return results.map((row) => {
+    const tags = tagMap.get(row.stockId) ?? { macroTagIds: [], themeTagIds: [] };
+    return longTermIndicatorDtoSchema.parse({
       stockId: row.stockId,
       tickerCode: row.tickerCode,
       tickerSymbol: row.tickerSymbol,
@@ -223,6 +297,8 @@ export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async ()
       revenueDeclineYears: row.revenueDeclineYears,
       epsLatest: row.epsLatest ? Number(row.epsLatest) : null,
       eps3yAgo: row.eps3yAgo ? Number(row.eps3yAgo) : null,
-    }),
-  );
+      macroTagIds: tags.macroTagIds,
+      themeTagIds: tags.themeTagIds,
+    });
+  });
 };

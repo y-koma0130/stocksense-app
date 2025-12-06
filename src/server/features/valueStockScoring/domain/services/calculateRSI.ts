@@ -3,6 +3,7 @@ import type { HistoricalDataPointDto } from "../../application/dto/yahooFinance.
 
 /**
  * RSI (Relative Strength Index) を計算
+ * TODO: 型関数化
  */
 export const calculateRSI = (
   historicalData: HistoricalDataPointDto[],

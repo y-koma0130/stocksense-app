@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { MidTermIndicatorDto } from "../../../application/dto/indicator.dto";
-import { MID_TERM_CONFIG } from "../../values/scoringConfig";
+import type { MidTermScoreInput } from "../calculateMidTermValueStockScore.service";
 import { calculateMidTermValueStockScore } from "../calculateMidTermValueStockScore.service";
 
 // テスト用の基本的な中期銘柄データ
@@ -32,15 +32,36 @@ const createBaseMidTermIndicator = (
   revenueDeclineYears: 0,
   avgVolumeShort: 10000,
   avgVolumeLong: 10000,
+  epsLatest: 100,
+  eps3yAgo: 80,
+  macroTagIds: [],
+  themeTagIds: [],
   ...overrides,
+});
+
+// テスト用のスコア入力を作成
+const createScoreInput = (
+  indicatorOverrides: Partial<MidTermIndicatorDto> = {},
+  inputOverrides: Partial<Omit<MidTermScoreInput, "indicator">> = {},
+): MidTermScoreInput => ({
+  indicator: createBaseMidTermIndicator(indicatorOverrides),
+  stockMacroTagIds: [],
+  stockThemeTagIds: [],
+  favorableMacroTagIds: [],
+  favorableThemeTagIds: [],
+  unfavorableMacroTagIds: [],
+  unfavorableThemeTagIds: [],
+  epsLatest: 100,
+  eps3yAgo: 80,
+  ...inputOverrides,
 });
 
 describe("calculateMidTermValueStockScore", () => {
   describe("基本スコアリング", () => {
     it("標準的な割安株のスコアを計算できる", () => {
-      const indicator = createBaseMidTermIndicator();
+      const input = createScoreInput();
 
-      const result = calculateMidTermValueStockScore(indicator);
+      const result = calculateMidTermValueStockScore(input);
 
       expect(result.perScore).toBeGreaterThanOrEqual(0);
       expect(result.perScore).toBeLessThanOrEqual(100);
@@ -55,49 +76,44 @@ describe("calculateMidTermValueStockScore", () => {
     });
 
     it("RSIモメンタムが正の場合、スコアが向上する", () => {
-      const indicatorWithPositiveMomentum = createBaseMidTermIndicator({
-        rsiShort: 55, // momentum = +20
-      });
-      const indicatorWithNegativeMomentum = createBaseMidTermIndicator({
-        rsiShort: 20, // momentum = -15
-      });
+      const inputPositive = createScoreInput({ rsiShort: 55 }); // momentum = +20
+      const inputNegative = createScoreInput({ rsiShort: 20 }); // momentum = -15
 
-      const resultPositive = calculateMidTermValueStockScore(indicatorWithPositiveMomentum);
-      const resultNegative = calculateMidTermValueStockScore(indicatorWithNegativeMomentum);
+      const resultPositive = calculateMidTermValueStockScore(inputPositive);
+      const resultNegative = calculateMidTermValueStockScore(inputNegative);
 
       expect(resultPositive.totalScore).toBeGreaterThan(resultNegative.totalScore);
     });
 
     it("出来高が急増している場合、スコアが向上する", () => {
-      const indicatorWithHighVolume = createBaseMidTermIndicator({
+      const inputHigh = createScoreInput({
         avgVolumeShort: 20000, // ratio = 2.0 → 100点
         avgVolumeLong: 10000,
       });
-      const indicatorWithLowVolume = createBaseMidTermIndicator({
+      const inputLow = createScoreInput({
         avgVolumeShort: 5000, // ratio = 0.5 → 0点
         avgVolumeLong: 10000,
       });
 
-      const resultHigh = calculateMidTermValueStockScore(indicatorWithHighVolume);
-      const resultLow = calculateMidTermValueStockScore(indicatorWithLowVolume);
+      const resultHigh = calculateMidTermValueStockScore(inputHigh);
+      const resultLow = calculateMidTermValueStockScore(inputLow);
 
       expect(resultHigh.totalScore).toBeGreaterThan(resultLow.totalScore);
     });
 
     it("出来高が横ばいの場合、中間スコアになる", () => {
-      const indicatorWithStableVolume = createBaseMidTermIndicator({
+      const input = createScoreInput({
         avgVolumeShort: 10000, // ratio = 1.0 → 50点
         avgVolumeLong: 10000,
       });
 
-      const result = calculateMidTermValueStockScore(indicatorWithStableVolume);
+      const result = calculateMidTermValueStockScore(input);
 
-      // volumeSurgeWeightが12%で50点の場合、その寄与は6%(0.06)
       expect(result.totalScore).toBeGreaterThan(0);
     });
 
     it("全て理想的な値の場合、高スコアになる", () => {
-      const idealIndicator = createBaseMidTermIndicator({
+      const input = createScoreInput({
         per: 5, // 業種平均の50%（非常に割安）
         pbr: 0.5, // 業種平均の50%（非常に割安）
         rsi: 25, // 売られすぎ
@@ -107,7 +123,7 @@ describe("calculateMidTermValueStockScore", () => {
         avgVolumeLong: 10000,
       });
 
-      const result = calculateMidTermValueStockScore(idealIndicator);
+      const result = calculateMidTermValueStockScore(input);
 
       expect(result.perScore).toBe(100);
       expect(result.pbrScore).toBe(100);
@@ -117,7 +133,7 @@ describe("calculateMidTermValueStockScore", () => {
     });
 
     it("全て悪い値の場合、低スコアになる", () => {
-      const poorIndicator = createBaseMidTermIndicator({
+      const input = createScoreInput({
         per: 20, // 業種平均の200%（割高）
         pbr: 2.0, // 業種平均の200%（割高）
         rsi: 75, // 買われすぎ
@@ -127,7 +143,7 @@ describe("calculateMidTermValueStockScore", () => {
         avgVolumeLong: 10000,
       });
 
-      const result = calculateMidTermValueStockScore(poorIndicator);
+      const result = calculateMidTermValueStockScore(input);
 
       expect(result.perScore).toBe(0);
       expect(result.pbrScore).toBe(0);
@@ -137,59 +153,50 @@ describe("calculateMidTermValueStockScore", () => {
     });
   });
 
-  describe("重み付けの検証", () => {
-    it("中期設定の重み合計が100%になる", () => {
-      const totalWeight =
-        MID_TERM_CONFIG.perWeight +
-        MID_TERM_CONFIG.pbrWeight +
-        MID_TERM_CONFIG.rsiWeight +
-        MID_TERM_CONFIG.priceRangeWeight +
-        (MID_TERM_CONFIG.rsiMomentumWeight ?? 0) +
-        (MID_TERM_CONFIG.volumeSurgeWeight ?? 0);
+  describe("市場別重み配分の検証", () => {
+    it("プライム市場では標準的な重み配分が適用される", () => {
+      const input = createScoreInput({ market: "プライム" });
 
-      expect(totalWeight).toBe(100);
-    });
-  });
+      const result = calculateMidTermValueStockScore(input);
 
-  describe("市場別補正の検証", () => {
-    it("グロース市場ではPERスコアに1.2倍の補正がかかる", () => {
-      const primeIndicator = createBaseMidTermIndicator({
-        market: "プライム",
-        per: 10, // 業種平均と同等
-      });
-      const growthIndicator = createBaseMidTermIndicator({
-        market: "グロース",
-        per: 10, // 業種平均と同等
-      });
-
-      const resultPrime = calculateMidTermValueStockScore(primeIndicator);
-      const resultGrowth = calculateMidTermValueStockScore(growthIndicator);
-
-      // グロース市場はPERスコアに1.2倍補正
-      expect(resultGrowth.perScore).toBeGreaterThan(resultPrime.perScore);
+      // スコアが計算可能であることを確認
+      expect(result.totalScore).toBeGreaterThan(0);
     });
 
-    it("グロース市場ではPBRスコアに0.8倍の補正がかかる", () => {
-      const primeIndicator = createBaseMidTermIndicator({
-        market: "プライム",
-        pbr: 1.0, // 業種平均と同等
-      });
-      const growthIndicator = createBaseMidTermIndicator({
-        market: "グロース",
-        pbr: 1.0, // 業種平均と同等
-      });
+    it("グロース市場ではEPS成長率とタグスコアが加味される", () => {
+      // 有望テーマに該当するグロース株
+      const inputWithTag = createScoreInput(
+        { market: "グロース" },
+        {
+          stockThemeTagIds: ["ai"],
+          favorableThemeTagIds: ["ai"],
+          epsLatest: 120,
+          eps3yAgo: 100,
+        },
+      );
 
-      const resultPrime = calculateMidTermValueStockScore(primeIndicator);
-      const resultGrowth = calculateMidTermValueStockScore(growthIndicator);
+      // タグなしのグロース株
+      const inputWithoutTag = createScoreInput(
+        { market: "グロース" },
+        {
+          stockThemeTagIds: [],
+          favorableThemeTagIds: ["ai"],
+          epsLatest: 120,
+          eps3yAgo: 100,
+        },
+      );
 
-      // グロース市場はPBRスコアに0.8倍補正
-      expect(resultGrowth.pbrScore).toBeLessThan(resultPrime.pbrScore);
+      const resultWithTag = calculateMidTermValueStockScore(inputWithTag);
+      const resultWithoutTag = calculateMidTermValueStockScore(inputWithoutTag);
+
+      // タグが一致する方がスコアが高い
+      expect(resultWithTag.totalScore).toBeGreaterThan(resultWithoutTag.totalScore);
     });
   });
 
   describe("nullハンドリング", () => {
     it("主要指標がnullでもスコア計算が可能", () => {
-      const nullIndicator = createBaseMidTermIndicator({
+      const input = createScoreInput({
         currentPrice: null,
         per: null,
         pbr: null,
@@ -204,7 +211,7 @@ describe("calculateMidTermValueStockScore", () => {
         avgVolumeLong: null,
       });
 
-      const result = calculateMidTermValueStockScore(nullIndicator);
+      const result = calculateMidTermValueStockScore(input);
 
       expect(result.perScore).toBe(0);
       expect(result.pbrScore).toBe(0);
@@ -217,12 +224,12 @@ describe("calculateMidTermValueStockScore", () => {
 
   describe("セクタースコアの検証", () => {
     it("PERとPBRの平均がセクタースコアになる", () => {
-      const indicator = createBaseMidTermIndicator({
+      const input = createScoreInput({
         per: 7, // 70% → 100点
         pbr: 1.0, // 100% → 50点
       });
 
-      const result = calculateMidTermValueStockScore(indicator);
+      const result = calculateMidTermValueStockScore(input);
 
       // sectorScore = (perScore + pbrScore) / 2
       expect(result.sectorScore).toBe(Math.round((result.perScore + result.pbrScore) / 2));

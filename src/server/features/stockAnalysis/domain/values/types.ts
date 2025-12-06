@@ -23,16 +23,29 @@ export type ValueStockRating = z.infer<typeof ValueStockRatingSchema>;
  */
 export const StockAnalysisResultSchema = z.object({
   // バリュー株としての評価（5段階）
-  valueStockRating: ValueStockRatingSchema,
+  valueStockRating: ValueStockRatingSchema.describe(
+    "バリュー株としての評価。excellent/good/fair/poor/very_poorのいずれか",
+  ),
 
-  // 総合評価コメント（最大300字厳守）- 割安度の根拠と投資判断の視点
-  summary: z.string().min(50).max(300),
+  // 総合評価コメント - 割安度の根拠と投資判断の視点
+  // LLMが超過する場合に備えて余裕を持たせる（UI側で300字折りたたみ）
+  summary: z.string().min(50).max(1500).describe("総合評価コメント。300-400字程度で記述"),
 
-  // 投資する場合の魅力ポイント（3-4項目、各80字以内厳守）
-  investmentPoints: z.array(z.string().max(80)).min(3).max(4),
+  // 投資する場合の魅力ポイント（3-4項目）
+  // プロンプトでは60-80字を指示するが、超過に備えて余裕を持たせる
+  investmentPoints: z
+    .array(z.string().max(150).describe("各項目60-80字程度"))
+    .min(3)
+    .max(4)
+    .describe("投資魅力ポイント。3-4項目の配列"),
 
-  // 注意すべきリスク（2-3項目、各80字以内厳守）
-  risks: z.array(z.string().max(80)).min(2).max(3),
+  // 注意すべきリスク（2-3項目）
+  // プロンプトでは60-80字を指示するが、超過に備えて余裕を持たせる
+  risks: z
+    .array(z.string().max(150).describe("各項目60-80字程度"))
+    .min(2)
+    .max(3)
+    .describe("注意すべきリスク。2-3項目の配列"),
 });
 
 export type StockAnalysisResult = z.infer<typeof StockAnalysisResultSchema>;

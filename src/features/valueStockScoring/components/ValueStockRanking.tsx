@@ -18,17 +18,17 @@ export const ValueStockRanking = () => {
   const [selectedStock, setSelectedStock] = useState<ValueStockDto | null>(null);
   const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
 
-  // 表示中の銘柄IDリストを取得
-  const stockIds = useMemo(() => data.map((stock) => stock.stockId), [data]);
+  // 上位5銘柄のIDリストを取得（AI分析は上位5銘柄のみ対象）
+  const top5StockIds = useMemo(() => data.slice(0, 5).map((stock) => stock.stockId), [data]);
 
-  // 複数銘柄の解析状況を一括取得
+  // 上位5銘柄の解析状況を一括取得
   const { data: analysisStatuses } = trpc.stockAnalysis.getBulkAnalysisStatus.useQuery(
     {
-      stockIds,
+      stockIds: top5StockIds,
       periodType,
     },
     {
-      enabled: stockIds.length > 0,
+      enabled: top5StockIds.length > 0,
     },
   );
 

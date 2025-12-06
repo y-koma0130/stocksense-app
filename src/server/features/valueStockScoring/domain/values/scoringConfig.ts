@@ -1,15 +1,40 @@
 import { z } from "zod";
 
 /**
- * 市場別の補正係数スキーマ
+ * 市場タイプ
  */
-export const marketAdjustmentsSchema = z.object({
-  per: z.number().min(0.5).max(1.5), // ±50%以内に制限
-  pbr: z.number().min(0.5).max(1.5),
-  priceRange: z.number().min(0.5).max(1.5),
+export type MarketType = "prime" | "standard" | "growth" | "other";
+
+/**
+ * 中期スコアの重み配分スキーマ
+ */
+export const midTermWeightsSchema = z.object({
+  per: z.number().min(0).max(100),
+  pbr: z.number().min(0).max(100),
+  rsi: z.number().min(0).max(100),
+  priceRange: z.number().min(0).max(100),
+  rsiMomentum: z.number().min(0).max(100),
+  volumeSurge: z.number().min(0).max(100),
+  epsGrowth: z.number().min(0).max(100), // グロースのみ使用
+  tagScore: z.number().min(0).max(100), // グロースのみ使用
 });
 
-export type MarketAdjustments = z.infer<typeof marketAdjustmentsSchema>;
+export type MidTermWeights = z.infer<typeof midTermWeightsSchema>;
+
+/**
+ * 長期スコアの重み配分スキーマ
+ */
+export const longTermWeightsSchema = z.object({
+  per: z.number().min(0).max(100),
+  pbr: z.number().min(0).max(100),
+  rsi: z.number().min(0).max(100),
+  priceRange: z.number().min(0).max(100),
+  epsGrowth: z.number().min(0).max(100),
+  tagScore: z.number().min(0).max(100),
+  roe: z.number().min(0).max(100),
+});
+
+export type LongTermWeights = z.infer<typeof longTermWeightsSchema>;
 
 /**
  * PER/PBRの閾値（業種平均比のパーセント値）
@@ -20,6 +45,19 @@ export const ratioThresholdsSchema = z.object({
 });
 
 export type RatioThresholds = z.infer<typeof ratioThresholdsSchema>;
+
+/**
+ * PBRの絶対値ペナルティ閾値
+ */
+export const pbrPenaltyThresholdsSchema = z.object({
+  severelyLow: z.number(), // 極端に低い閾値（0.3倍未満）
+  low: z.number(), // 低い閾値（0.5倍未満）
+  lowRoeThreshold: z.number(), // 低PBR+低ROEのROE閾値（5%）
+  severePenalty: z.number(), // 極端に低い場合のペナルティ係数（0.7）
+  lowPenalty: z.number(), // 低い+低ROEの場合のペナルティ係数（0.8）
+});
+
+export type PbrPenaltyThresholds = z.infer<typeof pbrPenaltyThresholdsSchema>;
 
 /**
  * RSIの閾値
@@ -42,124 +80,219 @@ export const priceRangeThresholdsSchema = z.object({
 export type PriceRangeThresholds = z.infer<typeof priceRangeThresholdsSchema>;
 
 /**
- * スコアリング設定のZodスキーマ
+ * EPS成長率の閾値
  */
-export const scoringConfigSchema = z.object({
-  // 重み（合計100%）
-  perWeight: z.number().min(0).max(100),
-  pbrWeight: z.number().min(0).max(100),
-  rsiWeight: z.number().min(0).max(100),
-  priceRangeWeight: z.number().min(0).max(100),
-  rsiMomentumWeight: z.number().min(0).max(100).optional(), // 中期のみ使用
-  volumeSurgeWeight: z.number().min(0).max(100).optional(), // 中期のみ使用（出来高急増）
-  epsGrowthWeight: z.number().min(0).max(100).optional(), // 長期のみ使用
+export const epsGrowthThresholdsSchema = z.object({
+  lowGrowth: z.number(), // 低成長の閾値（10%）
+  highGrowth: z.number(), // 高成長の閾値（20%）
+});
+
+export type EpsGrowthThresholds = z.infer<typeof epsGrowthThresholdsSchema>;
+
+/**
+ * ROEの閾値
+ */
+export const roeThresholdsSchema = z.object({
+  low: z.number(), // 低ROE閾値（5%）
+  medium: z.number(), // 中程度閾値（8%）
+  high: z.number(), // 高ROE閾値（15%）
+});
+
+export type RoeThresholds = z.infer<typeof roeThresholdsSchema>;
+
+/**
+ * 中期スコアリング設定のZodスキーマ
+ */
+export const midTermScoringConfigSchema = z.object({
+  // 市場別の重み配分
+  weights: z.object({
+    prime: midTermWeightsSchema,
+    standard: midTermWeightsSchema,
+    growth: midTermWeightsSchema,
+    other: midTermWeightsSchema,
+  }),
 
   // 各指標の閾値
   perThresholds: ratioThresholdsSchema,
   pbrThresholds: ratioThresholdsSchema,
+  pbrPenaltyThresholds: pbrPenaltyThresholdsSchema,
   rsiThresholds: rsiThresholdsSchema,
   priceRangeThresholds: priceRangeThresholdsSchema,
-
-  // 市場別補正係数
-  marketAdjustments: z.object({
-    prime: marketAdjustmentsSchema,
-    standard: marketAdjustmentsSchema,
-    growth: marketAdjustmentsSchema,
-    other: marketAdjustmentsSchema,
-  }),
+  epsGrowthThresholds: epsGrowthThresholdsSchema,
 });
 
-export type ScoringConfig = z.infer<typeof scoringConfigSchema>;
+export type MidTermScoringConfig = z.infer<typeof midTermScoringConfigSchema>;
 
 /**
- * 中期（週次）スコアリングの設定
- * 重み合計: 100%
- * PER: 24%, PBR: 18%, RSI静的: 16%, 価格レンジ: 12%, RSIモメンタム: 18%, 出来高急増: 12%
+ * 長期スコアリング設定のZodスキーマ
  */
-export const MID_TERM_CONFIG: ScoringConfig = {
-  // 重み配分（合計100%）
-  perWeight: 24, // 24%
-  pbrWeight: 18, // 18%
-  rsiWeight: 16, // 16%（静的RSI）
-  priceRangeWeight: 12, // 12%
-  rsiMomentumWeight: 18, // 18%（RSIモメンタム - 反発初動検出）
-  volumeSurgeWeight: 12, // 12%（出来高急増 - 注目度上昇検出）
+export const longTermScoringConfigSchema = z.object({
+  // 市場別の重み配分
+  weights: z.object({
+    prime: longTermWeightsSchema,
+    standard: longTermWeightsSchema,
+    growth: longTermWeightsSchema,
+    other: longTermWeightsSchema,
+  }),
 
-  // PER閾値（業種平均比のパーセント値）
+  // 各指標の閾値
+  perThresholds: ratioThresholdsSchema,
+  pbrThresholds: ratioThresholdsSchema,
+  pbrPenaltyThresholds: pbrPenaltyThresholdsSchema,
+  rsiThresholds: rsiThresholdsSchema,
+  priceRangeThresholds: priceRangeThresholdsSchema,
+  epsGrowthThresholds: epsGrowthThresholdsSchema,
+  roeThresholds: roeThresholdsSchema,
+});
+
+export type LongTermScoringConfig = z.infer<typeof longTermScoringConfigSchema>;
+
+/**
+ * 共通の閾値設定
+ */
+const COMMON_THRESHOLDS = {
   perThresholds: {
     excellent: 70, // 70%以下で満点
     good: 100, // 100%以下で中程度
   },
-
-  // PBR閾値（業種平均比のパーセント値）
   pbrThresholds: {
-    excellent: 70, // 70%以下で満点
+    excellent: 70, // 70%以下で満点（40%未満は警告）
     good: 100, // 100%以下で中程度
   },
-
-  // RSI閾値
+  pbrPenaltyThresholds: {
+    severelyLow: 0.3, // PBR 0.3倍未満
+    low: 0.5, // PBR 0.5倍未満
+    lowRoeThreshold: 5, // ROE 5%未満
+    severePenalty: 0.7, // 30%減点
+    lowPenalty: 0.8, // 20%減点
+  },
   rsiThresholds: {
     oversold: 30, // 30以下で売られすぎ
     neutral: 50, // 50以下で中立
   },
-
-  // 価格レンジ閾値（パーセント値）
   priceRangeThresholds: {
     bottom: 20, // 20%以下で底値圏
     low: 40, // 40%以下で安値圏
   },
-
-  // 市場別補正係数（小幅調整）
-  marketAdjustments: {
-    prime: { per: 1.0, pbr: 1.0, priceRange: 1.0 },
-    standard: { per: 1.05, pbr: 1.0, priceRange: 1.05 },
-    growth: { per: 1.2, pbr: 0.8, priceRange: 0.95 }, // グロースはPER重視、PBR軽視
-    other: { per: 1.0, pbr: 1.0, priceRange: 1.0 },
+  epsGrowthThresholds: {
+    lowGrowth: 10, // 10%以下で低成長
+    highGrowth: 20, // 20%以上で高成長
   },
 };
 
 /**
- * 長期（月次）スコアリングの設定
- * 重み合計: 100%
- * PER: 28%, PBR: 25%, RSI: 15%, 価格レンジ: 12%, EPS成長率: 20%
+ * 中期（週次）スコアリングの設定
+ *
+ * 市場別の重み配分:
+ * - プライム: バリュエーション重視（PER/PBR合計42%）
+ * - スタンダード: バリュエーション重視（PER/PBR合計46%）
+ * - グロース: 成長×テーマ重視（EPS12% + タグ8%）、PER/PBR軽視（20%）
  */
-export const LONG_TERM_CONFIG: ScoringConfig = {
-  // 重み配分（合計100%）
-  perWeight: 28, // 28%
-  pbrWeight: 25, // 25%
-  rsiWeight: 15, // 15%
-  priceRangeWeight: 12, // 12%
-  epsGrowthWeight: 20, // 20%（3年EPS成長率 - 長期成長性評価）
-
-  // PER閾値（業種平均比のパーセント値）
-  perThresholds: {
-    excellent: 70, // 70%以下で満点
-    good: 100, // 100%以下で中程度
+export const MID_TERM_CONFIG: MidTermScoringConfig = {
+  weights: {
+    // プライム: 合計100%
+    prime: {
+      per: 24,
+      pbr: 18,
+      rsi: 16,
+      priceRange: 12,
+      rsiMomentum: 18,
+      volumeSurge: 12,
+      epsGrowth: 0, // 使用しない
+      tagScore: 0, // 使用しない
+    },
+    // スタンダード: 合計100%
+    standard: {
+      per: 26,
+      pbr: 20,
+      rsi: 16,
+      priceRange: 12,
+      rsiMomentum: 16,
+      volumeSurge: 10,
+      epsGrowth: 0, // 使用しない
+      tagScore: 0, // 使用しない
+    },
+    // グロース: 合計100%（EPS成長率・タグスコア使用）
+    growth: {
+      per: 15,
+      pbr: 5,
+      rsi: 18,
+      priceRange: 15,
+      rsiMomentum: 17,
+      volumeSurge: 10,
+      epsGrowth: 12, // グロースのみ
+      tagScore: 8, // グロースのみ
+    },
+    // その他: プライムと同じ
+    other: {
+      per: 24,
+      pbr: 18,
+      rsi: 16,
+      priceRange: 12,
+      rsiMomentum: 18,
+      volumeSurge: 12,
+      epsGrowth: 0,
+      tagScore: 0,
+    },
   },
+  ...COMMON_THRESHOLDS,
+};
 
-  // PBR閾値（業種平均比のパーセント値）
-  pbrThresholds: {
-    excellent: 70, // 70%以下で満点
-    good: 100, // 100%以下で中程度
+/**
+ * 長期（月次）スコアリングの設定
+ *
+ * 市場別の重み配分:
+ * - プライム: バランス型（バリュエーション40% + 成長18% + タグ15% + ROE7%）
+ * - スタンダード: バリュエーション重視（PER/PBR合計45%）
+ * - グロース: 成長×テーマ最重視（EPS30% + タグ25%）、PER/PBR軽視（13%）
+ */
+export const LONG_TERM_CONFIG: LongTermScoringConfig = {
+  weights: {
+    // プライム: 合計100%
+    prime: {
+      per: 22,
+      pbr: 18,
+      rsi: 10,
+      priceRange: 10,
+      epsGrowth: 18,
+      tagScore: 15,
+      roe: 7,
+    },
+    // スタンダード: 合計100%
+    standard: {
+      per: 25,
+      pbr: 20,
+      rsi: 10,
+      priceRange: 10,
+      epsGrowth: 15,
+      tagScore: 13,
+      roe: 7,
+    },
+    // グロース: 合計100%（成長×テーマ最重視）
+    growth: {
+      per: 8,
+      pbr: 5,
+      rsi: 10,
+      priceRange: 12,
+      epsGrowth: 30,
+      tagScore: 25,
+      roe: 10,
+    },
+    // その他: プライムと同じ
+    other: {
+      per: 22,
+      pbr: 18,
+      rsi: 10,
+      priceRange: 10,
+      epsGrowth: 18,
+      tagScore: 15,
+      roe: 7,
+    },
   },
-
-  // RSI閾値
-  rsiThresholds: {
-    oversold: 30, // 30以下で売られすぎ
-    neutral: 50, // 50以下で中立
-  },
-
-  // 価格レンジ閾値（パーセント値）
-  priceRangeThresholds: {
-    bottom: 20, // 20%以下で底値圏
-    low: 40, // 40%以下で安値圏
-  },
-
-  // 市場別補正係数（小幅調整）
-  marketAdjustments: {
-    prime: { per: 1.0, pbr: 1.0, priceRange: 1.0 },
-    standard: { per: 1.05, pbr: 1.0, priceRange: 1.05 },
-    growth: { per: 1.2, pbr: 0.8, priceRange: 0.95 }, // グロースはPER重視、PBR軽視
-    other: { per: 1.0, pbr: 1.0, priceRange: 1.0 },
+  ...COMMON_THRESHOLDS,
+  roeThresholds: {
+    low: 5, // 5%未満は0点
+    medium: 8, // 8%で50点
+    high: 15, // 15%以上で100点
   },
 };

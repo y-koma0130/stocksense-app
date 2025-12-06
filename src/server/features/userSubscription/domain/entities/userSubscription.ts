@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { subscriptionPlanSchema } from "@/constants/subscriptionPlans";
+import { nowJST } from "@/lib/datetime/jst";
 
 /**
  * ユーザーサブスクリプション集約エンティティのZodスキーマ
@@ -41,7 +42,7 @@ export const createUserSubscription = (
   return userSubscriptionSchema.parse({
     userId: params.userId,
     plan: params.plan ?? "free",
-    planStartedAt: params.planStartedAt ?? new Date(),
+    planStartedAt: params.planStartedAt ?? nowJST(),
     planExpiresAt: params.planExpiresAt ?? null,
     stripeCustomerId: params.stripeCustomerId ?? null,
     stripeSubscriptionId: params.stripeSubscriptionId ?? null,

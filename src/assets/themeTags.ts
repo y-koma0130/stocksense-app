@@ -240,6 +240,47 @@ export const getThemeTagById = (id: string): ThemeTag | undefined => {
 };
 
 /**
- * 全テーマタグIDの配列
+ * 全テーマタグIDの配列（z.enumに渡すためのタプル型）
  */
-export const THEME_TAG_IDS = THEME_TAGS.map((tag) => tag.id);
+export const THEME_TAG_IDS: readonly [ThemeTagId, ...ThemeTagId[]] = [
+  "ai",
+  "quantum",
+  "semiconductor",
+  "robotics",
+  "cloud",
+  "cybersecurity",
+  "iot",
+  "autonomous_driving",
+  "mobility",
+  "renewable_energy",
+  "hydrogen",
+  "nuclear",
+  "lithium",
+  "rare_earth",
+  "resource_development",
+  "manufacturing",
+  "logistics",
+  "space",
+  "defense",
+  "infrastructure",
+  "construction",
+  "ec",
+  "retail",
+  "foodtech",
+  "travel",
+  "entertainment",
+  "biotech",
+  "pharma",
+  "medical_device",
+  "healthcare",
+  "fintech",
+  "crypto",
+  "digital_transformation",
+  "esg",
+  "carbon_neutral",
+  "circular_economy",
+  "residential",
+  "aging",
+  "inbound",
+  "telecom",
+];

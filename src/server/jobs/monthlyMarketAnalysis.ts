@@ -2,14 +2,15 @@
  * 長期マーケット分析ジョブ
  * 毎月1日2:00 (JST)に実行
  * LLMを使用して6ヶ月-3年の投資目線でマーケット分析を実施
+ * 有望マクロタグ・テーマタグの選定も行う
  */
 
 import { zodResponseFormat } from "openai/helpers/zod";
 import { DEFAULT_MODEL, openai } from "@/server/lib/openai";
 import { inngest } from "../../../inngest/client";
-import { MarketAnalysisResultSchema } from "../features/marketAnalysis/domain/values/types";
+import { LongTermMarketAnalysisResultSchema } from "../features/marketAnalysis/domain/values/types";
 import { saveMarketAnalysis } from "../features/marketAnalysis/infrastructure/repositories/saveMarketAnalysis";
-import { buildMarketAnalysisPrompt } from "./utils/buildMarketAnalysisPrompt";
+import { buildLongTermMarketAnalysisPrompt } from "./utils/buildLongTermMarketAnalysisPrompt";
 
 export const monthlyMarketAnalysis = inngest.createFunction(
   {
@@ -19,11 +20,11 @@ export const monthlyMarketAnalysis = inngest.createFunction(
   },
   { cron: "TZ=Asia/Tokyo 0 2 1 * *" }, // 毎月1日2:00 JST
   async ({ step }) => {
-    // プロンプト生成
-    const prompt = buildMarketAnalysisPrompt({ periodType: "long_term" });
+    // 長期分析用プロンプト生成
+    const { context, instruction } = buildLongTermMarketAnalysisPrompt();
 
-    // Zodスキーマ → JSONスキーマ変換（OpenAIヘルパーを使用）
-    const responseFormat = zodResponseFormat(MarketAnalysisResultSchema, "market_analysis");
+    // Zodスキーマ → JSONスキーマ変換（長期分析用スキーマを使用）
+    const responseFormat = zodResponseFormat(LongTermMarketAnalysisResultSchema, "market_analysis");
     const jsonSchema = responseFormat.json_schema.schema;
 
     // OpenAI Responses APIをバインド
@@ -33,7 +34,10 @@ export const monthlyMarketAnalysis = inngest.createFunction(
       model: DEFAULT_MODEL,
       instructions:
         "あなたは日本株のバリュー投資を専門とするプロのアナリストです。最新のマーケット情報をウェブ検索して、指定された構造で正確に分析結果を出力してください。",
-      input: prompt,
+      input: [
+        { role: "developer" as const, content: context },
+        { role: "user" as const, content: instruction },
+      ],
       text: {
         format: {
           type: "json_schema" as const,
@@ -63,9 +67,9 @@ export const monthlyMarketAnalysis = inngest.createFunction(
       .replace(/\bcite\b/gi, "")
       .trim();
 
-    // JSONをパースしてバリデーション
+    // JSONをパースしてバリデーション（長期分析用スキーマで検証）
     const parsed = JSON.parse(cleanedResponse);
-    const result = MarketAnalysisResultSchema.parse(parsed);
+    const result = LongTermMarketAnalysisResultSchema.parse(parsed);
 
     // データベースに保存
     await step.run("save-analysis-result", async () => {
@@ -75,6 +79,10 @@ export const monthlyMarketAnalysis = inngest.createFunction(
     return {
       message: "Monthly market analysis completed",
       periodType: "long_term",
+      favorableMacroTags: result.favorableMacroTags,
+      favorableThemeTags: result.favorableThemeTags,
+      unfavorableMacroTags: result.unfavorableMacroTags,
+      unfavorableThemeTags: result.unfavorableThemeTags,
     };
   },
 );

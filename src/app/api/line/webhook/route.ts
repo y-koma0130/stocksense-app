@@ -38,10 +38,6 @@ import { NextResponse } from "next/server";
 import type { PeriodType } from "@/constants/periodTypes";
 import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
 import { LINE_STOCK_ANALYSIS_LIMITS } from "@/constants/subscriptionPlans";
-import { createLineUser } from "@/server/features/lineNotification/domain/entities/lineUser";
-import { sendLineMessage } from "@/server/features/lineNotification/infrastructure/externalServices/sendLineMessage";
-import { getLineUserByLineUserId } from "@/server/features/lineNotification/infrastructure/queryServices/getLineUserByLineUserId";
-import { upsertLineUser } from "@/server/features/lineNotification/infrastructure/repositories/upsertLineUser.repository";
 import type { AnalyzeStockForLineResultDto } from "@/server/features/lineStockAnalysis/application/dto/analyzeStockForLineResult.dto";
 import { analyzeStockForLineUsecase } from "@/server/features/lineStockAnalysis/application/usecases/analyzeStockForLine.usecase";
 import { executeStockAnalysis } from "@/server/features/lineStockAnalysis/infrastructure/externalServices/executeStockAnalysis";
@@ -67,6 +63,10 @@ import {
   buildUnlinkedUserMessage,
   buildUsageLimitReachedMessage,
 } from "@/server/features/lineStockAnalysis/presentation/lineMessageBuilder";
+import { createLineUser } from "@/server/features/lineUsers/domain/entities/lineUser";
+import { sendLineMessage } from "@/server/features/lineUsers/infrastructure/externalServices/sendLineMessage";
+import { getLineUserByLineUserId } from "@/server/features/lineUsers/infrastructure/queryServices/getLineUserByLineUserId";
+import { upsertLineUser } from "@/server/features/lineUsers/infrastructure/repositories/upsertLineUser.repository";
 import { getLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { getStockAnalysesByStockIds } from "@/server/features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getUserSubscriptionByUserId } from "@/server/features/userSubscription/infrastructure/queryServices/getUserSubscriptionByUserId";
@@ -76,10 +76,7 @@ import {
   getLatestLongTermIndicators,
   getLatestMidTermIndicators,
 } from "@/server/features/valueStockScoring/infrastructure/queryServices/getIndicators";
-import {
-  buildMarketSummaryMessage,
-  buildRankingMessage,
-} from "@/server/jobs/utils/lineMessageBuilders";
+import { buildMarketSummaryMessage, buildRankingMessage } from "@/server/utils/lineMessageBuilders";
 
 /**
  * LINE Webhookイベントの型定義

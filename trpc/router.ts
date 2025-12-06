@@ -1,7 +1,7 @@
 import { getBitcoinPrice } from "@/lib/coingecko/client";
 import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahooFinance/client";
 import { feedbackRouter } from "@/server/features/feedback/presentation/router";
-import { lineNotificationRouter } from "@/server/features/lineNotification/presentation/router";
+import { lineUsersRouter } from "@/server/features/lineUsers/presentation/router";
 import { marketAnalysisRouter } from "@/server/features/marketAnalysis/presentation/router";
 import { stockAnalysisRouter } from "@/server/features/stockAnalysis/presentation/router";
 import { userSubscriptionRouter } from "@/server/features/userSubscription/presentation/router";
@@ -95,7 +95,7 @@ export const appRouter = router({
     }),
   }),
   valueStockScoring: valueStockScoringRouter,
-  lineNotification: lineNotificationRouter,
+  lineNotification: lineUsersRouter,
   feedback: feedbackRouter,
   marketAnalysis: marketAnalysisRouter,
   stockAnalysis: stockAnalysisRouter,

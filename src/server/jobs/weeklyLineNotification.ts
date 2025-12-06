@@ -6,13 +6,13 @@
  */
 
 import { inngest } from "../../../inngest/client";
-import { sendLineMessage } from "../features/lineNotification/infrastructure/externalServices/sendLineMessage";
-import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
+import { sendLineMessage } from "../features/lineUsers/infrastructure/externalServices/sendLineMessage";
+import { getNotificationEnabledLineUsers } from "../features/lineUsers/infrastructure/queryServices/getNotificationEnabledLineUsers";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { getStockAnalysesByStockIds } from "../features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getTopMidTermValueStocks } from "../features/valueStockScoring/application/usecases/getTopMidTermValueStocks.usecase";
 import { getLatestMidTermIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
-import { buildMarketSummaryMessage, buildRankingMessage } from "./utils/lineMessageBuilders";
+import { buildMarketSummaryMessage, buildRankingMessage } from "../utils/lineMessageBuilders";
 
 const PERIOD_TYPE = "mid_term" as const;
 

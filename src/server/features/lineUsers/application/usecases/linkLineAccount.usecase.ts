@@ -21,20 +21,15 @@ export type LinkLineAccountUsecase = (
 ) => Promise<{ success: boolean }>;
 
 export const linkLineAccountUsecase: LinkLineAccountUsecase = async (dependencies, params) => {
-  console.log("[linkLineAccount] Starting with params:", params);
-
   // クエリサービスで既存データを取得
   const existingRecord = await dependencies.getLineUserByLineUserId(params.lineUserId);
-  console.log("[linkLineAccount] Existing record:", existingRecord);
 
   if (!existingRecord) {
-    console.error("[linkLineAccount] LINE連携が見つかりません");
     throw new Error("LINE連携が見つかりません");
   }
 
   // すでに別のユーザーに紐付いている場合はエラー
   if (existingRecord.userId && existingRecord.userId !== params.supabaseUserId) {
-    console.error("[linkLineAccount] Already linked to different user");
     throw new Error("このLINEアカウントは既に別のユーザーに紐付けられています");
   }
 
@@ -45,11 +40,9 @@ export const linkLineAccountUsecase: LinkLineAccountUsecase = async (dependencie
     displayName: existingRecord.displayName,
     notificationEnabled: existingRecord.notificationEnabled,
   });
-  console.log("[linkLineAccount] Updated entity:", updatedEntity);
 
   // エンティティを丸ごとupsert
   await dependencies.upsertLineUser(updatedEntity);
-  console.log("[linkLineAccount] Upsert completed successfully");
 
   return { success: true };
 };

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { authenticatedProcedure, router } from "../../../../../trpc/init";
+import { toLineUserSettingsDto } from "../application/dto/lineUserDto";
 import { linkLineAccountUsecase } from "../application/usecases/linkLineAccount.usecase";
 import { updateNotificationEnabledUsecase } from "../application/usecases/updateNotificationEnabled.usecase";
 import { validateNotificationUpdate } from "../domain/services/validateNotificationUpdate.service";
@@ -7,7 +8,7 @@ import { getLineUserByLineUserId } from "../infrastructure/queryServices/getLine
 import { getLineUserByUserId } from "../infrastructure/queryServices/getLineUserByUserId";
 import { upsertLineUser } from "../infrastructure/repositories/upsertLineUser.repository";
 
-export const lineNotificationRouter = router({
+export const lineUsersRouter = router({
   /**
    * 現在のユーザーのLINE連携設定を取得
    * router -> クエリサービスで取得して返却
@@ -17,11 +18,7 @@ export const lineNotificationRouter = router({
     if (!lineUser) {
       return null;
     }
-    return {
-      lineUserId: lineUser.lineUserId,
-      displayName: lineUser.displayName,
-      notificationEnabled: lineUser.notificationEnabled,
-    };
+    return toLineUserSettingsDto(lineUser);
   }),
 
   /**

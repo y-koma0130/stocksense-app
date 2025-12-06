@@ -6,46 +6,17 @@
  * 2通目: 長期上位10銘柄（上位5銘柄にAI分析コメント付き）
  */
 
-import { getDate, getDay, startOfMonth } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 import { inngest } from "../../../inngest/client";
-import { sendLineMessage } from "../features/lineNotification/infrastructure/externalServices/sendLineMessage";
-import { getNotificationEnabledLineUsers } from "../features/lineNotification/infrastructure/queryServices/getNotificationEnabledLineUsers";
+import { sendLineMessage } from "../features/lineUsers/infrastructure/externalServices/sendLineMessage";
+import { getNotificationEnabledLineUsers } from "../features/lineUsers/infrastructure/queryServices/getNotificationEnabledLineUsers";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { getStockAnalysesByStockIds } from "../features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getTopLongTermValueStocks } from "../features/valueStockScoring/application/usecases/getTopLongTermValueStocks.usecase";
 import { getLatestLongTermIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
-import { buildMarketSummaryMessage, buildRankingMessage } from "./utils/lineMessageBuilders";
+import { isFirstWeekdayOfMonth } from "../utils/dateUtils";
+import { buildMarketSummaryMessage, buildRankingMessage } from "../utils/lineMessageBuilders";
 
 const PERIOD_TYPE = "long_term" as const;
-const JST_TIMEZONE = "Asia/Tokyo";
-
-/**
- * 月の最初の平日かどうかを判定（JST基準）
- * 祝日は考慮しない
- */
-const isFirstWeekdayOfMonth = (): boolean => {
-  const nowJST = toZonedTime(new Date(), JST_TIMEZONE);
-  const today = getDate(nowJST);
-
-  // 月の1日の曜日を取得（JSTで計算）
-  const firstDayOfMonth = startOfMonth(nowJST);
-  const dayOfWeek = getDay(firstDayOfMonth);
-
-  let firstWeekday: number;
-  if (dayOfWeek === 0) {
-    // 1日が日曜 → 2日（月曜）が最初の平日
-    firstWeekday = 2;
-  } else if (dayOfWeek === 6) {
-    // 1日が土曜 → 3日（月曜）が最初の平日
-    firstWeekday = 3;
-  } else {
-    // 1日が平日 → 1日が最初の平日
-    firstWeekday = 1;
-  }
-
-  return today === firstWeekday;
-};
 
 export const monthlyLineNotification = inngest.createFunction(
   {

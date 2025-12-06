@@ -13,7 +13,7 @@ import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructu
 import { getStockAnalysesByStockIds } from "../features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getTopLongTermValueStocks } from "../features/valueStockScoring/application/usecases/getTopLongTermValueStocks.usecase";
 import { getLatestLongTermIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
-import { isFirstWeekdayOfMonth } from "../utils/dateUtils";
+import { isFirstWeekdayOfMonth } from "./utils/isFirstWeekdayOfMonth";
 import { buildMarketSummaryMessage, buildRankingMessage } from "../utils/lineMessageBuilders";
 
 const PERIOD_TYPE = "long_term" as const;

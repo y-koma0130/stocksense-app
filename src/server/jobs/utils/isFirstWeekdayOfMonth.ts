@@ -1,5 +1,6 @@
 /**
- * 日付関連のユーティリティ関数
+ * 月の最初の平日かどうかを判定（JST基準）
+ * 祝日は考慮しない
  */
 
 import { getDate, getDay, startOfMonth } from "date-fns";
@@ -7,10 +8,6 @@ import { toZonedTime } from "date-fns-tz";
 
 const JST_TIMEZONE = "Asia/Tokyo";
 
-/**
- * 月の最初の平日かどうかを判定（JST基準）
- * 祝日は考慮しない
- */
 export const isFirstWeekdayOfMonth = (): boolean => {
   const nowJST = toZonedTime(new Date(), JST_TIMEZONE);
   const today = getDate(nowJST);

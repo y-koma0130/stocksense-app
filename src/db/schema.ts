@@ -1,9 +1,11 @@
+import { sql } from "drizzle-orm";
 import {
   date,
   decimal,
   index,
   integer,
   jsonb,
+  pgPolicy,
   pgTable,
   text,
   timestamp,
@@ -230,6 +232,7 @@ export type NewStockFinancialHealth = typeof stockFinancialHealth.$inferInsert;
 /**
  * 7. LINE連携ユーザー
  * LINEユーザーIDとアプリユーザーの紐付け
+ * RLS: 認証ユーザーは自分のレコードのみ参照・更新可能
  */
 export const lineUsers = pgTable(
   "line_users",
@@ -241,10 +244,19 @@ export const lineUsers = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (table) => ({
-    userIdIdx: index("idx_line_users_user_id").on(table.userId),
-  }),
-);
+  (table) => [
+    index("idx_line_users_user_id").on(table.userId),
+    // RLS Policies
+    pgPolicy("line_users_select_own", {
+      for: "select",
+      using: sql`user_id = auth.uid()`,
+    }),
+    pgPolicy("line_users_update_own", {
+      for: "update",
+      using: sql`user_id = auth.uid()`,
+    }),
+  ],
+).enableRLS();
 
 export type LineUser = typeof lineUsers.$inferSelect;
 export type NewLineUser = typeof lineUsers.$inferInsert;
@@ -353,6 +365,7 @@ export type NewStockAnalysis = typeof stockAnalyses.$inferInsert;
 /**
  * 10. ユーザーサブスクリプション
  * Supabase AuthユーザーのプランとStripe連携情報
+ * RLS: 認証ユーザーは自分のレコードのみ参照可能（更新はサービスロールのみ）
  */
 export const userSubscriptions = pgTable(
   "user_subscriptions",
@@ -367,12 +380,17 @@ export const userSubscriptions = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (table) => ({
-    userIdIdx: index("idx_user_subscriptions_user_id").on(table.userId),
-    planIdx: index("idx_user_subscriptions_plan").on(table.plan),
-    stripeCustomerIdx: index("idx_user_subscriptions_stripe_customer").on(table.stripeCustomerId),
-  }),
-);
+  (table) => [
+    index("idx_user_subscriptions_user_id").on(table.userId),
+    index("idx_user_subscriptions_plan").on(table.plan),
+    index("idx_user_subscriptions_stripe_customer").on(table.stripeCustomerId),
+    // RLS Policies
+    pgPolicy("user_subscriptions_select_own", {
+      for: "select",
+      using: sql`user_id = auth.uid()`,
+    }),
+  ],
+).enableRLS();
 
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type NewUserSubscription = typeof userSubscriptions.$inferInsert;
@@ -380,6 +398,7 @@ export type NewUserSubscription = typeof userSubscriptions.$inferInsert;
 /**
  * 11. LINE銘柄分析履歴
  * LINEユーザーごとの分析履歴を記録（利用回数カウント・履歴参照用）
+ * RLS: 認証ユーザーは自分のLINEアカウントに紐づく履歴のみ参照可能
  */
 export const lineStockAnalysisUsage = pgTable(
   "line_stock_analysis_usage",
@@ -395,12 +414,21 @@ export const lineStockAnalysisUsage = pgTable(
     periodType: varchar("period_type", { length: 20 }).notNull(), // mid_term or long_term
     analyzedAt: timestamp("analyzed_at").defaultNow().notNull(),
   },
-  (table) => ({
-    lineUserIdIdx: index("idx_line_stock_analysis_usage_line_user").on(table.lineUserId),
-    stockIdIdx: index("idx_line_stock_analysis_usage_stock").on(table.stockId),
-    analyzedAtIdx: index("idx_line_stock_analysis_usage_analyzed_at").on(table.analyzedAt),
-  }),
-);
+  (table) => [
+    index("idx_line_stock_analysis_usage_line_user").on(table.lineUserId),
+    index("idx_line_stock_analysis_usage_stock").on(table.stockId),
+    index("idx_line_stock_analysis_usage_analyzed_at").on(table.analyzedAt),
+    // RLS Policies
+    pgPolicy("line_stock_analysis_usage_select_own", {
+      for: "select",
+      using: sql`EXISTS (
+        SELECT 1 FROM line_users
+        WHERE line_users.line_user_id = line_stock_analysis_usage.line_user_id
+          AND line_users.user_id = auth.uid()
+      )`,
+    }),
+  ],
+).enableRLS();
 
 export type LineStockAnalysisUsage = typeof lineStockAnalysisUsage.$inferSelect;
 export type NewLineStockAnalysisUsage = typeof lineStockAnalysisUsage.$inferInsert;

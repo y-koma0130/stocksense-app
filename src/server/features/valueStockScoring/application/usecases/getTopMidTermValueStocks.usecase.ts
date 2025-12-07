@@ -1,10 +1,16 @@
 import type { GetLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
-import { calculateMidTermValueStockScore } from "../../domain/services/calculateMidTermValueStockScore.service";
-import { filterProMarket } from "../../domain/services/filterProMarket.service";
-import { isTrapStock } from "../../domain/services/isTrapStock.service";
-import { rankByScore } from "../../domain/services/rankByScore.service";
+import type { CalculateMidTermValueStockScore } from "../../domain/services/calculateMidTermValueStockScore.service";
+import type { FilterProMarket } from "../../domain/services/filterProMarket.service";
+import type { TrapStockCheckResult } from "../../domain/services/isTrapStock.service";
+import type { RankByScore } from "../../domain/services/rankByScore.service";
 import type { GetLatestMidTermIndicators } from "../../infrastructure/queryServices/getIndicators";
+import type { MidTermIndicatorDto } from "../dto/midTermIndicator.dto";
 import { type MidTermValueStockDto, midTermValueStockDtoSchema } from "../dto/valueStock.dto";
+
+/**
+ * 罠銘柄判定関数の型定義
+ */
+type IsTrapStock = (indicator: MidTermIndicatorDto) => TrapStockCheckResult;
 
 /**
  * ユースケースの依存関係
@@ -12,6 +18,10 @@ import { type MidTermValueStockDto, midTermValueStockDtoSchema } from "../dto/va
 type Dependencies = Readonly<{
   getLatestMidTermIndicators: GetLatestMidTermIndicators;
   getLatestMarketAnalysis: GetLatestMarketAnalysis;
+  calculateMidTermValueStockScore: CalculateMidTermValueStockScore;
+  filterProMarket: FilterProMarket;
+  isTrapStock: IsTrapStock;
+  rankByScore: RankByScore;
 }>;
 
 /**
@@ -42,11 +52,20 @@ export type GetTopMidTermValueStocks = (
  * 7. DTOにパースして返却
  */
 export const getTopMidTermValueStocks: GetTopMidTermValueStocks = async (dependencies, params) => {
+  const {
+    getLatestMidTermIndicators,
+    getLatestMarketAnalysis,
+    calculateMidTermValueStockScore,
+    filterProMarket,
+    isTrapStock,
+    rankByScore,
+  } = dependencies;
+
   // 1. クエリサービスから中期指標データを取得
-  const indicators = await dependencies.getLatestMidTermIndicators();
+  const indicators = await getLatestMidTermIndicators();
 
   // 2. マーケット分析データを取得（有望・不利タグ情報）
-  const marketAnalysis = await dependencies.getLatestMarketAnalysis({ periodType: "mid_term" });
+  const marketAnalysis = await getLatestMarketAnalysis({ periodType: "mid_term" });
   const favorableMacroTagIds = marketAnalysis?.favorableMacroTags ?? [];
   const favorableThemeTagIds = marketAnalysis?.favorableThemeTags ?? [];
   const unfavorableMacroTagIds = marketAnalysis?.unfavorableMacroTags ?? [];

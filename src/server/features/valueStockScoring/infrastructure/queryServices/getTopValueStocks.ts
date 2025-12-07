@@ -10,6 +10,11 @@ import type {
 } from "../../application/dto/valueStock.dto";
 import { getTopLongTermValueStocks } from "../../application/usecases/getTopLongTermValueStocks.usecase";
 import { getTopMidTermValueStocks } from "../../application/usecases/getTopMidTermValueStocks.usecase";
+import { calculateLongTermValueStockScore } from "../../domain/services/calculateLongTermValueStockScore.service";
+import { calculateMidTermValueStockScore } from "../../domain/services/calculateMidTermValueStockScore.service";
+import { filterProMarket } from "../../domain/services/filterProMarket.service";
+import { isTrapStock } from "../../domain/services/isTrapStock.service";
+import { rankByScore } from "../../domain/services/rankByScore.service";
 import { getLatestLongTermIndicators, getLatestMidTermIndicators } from "./getIndicators";
 
 type GetTopValueStocksParams = Readonly<{
@@ -23,7 +28,14 @@ export const getTopMidTermStocks = async (
   params: GetTopValueStocksParams,
 ): Promise<MidTermValueStockDto[]> => {
   return await getTopMidTermValueStocks(
-    { getLatestMidTermIndicators, getLatestMarketAnalysis },
+    {
+      getLatestMidTermIndicators,
+      getLatestMarketAnalysis,
+      calculateMidTermValueStockScore,
+      filterProMarket,
+      isTrapStock,
+      rankByScore,
+    },
     params,
   );
 };
@@ -35,7 +47,14 @@ export const getTopLongTermStocks = async (
   params: GetTopValueStocksParams,
 ): Promise<LongTermValueStockDto[]> => {
   return await getTopLongTermValueStocks(
-    { getLatestLongTermIndicators, getLatestMarketAnalysis },
+    {
+      getLatestLongTermIndicators,
+      getLatestMarketAnalysis,
+      calculateLongTermValueStockScore,
+      filterProMarket,
+      isTrapStock,
+      rankByScore,
+    },
     params,
   );
 };

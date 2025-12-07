@@ -1,6 +1,6 @@
+import { VOLUME_SURGE_CONFIG } from "../config/volumeConfig";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import { VOLUME_SURGE_CONFIG } from "../values/volumeConfig";
 
 /**
  * 出来高急増スコア計算関数の型定義

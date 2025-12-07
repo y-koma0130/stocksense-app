@@ -1,8 +1,8 @@
 import { getMarketType } from "@/constants/marketTypes";
-import type { MidTermIndicatorDto } from "../../application/dto/indicator.dto";
+import type { MidTermIndicatorDto } from "../../application/dto/midTermIndicator.dto";
+import { MID_TERM_CONFIG } from "../config/midTermScoringConfig";
 import { type ValueStockScore, valueStockScoreSchema } from "../entities/valueStockScore";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import { MID_TERM_CONFIG } from "../values/scoringConfig";
 import { totalScoreSchema } from "../values/totalScore";
 import { calculateEpsGrowthScore } from "./calculateEpsGrowthScore.service";
 import { calculatePBRScore } from "./calculatePBRScore.service";

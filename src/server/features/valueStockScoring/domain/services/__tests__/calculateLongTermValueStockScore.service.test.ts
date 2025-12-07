@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LongTermIndicatorDto } from "../../../application/dto/indicator.dto";
+import type { LongTermIndicatorDto } from "../../../application/dto/longTermIndicator.dto";
 import type { LongTermScoreInput } from "../calculateLongTermValueStockScore.service";
 import { calculateLongTermValueStockScore } from "../calculateLongTermValueStockScore.service";
 

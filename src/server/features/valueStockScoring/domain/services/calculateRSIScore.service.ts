@@ -1,6 +1,6 @@
+import type { RsiThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { RsiThresholds } from "../values/scoringConfig";
 
 /**
  * RSIスコア計算関数の型定義
@@ -17,7 +17,7 @@ export type CalculateRSIScore = (rsi: number | null, thresholds: RsiThresholds) 
  * - RSI > 70: 0点（買われすぎ）
  */
 export const calculateRSIScore: CalculateRSIScore = (rsi, thresholds) => {
-  if (rsi === null) return 0;
+  if (rsi === null) return indicatorScoreSchema.parse(0);
 
   const { oversold, neutral } = thresholds;
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { valueStockScoreSchema } from "../../domain/entities/valueStockScore";
-import { longTermIndicatorDtoSchema, midTermIndicatorDtoSchema } from "./indicator.dto";
+import { longTermIndicatorDtoSchema } from "./longTermIndicator.dto";
+import { midTermIndicatorDtoSchema } from "./midTermIndicator.dto";
 
 /**
  * 中期スコア付き銘柄指標DTOスキーマ

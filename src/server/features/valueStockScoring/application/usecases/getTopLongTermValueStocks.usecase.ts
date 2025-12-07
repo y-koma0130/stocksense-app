@@ -1,10 +1,16 @@
 import type { GetLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
-import { calculateLongTermValueStockScore } from "../../domain/services/calculateLongTermValueStockScore.service";
-import { filterProMarket } from "../../domain/services/filterProMarket.service";
-import { isTrapStock } from "../../domain/services/isTrapStock.service";
-import { rankByScore } from "../../domain/services/rankByScore.service";
+import type { CalculateLongTermValueStockScore } from "../../domain/services/calculateLongTermValueStockScore.service";
+import type { FilterProMarket } from "../../domain/services/filterProMarket.service";
+import type { TrapStockCheckResult } from "../../domain/services/isTrapStock.service";
+import type { RankByScore } from "../../domain/services/rankByScore.service";
 import type { GetLatestLongTermIndicators } from "../../infrastructure/queryServices/getIndicators";
+import type { LongTermIndicatorDto } from "../dto/longTermIndicator.dto";
 import { type LongTermValueStockDto, longTermValueStockDtoSchema } from "../dto/valueStock.dto";
+
+/**
+ * 罠銘柄判定関数の型定義
+ */
+type IsTrapStock = (indicator: LongTermIndicatorDto) => TrapStockCheckResult;
 
 /**
  * ユースケースの依存関係
@@ -12,6 +18,10 @@ import { type LongTermValueStockDto, longTermValueStockDtoSchema } from "../dto/
 type Dependencies = Readonly<{
   getLatestLongTermIndicators: GetLatestLongTermIndicators;
   getLatestMarketAnalysis: GetLatestMarketAnalysis;
+  calculateLongTermValueStockScore: CalculateLongTermValueStockScore;
+  filterProMarket: FilterProMarket;
+  isTrapStock: IsTrapStock;
+  rankByScore: RankByScore;
 }>;
 
 /**
@@ -45,11 +55,20 @@ export const getTopLongTermValueStocks: GetTopLongTermValueStocks = async (
   dependencies,
   params,
 ) => {
+  const {
+    getLatestLongTermIndicators,
+    getLatestMarketAnalysis,
+    calculateLongTermValueStockScore,
+    filterProMarket,
+    isTrapStock,
+    rankByScore,
+  } = dependencies;
+
   // 1. クエリサービスから長期指標データを取得
-  const indicators = await dependencies.getLatestLongTermIndicators();
+  const indicators = await getLatestLongTermIndicators();
 
   // 2. マーケット分析データを取得（有利/不利タグ情報）
-  const marketAnalysis = await dependencies.getLatestMarketAnalysis({ periodType: "long_term" });
+  const marketAnalysis = await getLatestMarketAnalysis({ periodType: "long_term" });
   const favorableMacroTagIds = marketAnalysis?.favorableMacroTags ?? [];
   const favorableThemeTagIds = marketAnalysis?.favorableThemeTags ?? [];
   const unfavorableMacroTagIds = marketAnalysis?.unfavorableMacroTags ?? [];

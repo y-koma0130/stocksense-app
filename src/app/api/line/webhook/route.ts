@@ -72,6 +72,11 @@ import { getStockAnalysesByStockIds } from "@/server/features/stockAnalysis/infr
 import { getUserSubscriptionByUserId } from "@/server/features/userSubscription/infrastructure/queryServices/getUserSubscriptionByUserId";
 import { getTopLongTermValueStocks } from "@/server/features/valueStockScoring/application/usecases/getTopLongTermValueStocks.usecase";
 import { getTopMidTermValueStocks } from "@/server/features/valueStockScoring/application/usecases/getTopMidTermValueStocks.usecase";
+import { calculateLongTermValueStockScore } from "@/server/features/valueStockScoring/domain/services/calculateLongTermValueStockScore.service";
+import { calculateMidTermValueStockScore } from "@/server/features/valueStockScoring/domain/services/calculateMidTermValueStockScore.service";
+import { filterProMarket } from "@/server/features/valueStockScoring/domain/services/filterProMarket.service";
+import { isTrapStock } from "@/server/features/valueStockScoring/domain/services/isTrapStock.service";
+import { rankByScore } from "@/server/features/valueStockScoring/domain/services/rankByScore.service";
 import {
   getLatestLongTermIndicators,
   getLatestMidTermIndicators,
@@ -363,7 +368,14 @@ const sendWeeklyReport = async (lineUserId: string): Promise<void> => {
 
   // 上位10銘柄を取得
   const topStocks = await getTopMidTermValueStocks(
-    { getLatestMidTermIndicators, getLatestMarketAnalysis },
+    {
+      getLatestMidTermIndicators,
+      getLatestMarketAnalysis,
+      calculateMidTermValueStockScore,
+      filterProMarket,
+      isTrapStock,
+      rankByScore,
+    },
     { limit: 10 },
   );
 
@@ -397,7 +409,14 @@ const sendMonthlyReport = async (lineUserId: string): Promise<void> => {
 
   // 上位10銘柄を取得
   const topStocks = await getTopLongTermValueStocks(
-    { getLatestLongTermIndicators, getLatestMarketAnalysis },
+    {
+      getLatestLongTermIndicators,
+      getLatestMarketAnalysis,
+      calculateLongTermValueStockScore,
+      filterProMarket,
+      isTrapStock,
+      rankByScore,
+    },
     { limit: 10 },
   );
 

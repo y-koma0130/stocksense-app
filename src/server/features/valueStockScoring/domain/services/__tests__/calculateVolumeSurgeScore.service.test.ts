@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VOLUME_SURGE_CONFIG } from "../../values/volumeConfig";
+import { VOLUME_SURGE_CONFIG } from "../../config/volumeConfig";
 import { calculateVolumeSurgeScore } from "../calculateVolumeSurgeScore.service";
 
 describe("calculateVolumeSurgeScore", () => {

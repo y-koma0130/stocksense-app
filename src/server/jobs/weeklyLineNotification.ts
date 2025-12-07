@@ -11,6 +11,10 @@ import { getNotificationEnabledLineUsers } from "../features/lineUsers/infrastru
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { getStockAnalysesByStockIds } from "../features/stockAnalysis/infrastructure/queryServices/getStockAnalysesByStockIds";
 import { getTopMidTermValueStocks } from "../features/valueStockScoring/application/usecases/getTopMidTermValueStocks.usecase";
+import { calculateMidTermValueStockScore } from "../features/valueStockScoring/domain/services/calculateMidTermValueStockScore.service";
+import { filterProMarket } from "../features/valueStockScoring/domain/services/filterProMarket.service";
+import { isTrapStock } from "../features/valueStockScoring/domain/services/isTrapStock.service";
+import { rankByScore } from "../features/valueStockScoring/domain/services/rankByScore.service";
 import { getLatestMidTermIndicators } from "../features/valueStockScoring/infrastructure/queryServices/getIndicators";
 import { buildMarketSummaryMessage, buildRankingMessage } from "../utils/lineMessageBuilders";
 
@@ -41,7 +45,14 @@ export const weeklyLineNotification = inngest.createFunction(
     // ステップ3: 上位10銘柄を取得
     const topStocks = await step.run("fetch-top-stocks", async () => {
       return await getTopMidTermValueStocks(
-        { getLatestMidTermIndicators, getLatestMarketAnalysis },
+        {
+          getLatestMidTermIndicators,
+          getLatestMarketAnalysis,
+          calculateMidTermValueStockScore,
+          filterProMarket,
+          isTrapStock,
+          rankByScore,
+        },
         { limit: 10 },
       );
     });

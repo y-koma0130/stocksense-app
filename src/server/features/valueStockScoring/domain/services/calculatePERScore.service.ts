@@ -1,6 +1,6 @@
+import type { RatioThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { RatioThresholds } from "../values/scoringConfig";
 
 /**
  * PERスコア計算関数の型定義
@@ -24,7 +24,7 @@ export type CalculatePERScore = (
  */
 export const calculatePERScore: CalculatePERScore = (per, sectorAvgPer, thresholds) => {
   if (per === null || per <= 0 || sectorAvgPer === null || sectorAvgPer <= 0) {
-    return 0;
+    return indicatorScoreSchema.parse(0);
   }
 
   const ratio = (per / sectorAvgPer) * 100; // パーセント表示

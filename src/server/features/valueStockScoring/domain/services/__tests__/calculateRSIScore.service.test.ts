@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RsiThresholds } from "../../values/scoringConfig";
+import type { RsiThresholds } from "../../config/thresholdTypes";
 import { calculateRSIScore } from "../calculateRSIScore.service";
 
 // テスト用の閾値設定

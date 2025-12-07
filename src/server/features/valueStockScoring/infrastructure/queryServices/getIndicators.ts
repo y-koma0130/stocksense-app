@@ -9,6 +9,7 @@ import {
   stocks,
   stockThemeTags,
 } from "@/db/schema";
+import type { FilterConditionsInputDto } from "../../application/dto/filterConditionsInput.dto";
 import {
   type LongTermIndicatorDto,
   longTermIndicatorDtoSchema,
@@ -17,16 +18,25 @@ import {
   type MidTermIndicatorDto,
   midTermIndicatorDtoSchema,
 } from "../../application/dto/midTermIndicator.dto";
+import {
+  buildLongTermFilterConditions,
+  buildMidTermFilterConditions,
+} from "../utils/buildFilterConditions";
+import { getFilteredStockIdsByTags } from "../utils/getFilteredStockIdsByTags";
 
 /**
  * 中期指標の最新データを取得する関数の型定義
  */
-export type GetLatestMidTermIndicators = () => Promise<MidTermIndicatorDto[]>;
+export type GetLatestMidTermIndicators = (
+  filterConditions?: FilterConditionsInputDto,
+) => Promise<MidTermIndicatorDto[]>;
 
 /**
  * 長期指標の最新データを取得する関数の型定義
  */
-export type GetLatestLongTermIndicators = () => Promise<LongTermIndicatorDto[]>;
+export type GetLatestLongTermIndicators = (
+  filterConditions?: FilterConditionsInputDto,
+) => Promise<LongTermIndicatorDto[]>;
 
 /**
  * 銘柄IDからタグデータを取得
@@ -86,7 +96,7 @@ const getStockTagsByStockIds = async (
 /**
  * 中期指標の最新データを取得
  */
-export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () => {
+export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async (filterConditions) => {
   // 最新のcollectedAt日付を取得
   const latestDateResult = await db
     .select({ collectedAt: midTermIndicators.collectedAt })
@@ -107,6 +117,22 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () =
     .orderBy(desc(sectorAverages.dataDate))
     .limit(1);
   const latestSectorDate = latestSectorDateResult[0]?.dataDate;
+
+  // タグによるフィルタリング（事前に銘柄IDを取得）
+  const filteredStockIds = await getFilteredStockIdsByTags(filterConditions);
+
+  // タグフィルタが指定されているが該当銘柄がない場合は空配列を返す
+  if (filteredStockIds !== null && filteredStockIds.length === 0) {
+    return [];
+  }
+
+  // フィルタ条件を構築
+  const baseCondition = eq(midTermIndicators.collectedAt, latestDate);
+  const whereCondition = buildMidTermFilterConditions(
+    baseCondition,
+    filterConditions,
+    filteredStockIds,
+  );
 
   // 最新日付のデータを取得
   // sector_averagesは最新の業種平均データを使用（日付は一致しなくてもOK）
@@ -153,7 +179,7 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () =
       ),
     )
     .leftJoin(stockFinancialHealth, eq(midTermIndicators.stockId, stockFinancialHealth.stockId))
-    .where(eq(midTermIndicators.collectedAt, latestDate));
+    .where(whereCondition);
 
   // タグデータを取得
   const stockIds = results.map((row) => row.stockId);
@@ -199,7 +225,9 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async () =
 /**
  * 長期指標の最新データを取得
  */
-export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async () => {
+export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async (
+  filterConditions,
+) => {
   // 最新のcollectedAt日付を取得
   const latestDateResult = await db
     .select({ collectedAt: longTermIndicators.collectedAt })
@@ -220,6 +248,22 @@ export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async ()
     .orderBy(desc(sectorAverages.dataDate))
     .limit(1);
   const latestSectorDate = latestSectorDateResult[0]?.dataDate;
+
+  // タグによるフィルタリング（事前に銘柄IDを取得）
+  const filteredStockIds = await getFilteredStockIdsByTags(filterConditions);
+
+  // タグフィルタが指定されているが該当銘柄がない場合は空配列を返す
+  if (filteredStockIds !== null && filteredStockIds.length === 0) {
+    return [];
+  }
+
+  // フィルタ条件を構築
+  const baseCondition = eq(longTermIndicators.collectedAt, latestDate);
+  const whereCondition = buildLongTermFilterConditions(
+    baseCondition,
+    filterConditions,
+    filteredStockIds,
+  );
 
   // 最新日付のデータを取得
   // sector_averagesは最新の業種平均データを使用（日付は一致しなくてもOK）
@@ -264,7 +308,7 @@ export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async ()
       ),
     )
     .leftJoin(stockFinancialHealth, eq(longTermIndicators.stockId, stockFinancialHealth.stockId))
-    .where(eq(longTermIndicators.collectedAt, latestDate));
+    .where(whereCondition);
 
   // タグデータを取得
   const stockIds = results.map((row) => row.stockId);

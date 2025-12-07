@@ -24,7 +24,7 @@ export type CalculatePERScore = (
  */
 export const calculatePERScore: CalculatePERScore = (per, sectorAvgPer, thresholds) => {
   if (per === null || per <= 0 || sectorAvgPer === null || sectorAvgPer <= 0) {
-    return 0;
+    return indicatorScoreSchema.parse(0);
   }
 
   const ratio = (per / sectorAvgPer) * 100; // パーセント表示

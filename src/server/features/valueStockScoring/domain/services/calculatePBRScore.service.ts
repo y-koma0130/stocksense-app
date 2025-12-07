@@ -39,7 +39,7 @@ export const calculatePBRScore: CalculatePBRScore = (
   penaltyThresholds,
 ) => {
   if (pbr === null || pbr <= 0 || sectorAvgPbr === null || sectorAvgPbr <= 0) {
-    return 0;
+    return indicatorScoreSchema.parse(0);
   }
 
   const ratio = (pbr / sectorAvgPbr) * 100;

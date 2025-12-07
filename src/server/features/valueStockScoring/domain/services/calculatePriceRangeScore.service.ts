@@ -29,14 +29,14 @@ export const calculatePriceRangeScore: CalculatePriceRangeScore = (
   thresholds,
 ) => {
   if (currentPrice === null || priceHigh === null || priceLow === null) {
-    return 0;
+    return indicatorScoreSchema.parse(0);
   }
 
-  if (priceHigh === priceLow) return 0;
+  if (priceHigh === priceLow) return indicatorScoreSchema.parse(0);
 
   // 異常値チェック: 現在価格が期間レンジ外の場合
   if (currentPrice < priceLow || currentPrice > priceHigh) {
-    return 0;
+    return indicatorScoreSchema.parse(0);
   }
 
   const rangePosition = ((currentPrice - priceLow) / (priceHigh - priceLow)) * 100;

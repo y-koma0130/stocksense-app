@@ -4,6 +4,7 @@ import type { FilterProMarket } from "../../domain/services/filterProMarket.serv
 import type { TrapStockCheckResult } from "../../domain/services/isTrapStock.service";
 import type { RankByScore } from "../../domain/services/rankByScore.service";
 import type { GetLatestMidTermIndicators } from "../../infrastructure/queryServices/getIndicators";
+import type { FilterConditionsInputDto } from "../dto/filterConditionsInput.dto";
 import type { MidTermIndicatorDto } from "../dto/midTermIndicator.dto";
 import { type MidTermValueStockDto, midTermValueStockDtoSchema } from "../dto/valueStock.dto";
 
@@ -29,6 +30,7 @@ type Dependencies = Readonly<{
  */
 type Params = Readonly<{
   limit: number;
+  filterConditions?: FilterConditionsInputDto;
 }>;
 
 /**
@@ -62,7 +64,7 @@ export const getTopMidTermValueStocks: GetTopMidTermValueStocks = async (depende
   } = dependencies;
 
   // 1. クエリサービスから中期指標データを取得
-  const indicators = await getLatestMidTermIndicators();
+  const indicators = await getLatestMidTermIndicators(params.filterConditions);
 
   // 2. マーケット分析データを取得（有望・不利タグ情報）
   const marketAnalysis = await getLatestMarketAnalysis({ periodType: "mid_term" });

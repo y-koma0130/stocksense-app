@@ -13,6 +13,7 @@ import {
   getLatestLongTermIndicators,
   getLatestMidTermIndicators,
 } from "../infrastructure/queryServices/getIndicators";
+import { filterConditionsRequestSchema } from "./requests/filterConditionsRequest";
 
 export const valueStockScoringRouter = router({
   /**
@@ -24,6 +25,7 @@ export const valueStockScoringRouter = router({
       z.object({
         periodType: periodTypeSchema,
         limit: z.number().min(1).max(100).optional().default(20),
+        filterConditions: filterConditionsRequestSchema.optional(),
       }),
     )
     .query(async ({ input }) => {
@@ -37,7 +39,7 @@ export const valueStockScoringRouter = router({
             isTrapStock,
             rankByScore,
           },
-          { limit: input.limit },
+          { limit: input.limit, filterConditions: input.filterConditions },
         );
       } else {
         return await getTopLongTermValueStocks(
@@ -49,7 +51,7 @@ export const valueStockScoringRouter = router({
             isTrapStock,
             rankByScore,
           },
-          { limit: input.limit },
+          { limit: input.limit, filterConditions: input.filterConditions },
         );
       }
     }),

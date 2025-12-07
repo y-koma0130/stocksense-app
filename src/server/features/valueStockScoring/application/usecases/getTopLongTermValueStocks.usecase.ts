@@ -4,6 +4,7 @@ import type { FilterProMarket } from "../../domain/services/filterProMarket.serv
 import type { TrapStockCheckResult } from "../../domain/services/isTrapStock.service";
 import type { RankByScore } from "../../domain/services/rankByScore.service";
 import type { GetLatestLongTermIndicators } from "../../infrastructure/queryServices/getIndicators";
+import type { FilterConditionsInputDto } from "../dto/filterConditionsInput.dto";
 import type { LongTermIndicatorDto } from "../dto/longTermIndicator.dto";
 import { type LongTermValueStockDto, longTermValueStockDtoSchema } from "../dto/valueStock.dto";
 
@@ -29,6 +30,7 @@ type Dependencies = Readonly<{
  */
 type Params = Readonly<{
   limit: number;
+  filterConditions?: FilterConditionsInputDto;
 }>;
 
 /**
@@ -64,8 +66,8 @@ export const getTopLongTermValueStocks: GetTopLongTermValueStocks = async (
     rankByScore,
   } = dependencies;
 
-  // 1. クエリサービスから長期指標データを取得
-  const indicators = await getLatestLongTermIndicators();
+  // 1. クエリサービスから長期指標データを取得（フィルタ条件適用）
+  const indicators = await getLatestLongTermIndicators(params.filterConditions);
 
   // 2. マーケット分析データを取得（有利/不利タグ情報）
   const marketAnalysis = await getLatestMarketAnalysis({ periodType: "long_term" });

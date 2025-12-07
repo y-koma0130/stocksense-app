@@ -5,7 +5,4 @@ import { z } from "zod";
  */
 export const totalScoreSchema = z.number().min(0).max(1);
 
-/**
- * 総合スコアの型定義
- */
 export type TotalScore = z.infer<typeof totalScoreSchema>;

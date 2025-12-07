@@ -1,6 +1,6 @@
+import type { RatioThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { RatioThresholds } from "../values/scoringConfig";
 
 /**
  * PERスコア計算関数の型定義

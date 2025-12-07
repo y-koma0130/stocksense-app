@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PriceRangeThresholds } from "../../values/scoringConfig";
+import type { PriceRangeThresholds } from "../../config/thresholdTypes";
 import { calculatePriceRangeScore } from "../calculatePriceRangeScore.service";
 
 // テスト用の閾値設定

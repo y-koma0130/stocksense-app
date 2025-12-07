@@ -1,6 +1,6 @@
+import type { PriceRangeThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { PriceRangeThresholds } from "../values/scoringConfig";
 
 /**
  * 価格レンジスコア計算関数の型定義

@@ -1,6 +1,6 @@
+import type { RsiThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { RsiThresholds } from "../values/scoringConfig";
 
 /**
  * RSIスコア計算関数の型定義

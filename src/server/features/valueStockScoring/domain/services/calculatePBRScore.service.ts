@@ -1,6 +1,6 @@
+import type { PbrPenaltyThresholds, RatioThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { PbrPenaltyThresholds, RatioThresholds } from "../values/scoringConfig";
 
 /**
  * PBRスコア計算関数の型定義

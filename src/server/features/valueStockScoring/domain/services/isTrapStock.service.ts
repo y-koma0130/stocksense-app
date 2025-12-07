@@ -1,5 +1,5 @@
 import type { IndicatorDto } from "../../application/dto/indicator.dto";
-import { VOLUME_TRAP_THRESHOLDS } from "../values/volumeConfig";
+import { VOLUME_TRAP_THRESHOLDS } from "../config/volumeConfig";
 
 /**
  * 市場タイプ

@@ -1,8 +1,8 @@
 import { getMarketType } from "@/constants/marketTypes";
-import type { LongTermIndicatorDto } from "../../application/dto/indicator.dto";
+import type { LongTermIndicatorDto } from "../../application/dto/longTermIndicator.dto";
+import { LONG_TERM_CONFIG } from "../config/longTermScoringConfig";
 import { type ValueStockScore, valueStockScoreSchema } from "../entities/valueStockScore";
 import { indicatorScoreSchema } from "../values/indicatorScore";
-import { LONG_TERM_CONFIG } from "../values/scoringConfig";
 import { totalScoreSchema } from "../values/totalScore";
 import { calculateEpsGrowthScore } from "./calculateEpsGrowthScore.service";
 import { calculatePBRScore } from "./calculatePBRScore.service";

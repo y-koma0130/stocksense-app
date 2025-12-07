@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { MidTermIndicatorDto } from "../../../application/dto/indicator.dto";
+import type { MidTermIndicatorDto } from "../../../application/dto/midTermIndicator.dto";
 import type { MidTermScoreInput } from "../calculateMidTermValueStockScore.service";
 import { calculateMidTermValueStockScore } from "../calculateMidTermValueStockScore.service";
 

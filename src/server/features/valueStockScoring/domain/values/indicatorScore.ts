@@ -5,7 +5,4 @@ import { z } from "zod";
  */
 export const indicatorScoreSchema = z.number().min(0).max(100);
 
-/**
- * 個別指標スコアの型定義
- */
 export type IndicatorScore = z.infer<typeof indicatorScoreSchema>;

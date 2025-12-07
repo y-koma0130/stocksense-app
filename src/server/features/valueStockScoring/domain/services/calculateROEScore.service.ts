@@ -1,6 +1,6 @@
+import type { RoeThresholds } from "../config/thresholdTypes";
 import { clamp } from "../utils/clamp";
 import { type IndicatorScore, indicatorScoreSchema } from "../values/indicatorScore";
-import type { RoeThresholds } from "../values/scoringConfig";
 
 /**
  * ROEスコア計算関数の型定義

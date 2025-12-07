@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type {
-  LongTermIndicatorDto,
-  MidTermIndicatorDto,
-} from "../../../application/dto/indicator.dto";
+import type { LongTermIndicatorDto } from "../../../application/dto/longTermIndicator.dto";
+import type { MidTermIndicatorDto } from "../../../application/dto/midTermIndicator.dto";
 import { isTrapStock } from "../isTrapStock.service";
 
 // テスト用の中期指標データ

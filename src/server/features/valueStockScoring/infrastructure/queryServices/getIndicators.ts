@@ -12,9 +12,11 @@ import {
 import {
   type LongTermIndicatorDto,
   longTermIndicatorDtoSchema,
+} from "../../application/dto/longTermIndicator.dto";
+import {
   type MidTermIndicatorDto,
   midTermIndicatorDtoSchema,
-} from "../../application/dto/indicator.dto";
+} from "../../application/dto/midTermIndicator.dto";
 
 /**
  * 中期指標の最新データを取得する関数の型定義

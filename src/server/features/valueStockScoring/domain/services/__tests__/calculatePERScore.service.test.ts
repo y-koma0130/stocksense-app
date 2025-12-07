@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RatioThresholds } from "../../values/scoringConfig";
+import type { RatioThresholds } from "../../config/thresholdTypes";
 import { calculatePERScore } from "../calculatePERScore.service";
 
 // テスト用の閾値設定

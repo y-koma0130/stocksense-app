@@ -3,8 +3,8 @@ import type { CalculateLongTermValueStockScore } from "../../domain/services/cal
 import type { FilterProMarket } from "../../domain/services/filterProMarket.service";
 import type { TrapStockCheckResult } from "../../domain/services/isTrapStock.service";
 import type { RankByScore } from "../../domain/services/rankByScore.service";
-import type { LongTermIndicatorDto } from "../dto/longTermIndicator.dto";
 import type { GetLatestLongTermIndicators } from "../../infrastructure/queryServices/getIndicators";
+import type { LongTermIndicatorDto } from "../dto/longTermIndicator.dto";
 import { type LongTermValueStockDto, longTermValueStockDtoSchema } from "../dto/valueStock.dto";
 
 /**

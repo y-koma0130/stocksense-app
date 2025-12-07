@@ -1,9 +1,9 @@
 import { inngest } from "../../../inngest/client";
 import { getActiveStocks } from "../features/marketData/infrastructure/queryServices/getActiveStocks";
+import { VOLUME_PERIOD } from "../features/valueStockScoring/domain/config/volumeConfig";
 import { createMidTermIndicator } from "../features/valueStockScoring/domain/entities/midTermIndicator";
 import { calculateAvgDailyVolume } from "../features/valueStockScoring/domain/services/calculateAvgDailyVolume.service";
 import { calculateRSI } from "../features/valueStockScoring/domain/services/calculateRSI";
-import { VOLUME_PERIOD } from "../features/valueStockScoring/domain/config/volumeConfig";
 import { getFundamentals } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getFundamentals";
 import { getWeeklyData } from "../features/valueStockScoring/infrastructure/externalServices/yahooFinance/getWeeklyData";
 import { saveMidTermIndicator } from "../features/valueStockScoring/infrastructure/repositories/saveMidTermIndicator.repository";

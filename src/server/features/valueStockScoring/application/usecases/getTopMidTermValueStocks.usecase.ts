@@ -3,8 +3,8 @@ import type { CalculateMidTermValueStockScore } from "../../domain/services/calc
 import type { FilterProMarket } from "../../domain/services/filterProMarket.service";
 import type { TrapStockCheckResult } from "../../domain/services/isTrapStock.service";
 import type { RankByScore } from "../../domain/services/rankByScore.service";
-import type { MidTermIndicatorDto } from "../dto/midTermIndicator.dto";
 import type { GetLatestMidTermIndicators } from "../../infrastructure/queryServices/getIndicators";
+import type { MidTermIndicatorDto } from "../dto/midTermIndicator.dto";
 import { type MidTermValueStockDto, midTermValueStockDtoSchema } from "../dto/valueStock.dto";
 
 /**

@@ -1,5 +1,6 @@
 "use client";
 
+import { useNotificationTargetList } from "@/features/filterList/stores/notificationTargetList";
 import { trpc } from "../../../../trpc/client";
 import {
   useNotificationDrawerOpen,
@@ -13,6 +14,7 @@ const LINE_ADD_FRIEND_URL =
 export const NotificationSettingsDrawerContainer = () => {
   const isOpen = useNotificationDrawerOpen();
   const setIsOpen = useSetNotificationDrawerOpen();
+  const notificationTargetList = useNotificationTargetList();
   const utils = trpc.useUtils();
 
   const { data: settings, isLoading } = trpc.lineNotification.getSettings.useQuery(undefined, {
@@ -68,6 +70,7 @@ export const NotificationSettingsDrawerContainer = () => {
       notificationEnabled={settings?.notificationEnabled ?? false}
       onToggleNotification={handleToggleNotification}
       lineAddFriendUrl={LINE_ADD_FRIEND_URL}
+      notificationTargetListName={notificationTargetList?.name}
     />
   );
 };

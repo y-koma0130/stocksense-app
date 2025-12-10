@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { AccountMenu } from "@/components/account/AccountMenu";
 import { FeedbackModalContainer } from "@/features/feedback/components/FeedbackModalContainer";
+import { FilterListButton } from "@/features/filterList/components/FilterListButton";
+import { FilterListDrawerContainer } from "@/features/filterList/components/FilterListDrawerContainer";
 import { NotificationButton } from "@/features/lineNotification/components/NotificationButton";
 import { NotificationSettingsDrawerContainer } from "@/features/lineNotification/components/NotificationSettingsDrawerContainer";
 import { createClient } from "@/lib/supabase/client";
@@ -29,10 +31,12 @@ export const HeaderActions = () => {
   return (
     <>
       <div className={actionsStyle}>
+        <FilterListButton />
         <NotificationButton />
         <HelpButton />
         {userEmail && <AccountMenu email={userEmail} />}
       </div>
+      <FilterListDrawerContainer />
       <NotificationSettingsDrawerContainer />
       <FeedbackModalContainer />
     </>
@@ -42,5 +46,5 @@ export const HeaderActions = () => {
 const actionsStyle = css({
   display: "flex",
   alignItems: "center",
-  gap: { base: "0.5rem", md: "0.75rem" },
+  gap: { base: "0.375rem", md: "0.5rem" },
 });

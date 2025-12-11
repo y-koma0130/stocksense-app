@@ -1,6 +1,7 @@
 import { getBitcoinPrice } from "@/lib/coingecko/client";
 import { convertGoldToGramJPY, getYahooQuotes } from "@/lib/yahooFinance/client";
 import { feedbackRouter } from "@/server/features/feedback/presentation/router";
+import { filterListRouter } from "@/server/features/filterList/presentation/router";
 import { lineUsersRouter } from "@/server/features/lineUsers/presentation/router";
 import { marketAnalysisRouter } from "@/server/features/marketAnalysis/presentation/router";
 import { stockAnalysisRouter } from "@/server/features/stockAnalysis/presentation/router";
@@ -100,6 +101,7 @@ export const appRouter = router({
   marketAnalysis: marketAnalysisRouter,
   stockAnalysis: stockAnalysisRouter,
   userSubscription: userSubscriptionRouter,
+  filterList: filterListRouter,
 });
 
 export type AppRouter = typeof appRouter;

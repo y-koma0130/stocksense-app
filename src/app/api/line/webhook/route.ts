@@ -81,7 +81,10 @@ import {
   getLatestLongTermIndicators,
   getLatestMidTermIndicators,
 } from "@/server/features/valueStockScoring/infrastructure/queryServices/getIndicators";
-import { buildMarketSummaryMessage, buildRankingMessage } from "@/server/utils/lineMessageBuilders";
+import {
+  buildMarketSummaryMessage,
+  buildRankingMessage,
+} from "@/server/jobs/utils/lineMessageBuilders";
 
 /**
  * LINE Webhookイベントの型定義

@@ -2,14 +2,13 @@ import { z } from "zod";
 import type { FilterConditionsInputDto } from "../../application/dto/filterConditionsInput.dto";
 
 export const filterConditionsRequestSchema = z.object({
-  sectorCodes: z.array(z.string()).optional(),
-  markets: z.array(z.string()).optional(),
-  macroTagIds: z.array(z.string()).optional(),
-  themeTagIds: z.array(z.string()).optional(),
+  sectorCodes: z.array(z.string()).nullable().optional(),
+  markets: z.array(z.string()).nullable().optional(),
   priceRange: z
     .object({
-      min: z.number().optional(),
-      max: z.number().optional(),
+      min: z.number().nullable(),
+      max: z.number().nullable(),
     })
+    .nullable()
     .optional(),
 }) satisfies z.ZodType<FilterConditionsInputDto>;

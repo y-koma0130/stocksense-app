@@ -189,16 +189,12 @@ ${favorableThemes}`;
 };
 
 /**
- * ランキングメッセージを生成（2通目）
- * 上位5銘柄にはAI分析コメントを追加
+ * ランキング本体を生成する内部関数
  */
-export const buildRankingMessage = (
+const buildRankingBody = (
   stocks: readonly TopStock[],
-  periodType: PeriodType,
   stockAnalyses: Map<string, StockAnalysisForLine>,
-): string => {
-  const periodLabel = getPeriodLabel(periodType);
-
+): { topFive: string; restLines: string } => {
   // 上位5銘柄は詳細表示 + AI分析
   const topFive = stocks
     .slice(0, 5)
@@ -249,7 +245,48 @@ export const buildRankingMessage = (
     })
     .join("\n");
 
+  return { topFive, restLines };
+};
+
+/**
+ * ランキングメッセージを生成（2通目）
+ * 上位5銘柄にはAI分析コメントを追加
+ */
+export const buildRankingMessage = (
+  stocks: readonly TopStock[],
+  periodType: PeriodType,
+  stockAnalyses: Map<string, StockAnalysisForLine>,
+): string => {
+  const periodLabel = getPeriodLabel(periodType);
+  const { topFive, restLines } = buildRankingBody(stocks, stockAnalyses);
+
   return `📊 【${periodLabel}】バリュー株ランキング
+更新日: ${formatDate()}
+
+${topFive}
+
+--- 6位〜10位 ---
+${restLines}
+
+▼ 全ランキング・詳細分析
+${getDashboardUrl()}`;
+};
+
+/**
+ * フィルター名付きランキングメッセージを生成
+ * ユーザーが設定したフィルターリスト名を表示
+ */
+export const buildRankingMessageWithFilterName = (
+  stocks: readonly TopStock[],
+  periodType: PeriodType,
+  stockAnalyses: Map<string, StockAnalysisForLine>,
+  filterName: string,
+): string => {
+  const periodLabel = getPeriodLabel(periodType);
+  const { topFive, restLines } = buildRankingBody(stocks, stockAnalyses);
+
+  return `📊 【${periodLabel}】バリュー株ランキング
+📁 マイリスト: ${filterName}
 更新日: ${formatDate()}
 
 ${topFive}

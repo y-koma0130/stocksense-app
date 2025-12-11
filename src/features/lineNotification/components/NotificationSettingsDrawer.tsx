@@ -13,6 +13,7 @@ type NotificationSettingsDrawerProps = Readonly<{
   notificationEnabled: boolean;
   onToggleNotification: () => void;
   lineAddFriendUrl: string;
+  notificationTargetListName?: string;
 }>;
 
 export const NotificationSettingsDrawer = ({
@@ -23,6 +24,7 @@ export const NotificationSettingsDrawer = ({
   notificationEnabled,
   onToggleNotification,
   lineAddFriendUrl,
+  notificationTargetListName,
 }: NotificationSettingsDrawerProps) => {
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="LINE通知設定" width="400px">
@@ -64,12 +66,16 @@ export const NotificationSettingsDrawer = ({
                 </p>
               </div>
 
-              {/* 将来の絞り込み設定（プレースホルダー） */}
+              {/* 通知対象リスト */}
               <div className={sectionStyle}>
-                <h4 className={sectionTitleStyle}>通知対象（Coming Soon）</h4>
-                <p className={comingSoonTextStyle}>
-                  市場や業種で通知銘柄を絞り込む機能を準備中です
-                </p>
+                <h4 className={sectionTitleStyle}>通知対象</h4>
+                <div className={targetListContainerStyle}>
+                  <span className={targetListLabelStyle}>対象リスト</span>
+                  <span className={targetListNameStyle}>
+                    {notificationTargetListName ?? "すべての銘柄"}
+                  </span>
+                </div>
+                <p className={targetListDescriptionStyle}>マイリストで通知対象を変更できます</p>
               </div>
             </>
           ) : (
@@ -243,13 +249,30 @@ const toggleDescriptionStyle = css({
   color: "textMuted",
 });
 
-const comingSoonTextStyle = css({
-  padding: "1rem",
+const targetListContainerStyle = css({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "0.75rem 1rem",
   backgroundColor: "surfaceHover",
   borderRadius: "8px",
+});
+
+const targetListLabelStyle = css({
   fontSize: "0.875rem",
   color: "textMuted",
-  textAlign: "center",
+});
+
+const targetListNameStyle = css({
+  fontSize: "0.875rem",
+  fontWeight: "600",
+  color: "accent",
+});
+
+const targetListDescriptionStyle = css({
+  marginTop: "0.5rem",
+  fontSize: "0.75rem",
+  color: "textMuted",
 });
 
 const descriptionStyle = css({

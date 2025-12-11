@@ -482,3 +482,81 @@ export const stockThemeTags = pgTable(
 
 export type StockThemeTag = typeof stockThemeTags.$inferSelect;
 export type NewStockThemeTag = typeof stockThemeTags.$inferInsert;
+
+/**
+ * 14. フィルターリスト
+ * ユーザーが作成した銘柄絞り込み条件のリスト
+ * RLS: 認証ユーザーは自分のレコードのみ操作可能
+ */
+export const filterLists = pgTable(
+  "filter_lists",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(), // Supabase Auth の user.id
+    name: varchar("name", { length: 100 }).notNull(),
+    // フィルター条件（配列カラム）
+    markets: text("markets").array(), // ["プライム", "スタンダード", "グロース"]
+    sectorCodes: text("sector_codes").array(), // ["3050", "3100", ...]
+    priceMin: integer("price_min"), // 最小価格（円）
+    priceMax: integer("price_max"), // 最大価格（円）
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_filter_lists_user_id").on(table.userId),
+    // RLS Policies
+    pgPolicy("filter_lists_select_own", {
+      for: "select",
+      using: sql`user_id = auth.uid()`,
+    }),
+    pgPolicy("filter_lists_insert_own", {
+      for: "insert",
+      withCheck: sql`user_id = auth.uid()`,
+    }),
+    pgPolicy("filter_lists_update_own", {
+      for: "update",
+      using: sql`user_id = auth.uid()`,
+    }),
+    pgPolicy("filter_lists_delete_own", {
+      for: "delete",
+      using: sql`user_id = auth.uid()`,
+    }),
+  ],
+).enableRLS();
+
+export type FilterListRecord = typeof filterLists.$inferSelect;
+export type NewFilterListRecord = typeof filterLists.$inferInsert;
+
+/**
+ * 15. ユーザー通知設定
+ * ユーザーの通知対象リスト設定
+ * RLS: 認証ユーザーは自分のレコードのみ操作可能
+ */
+export const userNotificationSettings = pgTable(
+  "user_notification_settings",
+  {
+    userId: uuid("user_id").primaryKey(), // Supabase Auth の user.id
+    notificationTargetListId: uuid("notification_target_list_id").references(() => filterLists.id, {
+      onDelete: "set null",
+    }), // null = デフォルト（全銘柄）
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    // RLS Policies
+    pgPolicy("user_notification_settings_select_own", {
+      for: "select",
+      using: sql`user_id = auth.uid()`,
+    }),
+    pgPolicy("user_notification_settings_insert_own", {
+      for: "insert",
+      withCheck: sql`user_id = auth.uid()`,
+    }),
+    pgPolicy("user_notification_settings_update_own", {
+      for: "update",
+      using: sql`user_id = auth.uid()`,
+    }),
+  ],
+).enableRLS();
+
+export type UserNotificationSettingsRecord = typeof userNotificationSettings.$inferSelect;
+export type NewUserNotificationSettingsRecord = typeof userNotificationSettings.$inferInsert;

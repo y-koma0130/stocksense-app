@@ -1,15 +1,12 @@
-// TODO: 配置場所検討 - 他のユースケースでも同様のパターンで実装しているため、共通化の検討
-
 /**
  * ランキング取得時のフィルタ条件DTO
+ * FilterListDto.filterConditionsと同じ型を使用し、フロントから直接渡せるようにする
  */
 export type FilterConditionsInputDto = Readonly<{
-  sectorCodes?: string[];
-  markets?: string[];
-  macroTagIds?: string[];
-  themeTagIds?: string[];
+  sectorCodes?: string[] | null;
+  markets?: string[] | null;
   priceRange?: Readonly<{
-    min?: number;
-    max?: number;
-  }>;
+    min: number | null;
+    max: number | null;
+  }> | null;
 }>;

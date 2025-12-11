@@ -3,13 +3,7 @@
  * 日本取引所グループ（JPX）の業種分類に基づく
  */
 
-export type SectorMasterData = {
-  sectorCode: string;
-  sectorName: string;
-  displayOrder: number;
-};
-
-export const STOCK_MARKET_SECTORS: readonly SectorMasterData[] = [
+export const STOCK_MARKET_SECTORS = [
   // 1. 水産・農林業
   { sectorCode: "0050", sectorName: "水産・農林業", displayOrder: 1 },
 
@@ -109,6 +103,55 @@ export const STOCK_MARKET_SECTORS: readonly SectorMasterData[] = [
   // 33. サービス業
   { sectorCode: "9050", sectorName: "サービス業", displayOrder: 33 },
 ] as const;
+
+/**
+ * セクターマスタデータの型
+ */
+export type SectorMasterData = (typeof STOCK_MARKET_SECTORS)[number];
+
+/**
+ * セクターコードの型（リテラル型）
+ */
+export type SectorCode = SectorMasterData["sectorCode"];
+
+/**
+ * セクターコード一覧（Zodバリデーション用）
+ */
+export const SECTOR_CODES = [
+  "0050",
+  "1050",
+  "2050",
+  "3050",
+  "3100",
+  "3150",
+  "3200",
+  "3250",
+  "3300",
+  "3350",
+  "3400",
+  "3450",
+  "3500",
+  "3550",
+  "3600",
+  "3650",
+  "3700",
+  "3750",
+  "3800",
+  "4050",
+  "5050",
+  "5100",
+  "5150",
+  "5200",
+  "5250",
+  "6050",
+  "6100",
+  "7050",
+  "7100",
+  "7150",
+  "7200",
+  "8050",
+  "9050",
+] as const satisfies readonly SectorCode[];
 
 /**
  * セクターコードからセクター名を取得

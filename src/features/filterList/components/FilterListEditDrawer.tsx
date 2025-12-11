@@ -5,6 +5,7 @@ import { MARKET_OPTIONS, type MarketValue } from "@/assets/marketOptions";
 import { PRICE_MAX_OPTIONS, PRICE_MIN_OPTIONS } from "@/assets/priceRangeOptions";
 import { type SectorCode, STOCK_MARKET_SECTORS } from "@/assets/stockMarketSectors";
 import { Drawer } from "@/components/ui/Drawer";
+import { Select } from "@/components/ui/Select";
 import { css } from "../../../../styled-system/css";
 import type { FilterConditions, FilterList } from "../types/filterList";
 
@@ -144,10 +145,10 @@ export const FilterListEditDrawer = ({
         <div className={fieldStyle}>
           <span className={labelStyle}>価格帯</span>
           <div className={priceRangeContainerStyle}>
-            <select
+            <Select
+              className={priceSelectStyle}
               value={priceMin}
               onChange={(e) => setPriceMin(e.target.value)}
-              className={selectStyle}
               aria-label="最小価格"
             >
               {PRICE_MIN_OPTIONS.map((option) => (
@@ -155,12 +156,12 @@ export const FilterListEditDrawer = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Select>
             <span className={priceRangeSeparatorStyle}>〜</span>
-            <select
+            <Select
+              className={priceSelectStyle}
               value={priceMax}
               onChange={(e) => setPriceMax(e.target.value)}
-              className={selectStyle}
               aria-label="最大価格"
             >
               {PRICE_MAX_OPTIONS.map((option) => (
@@ -168,7 +169,7 @@ export const FilterListEditDrawer = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -354,25 +355,8 @@ const priceRangeContainerStyle = css({
   gap: "0.5rem",
 });
 
-const selectStyle = css({
+const priceSelectStyle = css({
   flex: 1,
-  padding: "0.625rem 0.75rem",
-  backgroundColor: "cardBgHover",
-  border: "1px solid",
-  borderColor: "border",
-  borderRadius: "6px",
-  color: "text",
-  fontSize: "0.8125rem",
-  outline: "none",
-  cursor: "pointer",
-  transition: "border-color 0.2s",
-  _focus: {
-    borderColor: "accent",
-  },
-  "& option": {
-    backgroundColor: "cardBg",
-    color: "text",
-  },
 });
 
 const priceRangeSeparatorStyle = css({

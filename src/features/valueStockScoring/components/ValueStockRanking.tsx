@@ -5,6 +5,7 @@ import type { ValueStockDto } from "@/server/features/valueStockScoring/applicat
 import { css } from "../../../../styled-system/css";
 import { trpc } from "../../../../trpc/client";
 import { useValueStockScoring } from "../hooks/useValueStockScoring";
+import { FilterListSelector } from "./FilterListSelector";
 import { PeriodTypeToggle } from "./PeriodTypeToggle";
 import { ScoringInfoBanner } from "./ScoringInfoBanner";
 import { ValueStockCardList } from "./ValueStockCardList";
@@ -16,7 +17,27 @@ import { ValueStockTableSkeleton } from "./ValueStockTableSkeleton";
 export const ValueStockRanking = () => {
   const [periodType, setPeriodType] = useState<"mid_term" | "long_term">("mid_term");
   const [selectedStock, setSelectedStock] = useState<ValueStockDto | null>(null);
-  const { data, loading, error } = useValueStockScoring({ periodType, limit: 20 });
+  const [selectedFilterListId, setSelectedFilterListId] = useState<string | null>(null);
+
+  // ユーザーのフィルターリスト一覧を取得
+  const { data: filterLists, isLoading: isLoadingFilterLists } = trpc.filterList.list.useQuery(
+    undefined,
+    {
+      staleTime: 5 * 60 * 1000, // 5分間キャッシュ
+    },
+  );
+
+  // 選択されたフィルターリストを取得
+  const selectedFilterList = useMemo(() => {
+    if (!selectedFilterListId || !filterLists) return undefined;
+    return filterLists.find((list) => list.id === selectedFilterListId);
+  }, [selectedFilterListId, filterLists]);
+
+  const { data, loading, error } = useValueStockScoring({
+    periodType,
+    limit: 20,
+    filterConditions: selectedFilterList?.filterConditions,
+  });
 
   // 上位5銘柄のIDリストを取得（AI分析は上位5銘柄のみ対象）
   const top5StockIds = useMemo(() => data.slice(0, 5).map((stock) => stock.stockId), [data]);
@@ -57,7 +78,15 @@ export const ValueStockRanking = () => {
           <h2 className={sectionTitleStyle}>割安株スコア上位</h2>
           {formattedDate && <span className={dateStyle}>{formattedDate}時点</span>}
         </div>
-        <PeriodTypeToggle periodType={periodType} onToggle={setPeriodType} />
+        <div className={controlsContainerStyle}>
+          <FilterListSelector
+            filterLists={filterLists ?? []}
+            selectedListId={selectedFilterListId}
+            onSelect={setSelectedFilterListId}
+            isLoading={isLoadingFilterLists}
+          />
+          <PeriodTypeToggle periodType={periodType} onToggle={setPeriodType} />
+        </div>
       </div>
 
       <ScoringInfoBanner />
@@ -135,6 +164,13 @@ const dateStyle = css({
   fontSize: "0.875rem",
   color: "textMuted",
   fontWeight: "400",
+});
+
+const controlsContainerStyle = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "1rem",
+  flexWrap: "wrap",
 });
 
 const errorContainerStyle = css({

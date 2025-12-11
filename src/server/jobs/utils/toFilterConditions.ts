@@ -10,17 +10,15 @@ import type { FilterConditionsInputDto } from "@/server/features/valueStockScori
  */
 export const toFilterConditions = (filterList: FilterListDataDto): FilterConditionsInputDto => {
   return {
-    markets: filterList.markets && filterList.markets.length > 0 ? filterList.markets : undefined,
+    markets: filterList.markets && filterList.markets.length > 0 ? filterList.markets : null,
     sectorCodes:
-      filterList.sectorCodes && filterList.sectorCodes.length > 0
-        ? filterList.sectorCodes
-        : undefined,
+      filterList.sectorCodes && filterList.sectorCodes.length > 0 ? filterList.sectorCodes : null,
     priceRange:
       filterList.priceMin !== null || filterList.priceMax !== null
         ? {
-            min: filterList.priceMin ?? undefined,
-            max: filterList.priceMax ?? undefined,
+            min: filterList.priceMin,
+            max: filterList.priceMax,
           }
-        : undefined,
+        : null,
   };
 };

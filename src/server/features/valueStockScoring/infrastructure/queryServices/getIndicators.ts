@@ -118,15 +118,12 @@ export const getLatestMidTermIndicators: GetLatestMidTermIndicators = async (fil
     .limit(1);
   const latestSectorDate = latestSectorDateResult[0]?.dataDate;
 
-  // タグによるフィルタリング（事前に銘柄IDを取得）
-  const filteredStockIds = await getFilteredStockIdsByTags(filterConditions);
+  const filteredStockIds = await getFilteredStockIdsByTags();
 
-  // タグフィルタが指定されているが該当銘柄がない場合は空配列を返す
   if (filteredStockIds !== null && filteredStockIds.length === 0) {
     return [];
   }
 
-  // フィルタ条件を構築
   const baseCondition = eq(midTermIndicators.collectedAt, latestDate);
   const whereCondition = buildMidTermFilterConditions(
     baseCondition,
@@ -249,15 +246,12 @@ export const getLatestLongTermIndicators: GetLatestLongTermIndicators = async (
     .limit(1);
   const latestSectorDate = latestSectorDateResult[0]?.dataDate;
 
-  // タグによるフィルタリング（事前に銘柄IDを取得）
-  const filteredStockIds = await getFilteredStockIdsByTags(filterConditions);
+  const filteredStockIds = await getFilteredStockIdsByTags();
 
-  // タグフィルタが指定されているが該当銘柄がない場合は空配列を返す
   if (filteredStockIds !== null && filteredStockIds.length === 0) {
     return [];
   }
 
-  // フィルタ条件を構築
   const baseCondition = eq(longTermIndicators.collectedAt, latestDate);
   const whereCondition = buildLongTermFilterConditions(
     baseCondition,

@@ -1,13 +1,21 @@
 import { inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { stockMacroTags, stockThemeTags } from "@/db/schema";
-import type { FilterConditionsInputDto } from "../../application/dto/filterConditionsInput.dto";
+
+/**
+ * タグフィルタ条件
+ * マイリストのFilterConditionsInputDtoとは別に、内部でタグフィルタを使用する場合の型
+ */
+type TagFilterConditions = Readonly<{
+  macroTagIds?: string[];
+  themeTagIds?: string[];
+}>;
 
 /**
  * フィルタ条件に基づいてタグで絞り込んだ銘柄IDを取得する関数の型定義
  */
 export type GetFilteredStockIdsByTags = (
-  filterConditions?: FilterConditionsInputDto,
+  filterConditions?: TagFilterConditions,
 ) => Promise<string[] | null>;
 
 /**

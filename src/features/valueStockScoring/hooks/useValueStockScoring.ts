@@ -1,9 +1,11 @@
+import type { FilterListDto } from "@/server/features/filterList/application/dto/filterList.dto";
 import type { ValueStockDto } from "@/server/features/valueStockScoring/application/dto/valueStock.dto";
 import { trpc } from "../../../../trpc/client";
 
 type UseValueStockScoringParams = {
   periodType: "mid_term" | "long_term";
   limit?: number;
+  filterConditions?: FilterListDto["filterConditions"];
 };
 
 type UseValueStockScoringResult = {
@@ -23,6 +25,7 @@ export const useValueStockScoring = (
     {
       periodType: params.periodType,
       limit: params.limit ?? 20,
+      filterConditions: params.filterConditions,
     },
     {
       refetchInterval: 60 * 60 * 1000, // 1時間ごとに再取得

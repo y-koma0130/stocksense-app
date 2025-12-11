@@ -38,11 +38,11 @@ export const buildMidTermFilterConditions: BuildMidTermFilterConditions = (
     conditions.push(inArray(stocks.market, filterConditions.markets));
   }
 
-  if (filterConditions?.priceRange?.min !== undefined) {
+  if (filterConditions?.priceRange?.min != null) {
     conditions.push(gte(midTermIndicators.currentPrice, String(filterConditions.priceRange.min)));
   }
 
-  if (filterConditions?.priceRange?.max !== undefined) {
+  if (filterConditions?.priceRange?.max != null) {
     conditions.push(lte(midTermIndicators.currentPrice, String(filterConditions.priceRange.max)));
   }
 
@@ -71,11 +71,11 @@ export const buildLongTermFilterConditions: BuildLongTermFilterConditions = (
     conditions.push(inArray(stocks.market, filterConditions.markets));
   }
 
-  if (filterConditions?.priceRange?.min !== undefined) {
+  if (filterConditions?.priceRange?.min != null) {
     conditions.push(gte(longTermIndicators.currentPrice, String(filterConditions.priceRange.min)));
   }
 
-  if (filterConditions?.priceRange?.max !== undefined) {
+  if (filterConditions?.priceRange?.max != null) {
     conditions.push(lte(longTermIndicators.currentPrice, String(filterConditions.priceRange.max)));
   }
 

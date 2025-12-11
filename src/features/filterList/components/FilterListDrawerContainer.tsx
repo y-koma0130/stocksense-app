@@ -2,40 +2,49 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_FILTER_LIST_ID, DEFAULT_FILTER_LIST_NAME } from "@/assets/filterListDefaults";
+import { trpc } from "../../../../trpc/client";
 import { useFilterListDrawerOpen, useSetFilterListDrawerOpen } from "../stores/filterListDrawer";
 import { useSetNotificationTargetList } from "../stores/notificationTargetList";
 import type { FilterList } from "../types/filterList";
 import { FilterListDrawer } from "./FilterListDrawer";
 import { FilterListEditDrawer } from "./FilterListEditDrawer";
 
-// TODO: 実際のデータ取得に置き換え
-const mockFilterLists: FilterList[] = [
-  {
-    id: "1",
-    name: "プライム高配当",
-    filterConditions: {
-      markets: ["プライム"],
-      priceRange: { min: 1000, max: 5000 },
-    },
-    isNotificationTarget: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
 export const FilterListDrawerContainer = () => {
   const isOpen = useFilterListDrawerOpen();
   const setDrawerOpen = useSetFilterListDrawerOpen();
   const setNotificationTargetList = useSetNotificationTargetList();
+  const utils = trpc.useUtils();
 
   // 編集中のリストID（nullなら新規作成、undefinedなら編集画面を表示しない）
   const [editingListId, setEditingListId] = useState<string | null | undefined>(undefined);
 
-  // TODO: 実際のデータに置き換え
-  const [filterLists] = useState<FilterList[]>(mockFilterLists);
-  const [notificationTargetId, setNotificationTargetId] = useState<string | null>(
-    DEFAULT_FILTER_LIST_ID,
+  // フィルターリスト一覧を取得
+  const { data: filterListsData, isLoading: isLoadingLists } = trpc.filterList.list.useQuery(
+    undefined,
+    {
+      enabled: isOpen,
+    },
   );
+
+  // 通知設定を取得
+  const { data: notificationSettings, isLoading: isLoadingSettings } =
+    trpc.filterList.getNotificationTarget.useQuery(undefined, {
+      enabled: isOpen,
+    });
+
+  // DTOをフロントエンド型に変換
+  const filterLists: FilterList[] =
+    filterListsData?.map((item) => ({
+      id: item.id,
+      name: item.name,
+      filterConditions: item.filterConditions,
+      createdAt: new Date(item.createdAt),
+      updatedAt: new Date(item.updatedAt),
+    })) ?? [];
+
+  // 通知対象リストID（nullの場合はデフォルト）
+  const notificationTargetId =
+    notificationSettings?.notificationTargetListId ?? DEFAULT_FILTER_LIST_ID;
 
   // TODO: プラン情報から取得
   const maxListCount = 1; // Freeプランは1件まで
@@ -51,6 +60,35 @@ export const FilterListDrawerContainer = () => {
       }
     }
   }, [notificationTargetId, filterLists, setNotificationTargetList]);
+
+  // ミューテーション
+  const createMutation = trpc.filterList.create.useMutation({
+    onSuccess: () => {
+      utils.filterList.list.invalidate();
+      setEditingListId(undefined);
+    },
+  });
+
+  const updateMutation = trpc.filterList.update.useMutation({
+    onSuccess: () => {
+      utils.filterList.list.invalidate();
+      setEditingListId(undefined);
+    },
+  });
+
+  const deleteMutation = trpc.filterList.delete.useMutation({
+    onSuccess: () => {
+      utils.filterList.list.invalidate();
+      utils.filterList.getNotificationTarget.invalidate();
+      setEditingListId(undefined);
+    },
+  });
+
+  const setNotificationTargetMutation = trpc.filterList.setNotificationTarget.useMutation({
+    onSuccess: () => {
+      utils.filterList.getNotificationTarget.invalidate();
+    },
+  });
 
   const handleClose = useCallback(() => {
     setDrawerOpen(false);
@@ -69,31 +107,60 @@ export const FilterListDrawerContainer = () => {
     setEditingListId(null); // nullは新規作成
   }, []);
 
-  const handleSetNotificationTarget = useCallback((listId: string) => {
-    setNotificationTargetId(listId);
-    // TODO: APIでの保存
-  }, []);
+  const handleSetNotificationTarget = useCallback(
+    (listId: string) => {
+      // DEFAULT_FILTER_LIST_IDの場合はnullを送信（デフォルト＝全銘柄）
+      const targetListId = listId === DEFAULT_FILTER_LIST_ID ? null : listId;
+      setNotificationTargetMutation.mutate({ listId: targetListId });
+    },
+    [setNotificationTargetMutation],
+  );
 
   const handleEditClose = useCallback(() => {
     setEditingListId(undefined);
   }, []);
 
-  const handleSave = useCallback((list: Omit<FilterList, "id" | "createdAt" | "updatedAt">) => {
-    // TODO: APIでの保存
-    console.log("Save list:", list);
-    setEditingListId(undefined);
-  }, []);
+  const handleSave = useCallback(
+    (list: Omit<FilterList, "id" | "createdAt" | "updatedAt">) => {
+      const { filterConditions } = list;
 
-  const handleDelete = useCallback((listId: string) => {
-    // TODO: APIでの削除
-    console.log("Delete list:", listId);
-    setEditingListId(undefined);
-  }, []);
+      if (editingListId === null) {
+        // 新規作成
+        createMutation.mutate({
+          name: list.name,
+          markets: filterConditions.markets,
+          sectorCodes: filterConditions.sectorCodes,
+          priceMin: filterConditions.priceRange?.min,
+          priceMax: filterConditions.priceRange?.max,
+        });
+      } else if (editingListId) {
+        // 更新
+        updateMutation.mutate({
+          id: editingListId,
+          name: list.name,
+          markets: filterConditions.markets,
+          sectorCodes: filterConditions.sectorCodes,
+          priceMin: filterConditions.priceRange?.min,
+          priceMax: filterConditions.priceRange?.max,
+        });
+      }
+    },
+    [editingListId, createMutation, updateMutation],
+  );
+
+  const handleDelete = useCallback(
+    (listId: string) => {
+      deleteMutation.mutate({ id: listId });
+    },
+    [deleteMutation],
+  );
 
   const editingList =
     editingListId === null
       ? null // 新規作成
       : filterLists.find((l) => l.id === editingListId);
+
+  const isLoading = isLoadingLists || isLoadingSettings;
 
   return (
     <>
@@ -107,6 +174,7 @@ export const FilterListDrawerContainer = () => {
         onCreateList={handleCreateList}
         onSetNotificationTarget={handleSetNotificationTarget}
         maxListCount={maxListCount}
+        isLoading={isLoading}
       />
       {editingListId !== undefined && (
         <FilterListEditDrawer

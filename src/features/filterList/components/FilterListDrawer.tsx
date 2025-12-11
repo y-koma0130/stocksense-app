@@ -5,6 +5,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { css } from "../../../../styled-system/css";
 import type { FilterList } from "../types/filterList";
 import { formatFilterDescription } from "../utils/formatFilterDescription";
+import { FilterListDrawerSkeleton } from "./FilterListDrawerSkeleton";
 import { FilterListItem } from "./FilterListItem";
 
 type FilterListDrawerProps = Readonly<{
@@ -17,6 +18,7 @@ type FilterListDrawerProps = Readonly<{
   onCreateList: () => void;
   onSetNotificationTarget: (listId: string) => void;
   maxListCount: number;
+  isLoading?: boolean;
 }>;
 
 export const FilterListDrawer = ({
@@ -29,6 +31,7 @@ export const FilterListDrawer = ({
   onCreateList,
   onSetNotificationTarget,
   maxListCount,
+  isLoading = false,
 }: FilterListDrawerProps) => {
   const canCreateMore = filterLists.length < maxListCount;
   const effectiveNotificationTargetId = notificationTargetId ?? DEFAULT_FILTER_LIST_ID;
@@ -41,53 +44,59 @@ export const FilterListDrawer = ({
           絞り込み条件を設定したリストを作成し、通知対象として選択できます。
         </p>
 
-        {/* デフォルトリスト */}
-        <div className={listSectionStyle}>
-          <FilterListItem
-            id={DEFAULT_FILTER_LIST_ID}
-            name={DEFAULT_FILTER_LIST_NAME}
-            description="フィルターなし"
-            isNotificationTarget={effectiveNotificationTargetId === DEFAULT_FILTER_LIST_ID}
-            isDefault
-            onSelect={() => onSelectList(DEFAULT_FILTER_LIST_ID)}
-            onSetNotificationTarget={() => onSetNotificationTarget(DEFAULT_FILTER_LIST_ID)}
-          />
-        </div>
-
-        {/* ユーザー作成リスト */}
-        {filterLists.length > 0 && (
-          <div className={listSectionStyle}>
-            <h4 className={sectionTitleStyle}>カスタムリスト</h4>
-            {filterLists.map((list) => (
+        {isLoading ? (
+          <FilterListDrawerSkeleton />
+        ) : (
+          <>
+            {/* デフォルトリスト */}
+            <div className={listSectionStyle}>
               <FilterListItem
-                key={list.id}
-                id={list.id}
-                name={list.name}
-                description={formatFilterDescription(list.filterConditions)}
-                isNotificationTarget={effectiveNotificationTargetId === list.id}
-                isDefault={false}
-                onSelect={() => onSelectList(list.id)}
-                onEdit={() => onEditList(list.id)}
-                onSetNotificationTarget={() => onSetNotificationTarget(list.id)}
+                id={DEFAULT_FILTER_LIST_ID}
+                name={DEFAULT_FILTER_LIST_NAME}
+                description="フィルターなし"
+                isNotificationTarget={effectiveNotificationTargetId === DEFAULT_FILTER_LIST_ID}
+                isDefault
+                onSelect={() => onSelectList(DEFAULT_FILTER_LIST_ID)}
+                onSetNotificationTarget={() => onSetNotificationTarget(DEFAULT_FILTER_LIST_ID)}
               />
-            ))}
-          </div>
-        )}
-
-        {/* 新規作成ボタン */}
-        <div className={createButtonContainerStyle}>
-          {canCreateMore ? (
-            <button type="button" onClick={onCreateList} className={createButtonStyle}>
-              <span className={plusIconStyle}>+</span>
-              新しいリストを作成
-            </button>
-          ) : (
-            <div className={limitReachedStyle}>
-              <p>リスト数の上限に達しました（{maxListCount}件）</p>
-              <p className={upgradeNoteStyle}>有料プランで上限を解除（準備中）</p>
             </div>
-          )}
-        </div>
+
+            {/* ユーザー作成リスト */}
+            {filterLists.length > 0 && (
+              <div className={listSectionStyle}>
+                <h4 className={sectionTitleStyle}>カスタムリスト</h4>
+                {filterLists.map((list) => (
+                  <FilterListItem
+                    key={list.id}
+                    id={list.id}
+                    name={list.name}
+                    description={formatFilterDescription(list.filterConditions)}
+                    isNotificationTarget={effectiveNotificationTargetId === list.id}
+                    isDefault={false}
+                    onSelect={() => onSelectList(list.id)}
+                    onEdit={() => onEditList(list.id)}
+                    onSetNotificationTarget={() => onSetNotificationTarget(list.id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 新規作成ボタン */}
+            <div className={createButtonContainerStyle}>
+              {canCreateMore ? (
+                <button type="button" onClick={onCreateList} className={createButtonStyle}>
+                  <span className={plusIconStyle}>+</span>
+                  新しいリストを作成
+                </button>
+              ) : (
+                <div className={limitReachedStyle}>
+                  <p>リスト数の上限に達しました（{maxListCount}件）</p>
+                  <p className={upgradeNoteStyle}>有料プランで上限を解除（準備中）</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </Drawer>
   );

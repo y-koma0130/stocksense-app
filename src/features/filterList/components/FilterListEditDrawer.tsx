@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { MARKET_OPTIONS } from "@/assets/marketOptions";
+import { MARKET_OPTIONS, type MarketValue } from "@/assets/marketOptions";
 import { PRICE_MAX_OPTIONS, PRICE_MIN_OPTIONS } from "@/assets/priceRangeOptions";
-import { STOCK_MARKET_SECTORS } from "@/assets/stockMarketSectors";
+import { type SectorCode, STOCK_MARKET_SECTORS } from "@/assets/stockMarketSectors";
 import { Drawer } from "@/components/ui/Drawer";
 import { css } from "../../../../styled-system/css";
 import type { FilterConditions, FilterList } from "../types/filterList";
@@ -27,8 +27,8 @@ export const FilterListEditDrawer = ({
 
   // フォーム状態
   const [name, setName] = useState("");
-  const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
-  const [selectedSectorCodes, setSelectedSectorCodes] = useState<string[]>([]);
+  const [selectedMarkets, setSelectedMarkets] = useState<MarketValue[]>([]);
+  const [selectedSectorCodes, setSelectedSectorCodes] = useState<SectorCode[]>([]);
   const [priceMin, setPriceMin] = useState<string>("");
   const [priceMax, setPriceMax] = useState<string>("");
 
@@ -50,13 +50,13 @@ export const FilterListEditDrawer = ({
     }
   }, [editingList]);
 
-  const handleMarketToggle = useCallback((market: string) => {
+  const handleMarketToggle = useCallback((market: MarketValue) => {
     setSelectedMarkets((prev) =>
       prev.includes(market) ? prev.filter((m) => m !== market) : [...prev, market],
     );
   }, []);
 
-  const handleSectorToggle = useCallback((sectorCode: string) => {
+  const handleSectorToggle = useCallback((sectorCode: SectorCode) => {
     setSelectedSectorCodes((prev) =>
       prev.includes(sectorCode) ? prev.filter((s) => s !== sectorCode) : [...prev, sectorCode],
     );
@@ -67,21 +67,20 @@ export const FilterListEditDrawer = ({
       return;
     }
 
-    const min = priceMin ? parseInt(priceMin, 10) : undefined;
-    const max = priceMax ? parseInt(priceMax, 10) : undefined;
+    const min = priceMin ? parseInt(priceMin, 10) : null;
+    const max = priceMax ? parseInt(priceMax, 10) : null;
 
     const filterConditions: FilterConditions = {
-      ...(selectedMarkets.length > 0 && { markets: selectedMarkets }),
-      ...(selectedSectorCodes.length > 0 && { sectorCodes: selectedSectorCodes }),
-      ...((min !== undefined || max !== undefined) && { priceRange: { min, max } }),
+      markets: selectedMarkets.length > 0 ? selectedMarkets : null,
+      sectorCodes: selectedSectorCodes.length > 0 ? selectedSectorCodes : null,
+      priceRange: min !== null || max !== null ? { min, max } : null,
     };
 
     onSave({
       name: name.trim(),
       filterConditions,
-      isNotificationTarget: editingList?.isNotificationTarget ?? false,
     });
-  }, [name, selectedMarkets, selectedSectorCodes, priceMin, priceMax, editingList, onSave]);
+  }, [name, selectedMarkets, selectedSectorCodes, priceMin, priceMax, onSave]);
 
   const title = (
     <div className={titleContainerStyle}>

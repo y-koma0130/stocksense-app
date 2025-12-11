@@ -4,6 +4,7 @@
  */
 
 import { getLatestMarketAnalysis } from "@/server/features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
+import type { FilterConditionsInputDto } from "../../application/dto/filterConditionsInput.dto";
 import type {
   LongTermValueStockDto,
   MidTermValueStockDto,
@@ -19,6 +20,7 @@ import { getLatestLongTermIndicators, getLatestMidTermIndicators } from "./getIn
 
 type GetTopValueStocksParams = Readonly<{
   limit: number;
+  filterConditions?: FilterConditionsInputDto;
 }>;
 
 /**
@@ -36,7 +38,10 @@ export const getTopMidTermStocks = async (
       isTrapStock,
       rankByScore,
     },
-    params,
+    {
+      limit: params.limit,
+      filterConditions: params.filterConditions,
+    },
   );
 };
 
@@ -55,6 +60,9 @@ export const getTopLongTermStocks = async (
       isTrapStock,
       rankByScore,
     },
-    params,
+    {
+      limit: params.limit,
+      filterConditions: params.filterConditions,
+    },
   );
 };

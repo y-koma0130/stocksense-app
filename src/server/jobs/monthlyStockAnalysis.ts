@@ -1,7 +1,7 @@
 /**
  * 月次個別株分析ジョブ
  * 毎月1日4:00 (JST)に実行（マーケット分析・指標取得の後）
- * 上位N銘柄の個別分析を実施（長期目線）
+ * 全銘柄上位 + ユーザーフィルター上位の銘柄を分析（長期目線）
  */
 
 import { zodResponseFormat } from "openai/helpers/zod";
@@ -10,11 +10,8 @@ import { inngest } from "../../../inngest/client";
 import { getLatestMarketAnalysis } from "../features/marketAnalysis/infrastructure/queryServices/getLatestMarketAnalysis";
 import { StockAnalysisResultSchema } from "../features/stockAnalysis/domain/values/types";
 import { saveStockAnalysis } from "../features/stockAnalysis/infrastructure/repositories/saveStockAnalysis";
-import { getTopLongTermStocks } from "../features/valueStockScoring/infrastructure/queryServices/getTopValueStocks";
 import { buildLongTermStockAnalysisPrompt } from "./utils/buildLongTermStockAnalysisPrompt";
-
-// 分析対象銘柄数（固定）
-const ANALYSIS_COUNT = 5;
+import { collectLongTermAnalysisTargetStocks } from "./utils/collectAnalysisTargetStocks";
 
 export const monthlyStockAnalysis = inngest.createFunction(
   {
@@ -29,9 +26,9 @@ export const monthlyStockAnalysis = inngest.createFunction(
       return await getLatestMarketAnalysis({ periodType: "long_term" });
     });
 
-    // 上位N銘柄を取得
-    const topStocks = await step.run("fetch-top-stocks", async () => {
-      return await getTopLongTermStocks({ limit: ANALYSIS_COUNT });
+    // 分析対象銘柄を収集（全銘柄上位 + ユーザーフィルター上位）
+    const topStocks = await step.run("collect-analysis-target-stocks", async () => {
+      return await collectLongTermAnalysisTargetStocks();
     });
 
     if (topStocks.length === 0) {

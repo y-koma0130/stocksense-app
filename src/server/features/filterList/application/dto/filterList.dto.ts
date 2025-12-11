@@ -51,3 +51,16 @@ export const toFilterListDto = (entity: FilterListEntity): FilterListDto => {
 export type NotificationSettingsDto = Readonly<{
   notificationTargetListId: string | null;
 }>;
+
+/**
+ * フィルターリストデータ（ジョブ用の軽量DTO）
+ * クエリサービスやジョブで使用する最小限のフィルター条件データ
+ */
+export type FilterListDataDto = Readonly<{
+  id: string;
+  name: string;
+  markets: string[] | null;
+  sectorCodes: string[] | null;
+  priceMin: number | null;
+  priceMax: number | null;
+}>;

@@ -19,8 +19,8 @@ import { upsertNotificationSettings } from "../infrastructure/repositories/upser
 // プラン別リスト上限
 const PLAN_LIST_LIMITS: Record<string, number> = {
   free: 1,
-  standard: 5,
-  pro: 100,
+  standard: 3,
+  pro: 10,
 };
 
 const getMaxListCount = (plan: string): number => {

@@ -244,6 +244,13 @@
 - [ ] 保存した設定の管理
 - [ ] フィルター設定の保存 (DB)
 
+### LINE連携フローの改善
+- [ ] Web先行ユーザーのLINE連携UX改善
+  - 現状の問題: WebでアカウントをいつくってからQRコードでLINE友だち追加しても、LINEからのリンクを再度タップしてログインしないと紐付けされない
+  - 解決策案1: ログイン済みユーザーが `/login?lineUserId=xxx` にアクセスした場合、ログイン画面をスキップして直接 `linkLineAccount` を実行
+  - 解決策案2: LIFFを使った連携フロー（QRコードにユーザーIDを含めた動的生成）
+  - 参考ファイル: `src/app/api/line/webhook/route.ts`, `src/features/auth/components/LoginCard.tsx`
+
 ### その他の機能拡張
 - [ ] ポートフォリオ管理機能
 - [ ] 銘柄比較機能

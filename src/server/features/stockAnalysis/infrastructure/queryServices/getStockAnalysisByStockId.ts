@@ -19,6 +19,7 @@ export type GetStockAnalysisByStockId = (params: GetStockAnalysisByStockIdParams
   analyzedAt: Date;
   valueStockRating: string | null;
   summary: string | null;
+  summaryShort: string | null;
   investmentPoints: unknown;
   risks: unknown;
 } | null>;

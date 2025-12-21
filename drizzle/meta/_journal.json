@@ -148,6 +148,13 @@
       "when": 1765440156031,
       "tag": "0020_early_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1766283161968,
+      "tag": "0021_pale_orphan",
+      "breakpoints": true
     }
   ]
 }

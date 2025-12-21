@@ -39,6 +39,7 @@ type MarketAnalysisForLine = Readonly<{
 type StockAnalysisForLine = Readonly<{
   valueStockRating: string | null;
   summary: string | null;
+  summaryShort: string | null;
 }>;
 
 type TopStock = Readonly<{
@@ -223,11 +224,10 @@ const buildRankingBody = (
         .filter((s) => s !== "")
         .join(" | ");
 
-      // AI分析コメント（100文字程度に要約）
+      // AI分析コメント（summaryShortを使用）
       let aiComment = "";
-      if (analysis?.summary) {
-        const summaryShort = analysis.summary.slice(0, 100);
-        aiComment = `\n💡 ${summaryShort}`;
+      if (analysis?.summaryShort) {
+        aiComment = `\n💡 ${analysis.summaryShort}`;
       }
 
       return `${basicInfo}\n${metricsLine}${aiComment}`;

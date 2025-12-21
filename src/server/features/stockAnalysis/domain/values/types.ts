@@ -31,6 +31,9 @@ export const StockAnalysisResultSchema = z.object({
   // LLMが超過する場合に備えて余裕を持たせる（UI側で300字折りたたみ）
   summary: z.string().min(50).max(1500).describe("総合評価コメント。300-400字程度で記述"),
 
+  // LINE通知用の短い要約（80-100字）
+  summaryShort: z.string().max(150).nullable().describe("LINE通知用の短い要約。80-100字程度で記述"),
+
   // 投資する場合の魅力ポイント（3-4項目）
   // プロンプトでは60-80字を指示するが、超過に備えて余裕を持たせる
   investmentPoints: z

@@ -15,6 +15,7 @@ export const StockAnalysisDtoSchema = z.object({
   analyzedAt: z.date(),
   valueStockRating: ValueStockRatingSchema.nullable(),
   summary: z.string().nullable(),
+  summaryShort: z.string().nullable(),
   investmentPoints: z.array(z.string()),
   risks: z.array(z.string()),
 });
@@ -31,6 +32,7 @@ export const toStockAnalysisDto = (record: {
   analyzedAt: Date;
   valueStockRating: string | null;
   summary: string | null;
+  summaryShort: string | null;
   investmentPoints: unknown;
   risks: unknown;
 }): StockAnalysisDto => {
@@ -41,6 +43,7 @@ export const toStockAnalysisDto = (record: {
     analyzedAt: record.analyzedAt,
     valueStockRating: record.valueStockRating,
     summary: record.summary,
+    summaryShort: record.summaryShort,
     investmentPoints: Array.isArray(record.investmentPoints) ? record.investmentPoints : [],
     risks: Array.isArray(record.risks) ? record.risks : [],
   });

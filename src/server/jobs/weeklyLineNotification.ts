@@ -77,7 +77,11 @@ export const weeklyLineNotification = inngest.createFunction(
 
     // ステップ4: 各フィルター条件で上位銘柄を取得
     type StockWithAnalysis = Awaited<ReturnType<typeof getTopMidTermValueStocks>>;
-    type StockAnalysisForLine = { valueStockRating: string | null; summary: string | null };
+    type StockAnalysisForLine = {
+      valueStockRating: string | null;
+      summary: string | null;
+      summaryShort: string | null;
+    };
     const filterKeyToStocks = new Map<string, StockWithAnalysis>();
     const filterKeyToAnalyses = new Map<string, Record<string, StockAnalysisForLine>>();
 

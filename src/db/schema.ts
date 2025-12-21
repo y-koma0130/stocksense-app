@@ -333,8 +333,11 @@ export const stockAnalyses = pgTable(
     // バリュー株としての評価（5段階、上位銘柄間の相対評価）
     valueStockRating: varchar("value_stock_rating", { length: 20 }), // "excellent" | "good" | "fair" | "poor" | "very_poor"
 
-    // 総合評価コメント（100-400字）
+    // 総合評価コメント（300-400字）
     summary: text("summary"),
+
+    // LINE通知用の短い要約（100字以内）
+    summaryShort: text("summary_short"),
 
     // 投資する場合の魅力ポイント（JSONB: string[]、3-4項目、各100字以内）
     investmentPoints: jsonb("investment_points"),

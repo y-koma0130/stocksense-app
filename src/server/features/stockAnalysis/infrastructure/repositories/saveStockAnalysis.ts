@@ -29,6 +29,7 @@ export const saveStockAnalysis: SaveStockAnalysis = async ({
     analyzedAt: nowJST(),
     valueStockRating: result.valueStockRating,
     summary: result.summary,
+    summaryShort: result.summaryShort ?? null,
     investmentPoints: result.investmentPoints,
     risks: result.risks,
     llmRawResponse: rawResponse,

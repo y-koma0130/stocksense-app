@@ -1,0 +1,1 @@
+ALTER TABLE "stock_analyses" ADD COLUMN "summary_short" text;
